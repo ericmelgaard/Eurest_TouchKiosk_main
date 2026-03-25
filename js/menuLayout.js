@@ -190,59 +190,88 @@ var IMSintegration;
             // Set up inactivity timer
             this.setupInactivityTimer();
 
+            // Welcome screen card navigation
+            $('#card-weeklymenu').on('click', function () {
+                $('#weekly_menu_page').show();
+                $('.home').hide();
+                _this.resetInactivityTimer();
+            });
+
+            // Feature cards - keeping existing actions or no-ops for now
+            $('#card-happening').on('click', function () {
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-beverage').on('click', function () {
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-youpickit').on('click', function () {
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-fit').on('click', function () {
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-mezze').on('click', function () {
+                _this.resetInactivityTimer();
+            });
+
+            // Restaurant brand navigation from weekly menu page
             $('#breakfast').on('click', function () {
                 $('#bfast_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#tacocantina').on('click', function () {
                 $('#tacocantina_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#butcherbaker').on('click', function () {
                 $('#butcherbaker_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#roost').on('click', function () {
                 $('#roost_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#piccolaitalia').on('click', function () {
                 $('#piccolaitalia_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#bigcitybbq').on('click', function () {
                 $('#bigcitybbq_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#sipsbites').on('click', function () {
                 $('#sipsbites_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#mashup').on('click', function () {
                 $('#mashup_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#graze').on('click', function () {
                 $('#graze_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#inspiredkitchen').on('click', function () {
                 $('#inspiredkitchen_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('#flame').on('click', function () {
                 $('#flame_page').show();
-                $('.home').hide();
+                $('#weekly_menu_page').hide();
                 _this.resetInactivityTimer();
             })
             $('.goHome img').on('click', function () {
