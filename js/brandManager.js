@@ -266,30 +266,21 @@ var IMSintegration;
             _this.brands.forEach(function (brand) {
                 var brandCard = $('<div>')
                     .addClass('brand-card')
-                    .attr('data-brand', brand.brandKey)
-                    .css({
-                        cursor: 'pointer',
-                        display: 'inline-block',
-                        margin: '10px',
-                        textAlign: 'center'
-                    });
+                    .attr('data-brand', brand.brandKey);
 
                 var brandLogo = $('<img>')
                     .attr('src', brand.logoUrl)
                     .attr('alt', brand.displayName)
-                    .css({
-                        maxWidth: '200px',
-                        maxHeight: '150px',
-                        display: 'block'
-                    })
                     .on('error', function () {
                         console.warn('Failed to load logo for ' + brand.displayName + ' from: ' + brand.logoUrl);
                         $(this).hide();
                         brandCard.append($('<div>').text(brand.displayName).css({
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            padding: '20px',
-                            fontFamily: 'BarlowSemiCondensed-Regular'
+                            fontSize: '48px',
+                            fontWeight: '600',
+                            color: '#2c2c2c',
+                            fontFamily: 'BarlowSemiCondensed-Regular',
+                            textAlign: 'center',
+                            lineHeight: '1.2'
                         }));
                     });
 
