@@ -4,6 +4,7 @@ var IMSintegration;
 (function (wandDigital) {
     var BrandManager = (function () {
         function BrandManager() {
+            this.logoBaseUrl = "https://trm.wandcorp.com/cms_mediafiles/DIGITAL_ASSETS_NX01/297748/eurest_logos/";
             this.brandConfig = {
                 graze: {
                     logoFilename: "graze.png",
@@ -20,11 +21,6 @@ var IMSintegration;
                     keywords: ["big city", "bigcity", "bbq"],
                     displayName: "Big City BBQ"
                 },
-                sipsbites: {
-                    logoFilename: "sipsbites.png",
-                    keywords: ["sips", "bites"],
-                    displayName: "Sips & Bites"
-                },
                 tacocantina: {
                     logoFilename: "tacocantina.png",
                     keywords: ["taco", "cantina"],
@@ -36,7 +32,7 @@ var IMSintegration;
                     displayName: "Butcher & Baker"
                 },
                 roost: {
-                    logoFilename: "roost.png",
+                    logoFilename: "roost1996.png",
                     keywords: ["roost", "1996"],
                     displayName: "Roost 1996"
                 },
@@ -45,33 +41,117 @@ var IMSintegration;
                     keywords: ["flame"],
                     displayName: "Flame"
                 },
-                inspiredkitchen: {
-                    logoFilename: "inspired_kitchen.png",
-                    keywords: ["inspired", "kitchen"],
-                    displayName: "Inspired Kitchen"
-                },
-                breakfast: {
-                    logoFilename: "bfast.png",
-                    keywords: ["breakfast", "bfast"],
-                    displayName: "Breakfast"
-                },
-                mashup: {
-                    logoFilename: "mashup.png",
-                    keywords: ["mashup"],
-                    displayName: "Mashup"
-                },
-                boxed: {
-                    logoFilename: "boxed.png",
-                    keywords: ["boxed"],
-                    displayName: "Boxed"
-                },
                 create: {
                     logoFilename: "create.png",
                     keywords: ["create"],
                     displayName: "Create"
+                },
+                bibimbap: {
+                    logoFilename: "bibimbap.png",
+                    keywords: ["bibimbap"],
+                    displayName: "Bibimbap"
+                },
+                bokchoy: {
+                    logoFilename: "bokchoy.png",
+                    keywords: ["bok choy", "bokchoy"],
+                    displayName: "Bok Choy"
+                },
+                crave: {
+                    logoFilename: "crave.png",
+                    keywords: ["crave"],
+                    displayName: "Crave"
+                },
+                crisp: {
+                    logoFilename: "crisp.png",
+                    keywords: ["crisp"],
+                    displayName: "Crisp"
+                },
+                earthbowl: {
+                    logoFilename: "earthbowl.png",
+                    keywords: ["earth bowl", "earthbowl"],
+                    displayName: "Earth Bowl"
+                },
+                fishmarket: {
+                    logoFilename: "fishmarket.png",
+                    keywords: ["fish market", "fishmarket"],
+                    displayName: "Fish Market"
+                },
+                justburgers: {
+                    logoFilename: "justburgers.png",
+                    keywords: ["just burgers", "justburgers"],
+                    displayName: "Just Burgers"
+                },
+                kitchenco: {
+                    logoFilename: "kitchenco.png",
+                    keywords: ["kitchen co", "kitchenco"],
+                    displayName: "Kitchen Co"
+                },
+                maccheeseology: {
+                    logoFilename: "maccheeseology.png",
+                    keywords: ["mac cheeseology", "maccheeseology", "mac cheese"],
+                    displayName: "Mac Cheeseology"
+                },
+                machuperu: {
+                    logoFilename: "machuperu.png",
+                    keywords: ["machu peru", "machuperu"],
+                    displayName: "Machu Peru"
+                },
+                madetomelt: {
+                    logoFilename: "madetomelt.png",
+                    keywords: ["made to melt", "madetomelt"],
+                    displayName: "Made to Melt"
+                },
+                marketfresh: {
+                    logoFilename: "marketfresh.png",
+                    keywords: ["market fresh", "marketfresh"],
+                    displayName: "Market Fresh"
+                },
+                masala: {
+                    logoFilename: "masala_685x300.png",
+                    keywords: ["masala"],
+                    displayName: "Masala"
+                },
+                meatballinc: {
+                    logoFilename: "meatballInc.png",
+                    keywords: ["meatball", "meatballinc"],
+                    displayName: "Meatball Inc"
+                },
+                mezze: {
+                    logoFilename: "mezze.png",
+                    keywords: ["mezze"],
+                    displayName: "Mezze"
+                },
+                picomesa: {
+                    logoFilename: "picomesa.png",
+                    keywords: ["pico mesa", "picomesa"],
+                    displayName: "Pico Mesa"
+                },
+                piripiri: {
+                    logoFilename: "piripiri.png",
+                    keywords: ["piri piri", "piripiri"],
+                    displayName: "Piri Piri"
+                },
+                revolutionnoodle: {
+                    logoFilename: "revolutionnoodle.png",
+                    keywords: ["revolution noodle", "revolutionnoodle"],
+                    displayName: "Revolution Noodle"
+                },
+                rootsandseeds: {
+                    logoFilename: "rootsandsseds.png",
+                    keywords: ["roots and seeds", "rootsandseeds"],
+                    displayName: "Roots and Seeds"
+                },
+                soulkitchen: {
+                    logoFilename: "soulkitchen.png",
+                    keywords: ["soul kitchen", "soulkitchen"],
+                    displayName: "Soul Kitchen"
+                },
+                soup: {
+                    logoFilename: "soup.png",
+                    keywords: ["soup"],
+                    displayName: "Soup"
                 }
             };
-            this.logoBaseUrl = "https://trm.wandcorp.com/cms_mediafiles/DIGITAL_ASSETS_NX01/297748/eurest_logos/";
             this.brands = [];
             this.currentBrand = null;
         }
@@ -195,7 +275,7 @@ var IMSintegration;
                     });
 
                 var brandLogo = $('<img>')
-                    .attr('src', './media/' + brand.logoFilename)
+                    .attr('src', brand.logoUrl)
                     .attr('alt', brand.displayName)
                     .css({
                         maxWidth: '200px',
@@ -203,7 +283,14 @@ var IMSintegration;
                         display: 'block'
                     })
                     .on('error', function () {
-                        $(this).attr('src', './media/header.png');
+                        console.warn('Failed to load logo for ' + brand.displayName + ' from: ' + brand.logoUrl);
+                        $(this).hide();
+                        brandCard.append($('<div>').text(brand.displayName).css({
+                            fontSize: '24px',
+                            fontWeight: 'bold',
+                            padding: '20px',
+                            fontFamily: 'BarlowSemiCondensed-Regular'
+                        }));
                     });
 
                 brandCard.append(brandLogo);
