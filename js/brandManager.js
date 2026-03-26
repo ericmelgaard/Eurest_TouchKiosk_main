@@ -330,24 +330,26 @@ var IMSintegration;
         BrandManager.prototype.createDynamicMenuPage = function (brandKey) {
             var pageHtml = `
                 <div id="${brandKey}_page" class="page" style="display:none;">
-                    <div class="goHome"><img src="./media/homebutton.png"/></div>
                     <div class="background">
-                        <img id="${brandKey}_background" src="./media/texture.png"/>
+                        <img id="${brandKey}_background" src="./media/texture.png" height="1920" width="1080"/>
                     </div>
-                    <div class="menu-content">
+                    <div class="section-wrapper" style="margin-top: 80px;">
                         <div class="items-wrapper"></div>
+                    </div>
+                    <div class="goHome">
+                        <img src="media/homebutton.png">
                     </div>
                 </div>
             `;
 
-            $('body').append(pageHtml);
+            $('#target.asset-wrapper').append(pageHtml);
             return $('#' + brandKey + '_page');
         };
 
         BrandManager.prototype.populateMenuPage = function (brand, menuPage) {
             var _this = this;
-            var itemsWrapper = menuPage.find('.items-wrapper');
-            itemsWrapper.empty();
+            var sectionWrapper = menuPage.find('.section-wrapper');
+            sectionWrapper.empty();
 
             var stationGroups = {};
 
@@ -370,31 +372,22 @@ var IMSintegration;
 
                 if (group.items.length === 0) return;
 
-                var sectionWrapper = $('<div>')
-                    .addClass('station-section')
-                    .css({
-                        marginBottom: '30px'
-                    });
+                var featureWrapper = $('<div>').addClass('feature-wrapper');
 
-                var sectionTitle = $('<h2>')
-                    .text(groupName)
-                    .css({
-                        fontSize: '32px',
-                        marginBottom: '15px',
-                        textTransform: 'capitalize',
-                        color: '#333'
-                    });
+                var sectionTitle = $('<div>')
+                    .addClass('header')
+                    .text(groupName);
 
-                var sectionItems = $('<div>').addClass('section-items');
+                var itemsWrapper = $('<div>').addClass('items-wrapper');
 
                 group.items.forEach(function (item) {
                     var itemHtml = Mustache.render(BrandManager.itemWrapper, item);
-                    sectionItems.append(itemHtml);
+                    itemsWrapper.append(itemHtml);
                 });
 
-                sectionWrapper.append(sectionTitle);
-                sectionWrapper.append(sectionItems);
-                itemsWrapper.append(sectionWrapper);
+                featureWrapper.append(sectionTitle);
+                featureWrapper.append(itemsWrapper);
+                sectionWrapper.append(featureWrapper);
             });
 
             _this.handleIconOrphans(menuPage);
