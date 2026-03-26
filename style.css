@@ -16,7 +16,7 @@ html {
     background-image: url("media/texture.png");
     background-size: 380px 380px;
     background-repeat: repeat;
-        display: flex;
+    display: flex;
     justify-content: center;
 }
 
@@ -167,31 +167,37 @@ min-width: 1080px;;
     max-width: 1080px;
     min-height: 100vh;
     display: none;
-    overflow-y: auto;
-    padding: 40px 20px 80px;
 }
 
 #weekly_menu_page .logo-wrapper {
     position: relative;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 1040px;
-    padding: 0;
+    background-color: white;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 645px;
+    min-height: 1800px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: space-around;
     align-items: center;
+    border: #CE3334 9px solid;
     z-index: 1;
 }
 
 .logo-wrapper {
     position: relative;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 1040px;
-    padding: 0;
+    background-color: white;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 645px;
+    min-height: 1800px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: space-around;
     align-items: center;
+    border: #CE3334 9px solid;
     z-index: 1;
 }
 
@@ -199,28 +205,15 @@ min-width: 1080px;;
     font-family: "BarlowSemiCondensed-Regular";
     letter-spacing: -.4px;
     text-align: center;
-    margin-bottom: 60px;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    width: 100%;
-    max-width: 900px;
 }
 
 .header {
-    font-size: 82px;
-    font-weight: 600;
-    color: #2c2c2c;
-    margin-bottom: 15px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 72px;
+    ;
 }
 
 .sub-header {
-    font-size: 52px;
-    color: #555;
-    font-weight: 400;
+    font-size: 49px;
 }
 
 .information-text img {
@@ -237,10 +230,6 @@ min-width: 1080px;;
     padding-bottom: 160px;
 }
 
-.page .background {
-    display: none;
-}
-
 .logo-wrapper IMG {
     cursor: pointer;
 }
@@ -252,7 +241,7 @@ min-width: 1080px;;
     width: auto;
     height: auto;
     text-align: right;
-    z-index: 10001;
+    z-index: 1000;
 }
 
 @keyframes bounceIn {
@@ -301,50 +290,110 @@ min-width: 1080px;;
 .section-wrapper {
     display: flex;
     flex-direction: column;
-    padding: 40px;
-    max-height: 1920px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(143, 216, 248, 0.6) rgba(0, 0, 0, 0.1);
+    justify-content: center;
+    font-family: "BarlowSemiCondensed-Regular";
 }
 
-.section-wrapper::-webkit-scrollbar {
-    width: 12px;
-}
 
-.section-wrapper::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
+#bfast_page .feature-wrapper {
+    position: relative;
+    margin: 450px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 525px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 1;
 }
-
-.section-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(143, 216, 248, 0.6);
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-}
-
-.section-wrapper::-webkit-scrollbar-thumb:hover {
-    background: rgba(143, 216, 248, 0.8);
-    background-clip: padding-box;
-}
-
 
 #bfast_page .section-wrapper {
-    margin-top: 80px;
+    background-color: white;
+    text-align: center;
+}
+
+#bfast_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 /* Taco Cantina Styles */
+#tacocantina_page .feature-wrapper {
+    position: relative;
+    margin: 425px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 1;
+}
+
 #tacocantina_page .section-wrapper {
-    margin-top: 80px;
+    text-align: center;
+}
+
+#tacocantina_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 /* Roost Styles */
 #roost_page .section-wrapper {
-    margin-top: 80px;
+    position: relative;
+    margin: 325px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 1200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    overflow: visible;
+    z-index: 1;
+}
+
+#roost_page .feature-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#roost_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+#roost_page .section-wrapper {
+    text-align: center;
+}
+
+#roost_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#roost_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 #roost_page .menu-item-wrapper {
@@ -362,129 +411,314 @@ min-width: 1080px;;
 }
 
 /* piccolaitalia styles */
+#piccolaitalia_page .feature-wrapper {
+    position: relative;
+    margin: 425px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 1050px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 1;
+}
+
+#piccolaitalia_page .sides-wrapper {
+    position: relative;
+    margin: 50px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 1;
+}
+
+
 #piccolaitalia_page .section-wrapper {
-    margin-top: 80px;
+    text-align: center;
+}
+
+#piccolaitalia_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 /* bigcitybbq styles  */
 #bigcitybbq_page .section-wrapper {
-    margin-top: 80px;
+    position: relative;
+    margin: 350px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 1275px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    z-index: 1;
+}
+
+
+#bigcitybbq_page .feature-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+
+#bigcitybbq_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+
+
+#bigcitybbq_page .section-wrapper {
+    text-align: center;
+}
+
+#bigcitybbq_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    color: white;
+}
+
+#bigcitybbq_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#bigcitybbq_page .Protein-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#bigcitybbq_page .name,
+#bigcitybbq_page .desc,
+#bigcitybbq_page .price,
+#bigcitybbq_page .calories,
+#bigcitybbq_page .portions {
+    color: white;
 }
 
 
 /* inspired kitchen styles */
+
 #inspiredkitchen_page .section-wrapper {
-    margin-top: 80px;
+    position: relative;
+    margin: 450px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 1200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    z-index: 1;
+}
+
+#inspiredkitchen_page .feature-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#inspiredkitchen_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+
+#inspiredkitchen_page .section-wrapper {
+    text-align: center;
+}
+
+#inspiredkitchen_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#inspiredkitchen_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 /* flame styles */
+
 #flame_page .section-wrapper {
-    margin-top: 80px;
+    position: relative;
+    margin: 350px auto 0;
+    width: 90%;
+    max-width: 845px;
+    min-height: 1075px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    z-index: 1;
+}
+
+#flame_page .feature-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    border-radius: 25px;
+    padding: 20px;
+}
+
+#flame_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    background-color: white;
+    border-radius: 25px;
+    padding: 20px;
+}
+
+
+#flame_page .section-wrapper {
+    text-align: center;
+}
+
+#flame_page .items-wrapper {
+    width: 100%;
+    max-width: 845px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 
 
 /* butcher and baker styles */
-#butcherbaker_page .section-wrapper {
-    margin-top: 80px;
+
+#butcherbaker_page .feature-wrapper {
+    position: relative;
+    margin: 500px auto 0;
+    width: 85%;
+    max-width: 690px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    border-radius: 35px;
+    padding: 20px;
+    padding-left: 60px;
+    z-index: 1;
 }
 
-#butcherbaker_page .soups-wrapper .header {
+#butcherbaker_page .sides-wrapper {
+    width: 100%;
+    max-width: 845px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+#butcherbaker_page .desc {
+    text-align: left;
+    padding: 0px;;
+}
+
+#butcherbaker_page .name{
+    text-align: left;
+    padding-bottom: 20px;;
+}
+
+#butcherbaker_page .feature-wrapper .items-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#butcherbaker_page .soups-wrapper {
+    position: relative;
+    margin: 350px auto 0;
+    width: 85%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background-color: white;
+    border-radius: 35px;
+    padding: 20px;
+    padding-top: 15px;
+    z-index: 1;
+}
+
+#butcherbaker_page .soups-wrapper .name {
+    font-size: 36px;
+    line-height: 32px;
+    font-weight: 500;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    text-transform: lowercase;
+    padding-bottom: 6px;
+    padding-top: 6px;
+}
+
+#butcherbaker_page .header {
     font-size: 48px;
-    font-weight: 600;
+    font-weight: 500;
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    justify-content: flex-start;
 }
 
 /* menuItems */
 
 .menu-item-wrapper {
-    cursor: pointer;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
-    border-radius: 20px;
-    padding: 35px 30px;
-    margin-bottom: 24px;
-    min-height: 100px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
-.menu-item-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(143, 216, 248, 0.06) 0%, rgba(143, 216, 248, 0.02) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 20px;
-}
-
-.menu-item-wrapper:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    border-color: rgba(143, 216, 248, 0.4);
-}
-
-.menu-item-wrapper:hover::before {
-    opacity: 1;
-}
-
-.menu-item-wrapper:active {
-    transform: translateY(-2px) scale(0.99);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.menu-item-wrapper::after {
-    content: 'ⓘ';
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 28px;
-    color: rgba(143, 216, 248, 0.7);
-    opacity: 0.6;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    z-index: 2;
-}
-
-.menu-item-wrapper:hover::after {
-    opacity: 1;
-    color: rgba(143, 216, 248, 1);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.item-wrapper {
-    position: relative;
-    z-index: 1;
-    padding-right: 50px;
+    margin-bottom: 10px;
 }
 
 .inline .item-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 20px;
 }
 
 .inline .desc {
     text-align: left;
-    margin-top: 12px;
 }
 
 .name {
     display: inline-block;
     font-family: "BarlowSemiCondensed-Regular";
-    font-size: 52px;
-    line-height: 52px;
+    font-size: 56px;
+    line-height: 50px;
     text-align: left;
     color: #282828;
-    font-weight: 500;
-    flex: 1;
 }
 
 .header {
@@ -501,7 +735,6 @@ min-width: 1080px;;
     text-align: right;
     color: #282828;
     margin-left: 20px;
-    font-weight: 500;
 }
 
 .calories {
@@ -509,7 +742,7 @@ min-width: 1080px;;
     font-family: "BarlowSemiCondensed-Regular";
     font-size: 36px;
     text-align: right;
-    color: #555;
+    color: #282828;
     margin-left: 5px;
 }
 
@@ -525,25 +758,24 @@ min-width: 1080px;;
 .desc {
     font-family: "BarlowSemiCondensed-Regular";
     font-size: 32px;
-    line-height: 36px;
+    line-height: 30px;
     text-align: left;
-    color: #555;
-    padding: 12px 0 0 0;
-    margin-top: 8px;
+    color: #282828;
+    text-align: center;
+    padding: 10px;
+    ;
 }
 
 .price-wrapper {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: baseline;
     min-width: 240px;
-    gap: 12px;
 }
 
 .nutrition-icon {
-    width: 32px;
-    height: 32px;
-    margin-left: 8px;
+    width: 30px;
+    height: 30px;
 }
 
 .menu-item-price-name-wrapper {
@@ -551,102 +783,6 @@ min-width: 1080px;;
     justify-content: space-between;
     align-items: baseline;
 }
-
-.items-wrapper {
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.feature-wrapper,
-.sides-wrapper {
-    margin-bottom: 40px;
-}
-
-.feature-wrapper .header,
-.sides-wrapper .header {
-    font-size: 56px;
-    font-weight: 600;
-    color: #2c2c2c;
-    text-align: center;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Brand List Container */
-.brand-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-    padding: 0;
-    width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.brand-card {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
-    border-radius: 24px;
-    padding: 50px 40px;
-    min-height: 280px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
-.brand-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(143, 216, 248, 0.08) 0%, rgba(143, 216, 248, 0.02) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 24px;
-}
-
-.brand-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-    border-color: rgba(143, 216, 248, 0.4);
-}
-
-.brand-card:hover::before {
-    opacity: 1;
-}
-
-.brand-card:active {
-    transform: translateY(-4px) scale(0.98);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-}
-
-.brand-card img {
-    max-width: 320px;
-    max-height: 200px;
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: contain;
-    position: relative;
-    z-index: 1;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
-    transition: filter 0.3s ease;
-}
-
-.brand-card:hover img {
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
-}
-
 
 /* actions */
 
