@@ -572,6 +572,31 @@ min-width: 1080px;;
     margin: 0 auto;
     max-height: 1500px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(143, 216, 248, 0.6) rgba(0, 0, 0, 0.1);
+}
+
+.brand-list::-webkit-scrollbar {
+    width: 12px;
+}
+
+.brand-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.brand-list::-webkit-scrollbar-thumb {
+    background: rgba(143, 216, 248, 0.6);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.brand-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(143, 216, 248, 0.8);
+    background-clip: padding-box;
 }
 
 .brand-card {
