@@ -730,9 +730,12 @@ var IMSintegration;
 
             _this.lastScrollTop = 0;
 
-            $('.section-wrapper').on('scroll', function () {
-                var scrollTop = $('.section-wrapper').scrollTop();
+            // Use event delegation on document since .section-wrapper might not exist yet
+            $(document).on('scroll', '.section-wrapper', function () {
+                var scrollTop = $(this).scrollTop();
                 var scrollButton = $('.nav-scroll-top');
+
+                console.log('Scroll detected! scrollTop:', scrollTop);
 
                 // Clear existing timeout
                 if (_this.scrollTimeout) {
@@ -744,6 +747,7 @@ var IMSintegration;
 
                 if (scrollTop > scrollThreshold && isScrollingUp) {
                     // Scrolling up past threshold - show button
+                    console.log('Showing scroll button');
                     scrollButton.addClass('visible');
 
                     // Hide after stop scrolling delay
