@@ -263,6 +263,143 @@
             <img id="image" src="">
         </div>
 
+        <!-- Nutrition Modal -->
+        <div id="item-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" hidden>
+            <div class="modal-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2 id="modal-title" class="modal-title"></h2>
+                    <button id="modal-close" class="icon-button" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <div class="modal-meta">
+                        <div class="item-quick-info">
+                            <span id="modal-price" class="item-price"></span>
+                            <span id="modal-calories" class="item-calories"></span>
+                            <span id="modal-serving" class="item-serving"></span>
+                        </div>
+                        <div id="modal-icons" class="item-icons"></div>
+                    </div>
+                    <p id="modal-description" class="item-description"></p>
+
+                    <section class="item-section">
+                        <h3 class="section-title">Ingredients</h3>
+                        <p id="modal-ingredients" class="ingredients-list"></p>
+                    </section>
+
+                    <section class="item-section" id="allergens-section">
+                        <h3 class="section-title">Allergens</h3>
+                        <p id="modal-allergens" class="allergens-list"></p>
+                    </section>
+
+                    <section class="item-section">
+                        <h3 class="section-title">Nutrition Facts</h3>
+                        <div class="nutrition-label">
+                            <div class="nutrition-header">
+                                <div class="nutrition-title-group">
+                                    <h4 class="nutrition-title">Nutrition Facts</h4>
+                                    <p class="nutrition-serving"><span class="serving-label">Serving Size</span> <span id="nutrition-serving"></span></p>
+                                </div>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-row major">
+                                <span class="nutrition-label-text">Calories</span>
+                                <span id="nutrition-calories" class="nutrition-value bold"></span>
+                            </div>
+                            <div class="nutrition-divider"></div>
+
+                            <div class="nutrition-row daily-value-header">
+                                <span></span>
+                                <span class="nutrition-value bold">% Daily Value*</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Total Fat</strong> <span id="nutrition-fat"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-fat-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Saturated Fat <span id="nutrition-sat-fat"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-sat-fat-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Trans Fat <span id="nutrition-trans-fat"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Cholesterol</strong> <span id="nutrition-cholesterol"></span>mg</span>
+                                <span class="nutrition-value bold"><span id="nutrition-cholesterol-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Sodium</strong> <span id="nutrition-sodium"></span>mg</span>
+                                <span class="nutrition-value bold"><span id="nutrition-sodium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Total Carbohydrate</strong> <span id="nutrition-carbs"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-carbs-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Dietary Fiber <span id="nutrition-fiber"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-fiber-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Total Sugars <span id="nutrition-sugars"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Protein</strong> <span id="nutrition-protein"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Vitamin D <span id="nutrition-vitamin-d"></span>mcg</span>
+                                <span class="nutrition-value"><span id="nutrition-vitamin-d-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Calcium <span id="nutrition-calcium"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-calcium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Iron <span id="nutrition-iron"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-iron-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Potassium <span id="nutrition-potassium"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-potassium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-footnote">
+                                * Percent Daily Values are based on a 2,000 calorie diet. Your daily values may be higher or lower depending on your calorie needs.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
 
         <!--scripts-->
         <script type="text/javascript" src="js/init.js"></script>
