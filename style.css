@@ -304,7 +304,7 @@ min-width: 1080px;;
     display: flex;
     flex-direction: column;
     padding: 40px;
-    max-height: 1920px;
+    max-height: 1840px;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
