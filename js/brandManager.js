@@ -299,6 +299,11 @@ var IMSintegration;
                 if (resetTimerCallback && typeof resetTimerCallback === 'function') {
                     resetTimerCallback();
                 }
+
+                // Update navigation using menuLayout
+                if (window.menuLayout && typeof menuLayout.navigateToPage === 'function') {
+                    menuLayout.navigateToPage(brandKey + '_page');
+                }
             });
         };
 
@@ -313,8 +318,6 @@ var IMSintegration;
 
             _this.currentBrand = brand;
 
-            $('#weekly_menu_page').hide();
-
             var menuPageId = '#' + brandKey + '_page';
             var menuPage = $(menuPageId);
 
@@ -323,8 +326,6 @@ var IMSintegration;
             }
 
             _this.populateMenuPage(brand, menuPage);
-
-            menuPage.show();
         };
 
         BrandManager.prototype.createDynamicMenuPage = function (brandKey) {
@@ -336,9 +337,12 @@ var IMSintegration;
                     <div class="section-wrapper" style="margin-top: 80px;">
                         <div class="items-wrapper"></div>
                     </div>
-                    <div class="goHome" onclick="goHome(event)">
-                        <img src="media/homebutton.png">
-                    </div>
+                    <button class="nav-btn nav-back" aria-label="Go back to weekly menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/>
+                            <polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                    </button>
                 </div>
             `;
 

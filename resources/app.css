@@ -477,3 +477,97 @@ p {
     color: #fafafa;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
+
+/* Navigation Button Styles */
+.nav-btn {
+    position: fixed;
+    z-index: 1000;
+    width: 120px;
+    height: 120px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.95);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0;
+}
+
+.nav-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn:active {
+    transform: scale(1.05);
+}
+
+.nav-btn svg {
+    width: 60px;
+    height: 60px;
+    color: #333;
+}
+
+.nav-close {
+    top: 40px;
+    left: 40px;
+    display: none;
+}
+
+.nav-back {
+    top: 40px;
+    left: 40px;
+    display: none;
+}
+
+.nav-scroll-top {
+    bottom: 40px;
+    right: 40px;
+    background-color: rgba(255, 255, 255, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.nav-scroll-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-scroll-top:hover {
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+.nav-btn.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.nav-btn.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}

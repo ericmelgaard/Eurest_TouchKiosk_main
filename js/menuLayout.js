@@ -17,6 +17,10 @@ var IMSintegration;
             this.roost_overlay = null;
             this.inspiredkitchen_overlay = null;
             this.flame_overlay = null;
+            this.navigationHistory = [];
+            this.isScrolling = false;
+            this.scrollTimeout = null;
+            this.lastScrollTop = 0;
         }
         MenuLayout.prototype.init = function (IMSItems, IMSProducts, IMSSettings, integrationItems, API) {
             var _this = this;
@@ -192,11 +196,16 @@ var IMSintegration;
             // Set up inactivity timer
             this.setupInactivityTimer();
 
+            // Set up scroll detection
+            this.setupScrollDetection();
+
+            // Set up navigation buttons
+            this.setupNavigationButtons();
+
             // Welcome screen card navigation
             $('#card-weeklymenu').on('click', function (e) {
                 e.stopPropagation();
-                $('#weekly_menu_page').show();
-                $('.home').hide();
+                _this.navigateToPage('weekly_menu_page');
                 _this.resetInactivityTimer();
             });
 
@@ -218,7 +227,7 @@ var IMSintegration;
 
             $('#card-fit').on('click', function (e) {
                 e.stopPropagation();
-            _this.resetInactivityTimer();
+                _this.resetInactivityTimer();
             });
 
             $('#card-mezze').on('click', function (e) {
@@ -226,13 +235,6 @@ var IMSintegration;
                 _this.resetInactivityTimer();
             });
 
-            $('.goHome img').on('click', function (e) {
-                e.stopPropagation();
-                console.log('Home button clicked');
-                $('.page').hide();
-                $('.home').show();
-                _this.resetInactivityTimer();
-            });
             return true;
         };
         MenuLayout.prototype.handleProducts = function (IMSProducts) {
@@ -605,7 +607,161 @@ var IMSintegration;
             $('.page').hide();
             $('.home').show();
 
+            // Clear navigation history
+            this.navigationHistory = [];
+
+            // Update navigation buttons
+            this.updateNavigationButtons();
+
             console.log('Returned to home due to inactivity');
+        };
+
+        MenuLayout.prototype.setupNavigationButtons = function () {
+            var _this = this;
+
+            // Close button - returns to welcome screen from weekly menu
+            $('.nav-close').on('click', function (e) {
+                e.stopPropagation();
+                _this.navigateToWelcome();
+                _this.resetInactivityTimer();
+            });
+
+            // Back button - returns to previous page
+            $('.nav-back').on('click', function (e) {
+                e.stopPropagation();
+                _this.navigateBack();
+                _this.resetInactivityTimer();
+            });
+
+            // Scroll to top button
+            $('.nav-scroll-top').on('click', function (e) {
+                e.stopPropagation();
+                _this.scrollToTop();
+                _this.resetInactivityTimer();
+            });
+        };
+
+        MenuLayout.prototype.navigateToPage = function (pageId) {
+            var currentPage = $('.page:visible').attr('id');
+
+            // Add current page to history if there's one visible
+            if (currentPage) {
+                this.navigationHistory.push(currentPage);
+            } else {
+                // Coming from welcome screen
+                this.navigationHistory = [];
+            }
+
+            // Hide all pages and welcome screen
+            $('.page').hide();
+            $('.home').hide();
+
+            // Show the target page
+            $('#' + pageId).show();
+
+            // Update navigation buttons
+            this.updateNavigationButtons();
+
+            // Scroll to top of new page
+            window.scrollTo(0, 0);
+        };
+
+        MenuLayout.prototype.navigateBack = function () {
+            if (this.navigationHistory.length > 0) {
+                // Get previous page
+                var previousPage = this.navigationHistory.pop();
+
+                // Hide current page
+                $('.page').hide();
+
+                // Show previous page
+                $('#' + previousPage).show();
+
+                // Update navigation buttons
+                this.updateNavigationButtons();
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }
+        };
+
+        MenuLayout.prototype.navigateToWelcome = function () {
+            // Hide all pages
+            $('.page').hide();
+
+            // Show welcome screen
+            $('.home').show();
+
+            // Clear navigation history
+            this.navigationHistory = [];
+
+            // Update navigation buttons
+            this.updateNavigationButtons();
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        };
+
+        MenuLayout.prototype.updateNavigationButtons = function () {
+            var currentPage = $('.page:visible').attr('id');
+            var isOnWelcome = $('.home:visible').length > 0;
+
+            // Hide all nav buttons first
+            $('.nav-close, .nav-back').hide();
+
+            if (isOnWelcome) {
+                // On welcome screen - no navigation buttons
+                return;
+            }
+
+            if (currentPage === 'weekly_menu_page') {
+                // On weekly menu page - show close button
+                $('.nav-close').show();
+            } else if (currentPage) {
+                // On any brand page - show back button
+                $('.nav-back').show();
+            }
+        };
+
+        MenuLayout.prototype.setupScrollDetection = function () {
+            var _this = this;
+            var scrollThreshold = 400;
+            var hideDelay = 2000;
+
+            $(window).on('scroll', function () {
+                var scrollTop = $(window).scrollTop();
+                var scrollButton = $('.nav-scroll-top');
+
+                // Show/hide based on scroll position
+                if (scrollTop > scrollThreshold) {
+                    // Scrolled down enough - show button
+                    if (!scrollButton.hasClass('visible')) {
+                        scrollButton.addClass('visible');
+                    }
+
+                    // Clear existing timeout
+                    if (_this.scrollTimeout) {
+                        clearTimeout(_this.scrollTimeout);
+                    }
+
+                    // Detect scroll direction
+                    if (scrollTop < _this.lastScrollTop) {
+                        // Scrolling up - hide after delay
+                        _this.scrollTimeout = setTimeout(function () {
+                            scrollButton.removeClass('visible');
+                        }, hideDelay);
+                    }
+
+                    _this.lastScrollTop = scrollTop;
+                } else {
+                    // Near top - hide button
+                    scrollButton.removeClass('visible');
+                }
+            });
+        };
+
+        MenuLayout.prototype.scrollToTop = function () {
+            $('html, body').animate({ scrollTop: 0 }, 600, 'swing');
         };
         MenuLayout.prototype.rotateEles = function () {
             if (this.isRotating) { return; }
