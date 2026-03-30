@@ -11,22 +11,24 @@
 
 html {
     background: white;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: white;
     background-image: url("media/texture.png");
     background-size: 380px 380px;
     background-repeat: repeat;
     display: flex;
     justify-content: center;
-    height: 1920px;
+    min-height: 100vh;
 }
 
 body {
     width: 1080px;
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    
+    overflow-y: auto;
+    overflow-x: hidden;
+
 }
 
 .background {
@@ -61,12 +63,12 @@ body {
 .home {
     position: relative;
     width: 1080px;
-    height: 1920px;
+    min-height: 1920px;
     display: flex;
     flex-direction: column;
     align-items: center;
-        overflow-y: hidden;
-        overflow-x: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .welcome-header {
