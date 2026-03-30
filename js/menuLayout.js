@@ -725,16 +725,17 @@ var IMSintegration;
 
         MenuLayout.prototype.setupScrollDetection = function () {
             var _this = this;
-            var scrollThreshold = 400;
-            var hideDelay = 2000;
+            var scrollThreshold = 300;
+            var hideDelay = 4000;
+            var scrollDelta = 50;
 
             $(window).on('scroll', function () {
                 var scrollTop = $(window).scrollTop();
                 var scrollButton = $('.nav-scroll-top');
 
-                // Show/hide based on scroll position
+                // Show button when scrolled past threshold
                 if (scrollTop > scrollThreshold) {
-                    // Scrolled down enough - show button
+                    // Always show when past threshold
                     if (!scrollButton.hasClass('visible')) {
                         scrollButton.addClass('visible');
                     }
@@ -744,18 +745,25 @@ var IMSintegration;
                         clearTimeout(_this.scrollTimeout);
                     }
 
-                    // Detect scroll direction
-                    if (scrollTop < _this.lastScrollTop) {
-                        // Scrolling up - hide after delay
+                    // Only hide after significant upward scroll AND delay
+                    if (scrollTop < _this.lastScrollTop - scrollDelta) {
+                        // Scrolling up - but keep visible for longer
                         _this.scrollTimeout = setTimeout(function () {
-                            scrollButton.removeClass('visible');
+                            // Only hide if still above threshold and not actively scrolling
+                            var currentScroll = $(window).scrollTop();
+                            if (currentScroll > scrollThreshold) {
+                                scrollButton.removeClass('visible');
+                            }
                         }, hideDelay);
                     }
 
                     _this.lastScrollTop = scrollTop;
                 } else {
-                    // Near top - hide button
+                    // Near top - hide button immediately
                     scrollButton.removeClass('visible');
+                    if (_this.scrollTimeout) {
+                        clearTimeout(_this.scrollTimeout);
+                    }
                 }
             });
         };
