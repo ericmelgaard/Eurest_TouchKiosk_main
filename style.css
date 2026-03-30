@@ -846,7 +846,7 @@ min-width: 1080px;;
     background: #ffffff;
     border-radius: 16px;
     max-width: 900px;
-    max-height: 95vh;
+    max-height: 80%;
     width: 90%;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
