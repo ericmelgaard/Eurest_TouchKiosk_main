@@ -1238,109 +1238,21 @@ function setupNutritionOverlayHandlers(nutritionLabelTemplate) {
         }
         function showNutritionOverlay(e, $removedOverlay) {
             var nutritionData = $(e.currentTarget).data('nutrition');
+            if (!nutritionData) {
+                console.warn('No nutrition data available for this item');
+                return;
+            }
             var labelHtml = Mustache.render(nutritionLabelTemplate, nutritionData);
             $('body').append(labelHtml);
             var $overlay = $('.nutrition-label-overlay');
-            var x = 0, y = 0;
-            if (e && e.pageX && e.pageY) {
-                x = e.pageX;
-                y = e.pageY;
-            } else {
-                var offset = $(e.currentTarget).offset();
-                x = offset.left + $(e.currentTarget).outerWidth();
-                y = offset.top;
-            }
-            var overlayWidth = $overlay.outerWidth();
-            var overlayHeight = $overlay.outerHeight();
-            var winWidth = $(window).width();
-            var winHeight = $(window).height();
-            // Adjust for body scale transform
-            var scale = 1;
-            var transform = document.body.style.transform;
-            if (transform && transform.startsWith('scale(')) {
-                scale = parseFloat(transform.replace('scale(', '').replace(')', '')) || 1;
-            }
-            x = x / scale;
-            y = y / scale;
-            overlayWidth = overlayWidth / scale;
-            overlayHeight = overlayHeight / scale;
-            winWidth = winWidth / scale;
-            winHeight = winHeight / scale;
-            if (x + overlayWidth > winWidth) x = winWidth - overlayWidth - 10;
-            if (y + overlayHeight > winHeight) y = winHeight - overlayHeight - 10;
-            $overlay.css({ position: 'absolute', left: x + 'px', top: y + 'px', zIndex: 9999, cursor: 'move' });
-            // Make overlay draggable
-            var isDragging = false;
-            var dragOffsetX = 0, dragOffsetY = 0;
-            $overlay.on('mousedown', function (e) {
-                if ($(e.target).closest('.close-nutrition-label').length) return;
-                e.stopPropagation();
-                isDragging = true;
-                var offset = $overlay.offset();
-                dragOffsetX = e.pageX - offset.left;
-                dragOffsetY = e.pageY - offset.top;
-                $(document).off('mousemove.nutritionDrag');
-                $(document).on('mousemove.nutritionDrag', function (e2) {
-                    if (isDragging) {
-                        var scale = 1;
-                        var transform = document.body.style.transform;
-                        if (transform && transform.startsWith('scale(')) {
-                            scale = parseFloat(transform.replace('scale(', '').replace(')', '')) || 1;
-                        }
-                        var newX = (e2.pageX - dragOffsetX) / scale;
-                        var newY = (e2.pageY - dragOffsetY) / scale;
-                        $overlay.css({ left: newX + 'px', top: newY + 'px' });
-                    }
-                });
-                function nutritionDragMouseUp(e2) {
-                    if (isDragging) {
-                        isDragging = false;
-                        $(document).off('mousemove.nutritionDrag');
-                        window.removeEventListener('mouseup', nutritionDragMouseUp, true);
-                    }
-                }
-                window.addEventListener('mouseup', nutritionDragMouseUp, true);
+
+            $overlay.find('.nutrition-label-backdrop').on('click', function() {
+                removeNutritionOverlay();
             });
-            $overlay.on('touchstart', function (e) {
-                if (!e.originalEvent || !e.originalEvent.touches || e.originalEvent.touches.length !== 1) return;
-                if ($(e.target).closest('.close-nutrition-label').length) return;
-                e.stopPropagation();
-                isDragging = true;
-                var touch = e.originalEvent.touches[0];
-                var offset = $overlay.offset();
-                dragOffsetX = touch.pageX - offset.left;
-                dragOffsetY = touch.pageY - offset.top;
-                $(document).off('touchmove.nutritionDrag');
-                $(document).on('touchmove.nutritionDrag', function (e2) {
-                    if (isDragging && e2.originalEvent && e2.originalEvent.touches && e2.originalEvent.touches.length === 1) {
-                        var scale = 1;
-                        var transform = document.body.style.transform;
-                        if (transform && transform.startsWith('scale(')) {
-                            scale = parseFloat(transform.replace('scale(', '').replace(')', '')) || 1;
-                        }
-                        var touchMove = e2.originalEvent.touches[0];
-                        var newX = (touchMove.pageX - dragOffsetX) / scale;
-                        var newY = (touchMove.pageY - dragOffsetY) / scale;
-                        $overlay.css({ left: newX + 'px', top: newY + 'px' });
-                        e2.preventDefault();
-                    }
-                });
-                function nutritionDragTouchEnd(e2) {
-                    if (isDragging) {
-                        isDragging = false;
-                        $(document).off('touchmove.nutritionDrag');
-                        window.removeEventListener('touchend', nutritionDragTouchEnd, true);
-                    }
-                }
-                window.addEventListener('touchend', nutritionDragTouchEnd, true);
-            });
-            $overlay.on('mousedown mouseup click', function (e) {
+
+            $overlay.find('.nutrition-label').on('click', function (e) {
                 e.stopPropagation();
             });
-            if (window.nutritionLabelTimeout) {
-                clearTimeout(window.nutritionLabelTimeout);
-            }
-            window.nutritionLabelTimeout = setTimeout(removeNutritionOverlay, 10000);
         }
     });
     $(document).off('click.nutritionOff').on('click.nutritionOff', function (e) {
@@ -1352,11 +1264,6 @@ function setupNutritionOverlayHandlers(nutritionLabelTemplate) {
     $(document).off('click.nutritionClose').on('click.nutritionClose', '.close-nutrition-label', function (e) {
         e.stopPropagation();
         removeNutritionOverlay();
-    });
-    $(document).off('mouseenter.nutritionLabel mouseleave.nutritionLabel').on('mouseenter.nutritionLabel', '.nutrition-label-overlay', function () {
-        clearTimeout(window.nutritionLabelTimeout);
-    }).on('mouseleave.nutritionLabel', '.nutrition-label-overlay', function () {
-        window.nutritionLabelTimeout = setTimeout(removeNutritionOverlay, 10000);
     });
 }
 

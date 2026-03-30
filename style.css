@@ -809,4 +809,269 @@ min-width: 1080px;;
         width: 80px;
         height: 80px;
     }
+}
+
+/* Nutrition Label Styles */
+.nutrition-label-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nutrition-label-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1;
+}
+
+.nutrition-label {
+    position: relative;
+    background: #1a1a1a;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    font-family: "BarlowSemiCondensed-Regular", sans-serif;
+}
+
+.close-nutrition-label {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.close-nutrition-label:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.nutrition-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.nutrition-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 20px;
+}
+
+.nutrition-item-name {
+    font-family: "Montserrat-ExtraBold", sans-serif;
+    font-size: 42px;
+    line-height: 1.2;
+    margin: 0;
+    color: #ffffff;
+    flex: 1;
+}
+
+.nutrition-price {
+    font-size: 36px;
+    font-weight: 600;
+    color: #8fd8f8;
+    white-space: nowrap;
+}
+
+.nutrition-meta-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.nutrition-calories-badge {
+    background: #8fd8f8;
+    color: #1a1a1a;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.nutrition-serving {
+    font-size: 22px;
+    color: #cccccc;
+}
+
+.nutrition-icons {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.nutrition-diet-icon {
+    width: 40px;
+    height: 40px;
+    filter: brightness(0) invert(1);
+}
+
+.nutrition-facts-container {
+    background: #ffffff;
+    color: #000000;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.nutrition-facts-header {
+    border-bottom: 8px solid #000000;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.nutrition-facts-header h3 {
+    font-family: "Montserrat-ExtraBold", sans-serif;
+    font-size: 40px;
+    margin: 0 0 8px 0;
+    color: #000000;
+}
+
+.serving-size-line {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.nutrition-facts-body {
+    border-top: 4px solid #000000;
+    padding-top: 8px;
+}
+
+.nutrition-calories-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 4px solid #000000;
+    margin-bottom: 4px;
+}
+
+.calories-label {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.calories-value {
+    font-size: 38px;
+    font-weight: 700;
+}
+
+.nutrition-daily-value-header {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 4px 0;
+    border-bottom: 1px solid #000000;
+    margin-bottom: 4px;
+}
+
+.nutrition-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #999999;
+    font-size: 18px;
+}
+
+.nutrition-row.main-nutrient {
+    border-bottom: 1px solid #000000;
+    font-weight: 600;
+}
+
+.nutrition-row.sub-nutrient {
+    padding-left: 20px;
+    font-size: 17px;
+}
+
+.nutrition-row.vitamin {
+    font-size: 17px;
+}
+
+.nutrient-name {
+    flex: 1;
+}
+
+.daily-value {
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+}
+
+.nutrition-divider {
+    height: 8px;
+    background: #000000;
+    margin: 8px 0;
+}
+
+.nutrition-footnote {
+    font-size: 14px;
+    color: #333333;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #999999;
+    line-height: 1.4;
+}
+
+.nutrition-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.nutrition-section h4 {
+    font-size: 24px;
+    margin: 0 0 12px 0;
+    color: #8fd8f8;
+    font-weight: 600;
+}
+
+.ingredients-text,
+.allergens-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0;
+    color: #ffffff;
+}
+
+.allergens-section {
+    background: rgba(255, 100, 100, 0.15);
+    border-left: 4px solid #ff6464;
+}
+
+.allergens-section h4 {
+    color: #ff6464;
+}
+
+.item-wrapper {
+    cursor: pointer;
 }   

@@ -382,7 +382,9 @@ var IMSintegration;
 
                 group.items.forEach(function (item) {
                     var itemHtml = Mustache.render(BrandManager.itemWrapper, item);
-                    itemsWrapper.append(itemHtml);
+                    var $item = $(itemHtml);
+                    $item.find('.item-wrapper').data('nutrition', item);
+                    itemsWrapper.append($item);
                 });
 
                 featureWrapper.append(sectionTitle);

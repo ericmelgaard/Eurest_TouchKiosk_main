@@ -63,13 +63,12 @@ var IMSintegration;
             //     console.error("Error in MenuLayout rotateEles: ", e);
             //     IMSintegration.Integration.prototype.showConnect(true, "Red", "rotateEles", e, "error");
             // }
-            //nutrtion overlay handlers
-            //requires adding data objects to each item with nutritionLabelTemplate
-            // try {
-            //     setupNutritionOverlayHandlers(nutritionLabelTemplate);
-            // } catch (e) {
-            //     console.error("Error in MenuLayout setupNutritionOverlayHandlers: ", e);
-            // }
+
+            try {
+                setupNutritionOverlayHandlers(nutritionLabelTemplate);
+            } catch (e) {
+                console.error("Error in MenuLayout setupNutritionOverlayHandlers: ", e);
+            }
         };
         MenuLayout.prototype.handleSettings = function (IMSSettings) {
             var _this = this;
@@ -284,7 +283,9 @@ var IMSintegration;
             breakfast_items.forEach(function (each, index) {
                 if (index > 0 || _this.breakfast_overlay) { return; }
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#bfast_page .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#bfast_page .items-wrapper').append($item);
             });
 
             //Taco Cantina
@@ -304,7 +305,9 @@ var IMSintegration;
             tacocantina_items.forEach(function (each, index) {
                 if (index > 0 || _this.tacocantina_overlay) { return; }
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#tacocantina_page .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#tacocantina_page .items-wrapper').append($item);
 
             });
 
@@ -331,7 +334,9 @@ var IMSintegration;
             bandb_feature.forEach(function (each) {
                 if (_this.bandb_overlay) { return; }
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#butcherbaker_page .feature-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#butcherbaker_page .feature-wrapper .items-wrapper').append($item);
 
             });
             bandb_soup.forEach(function (each) {
@@ -341,7 +346,9 @@ var IMSintegration;
                 each.showCals = "hide";
                 each.showIcons = "hide";
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#butcherbaker_page .soups-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#butcherbaker_page .soups-wrapper .items-wrapper').append($item);
 
             });
 
@@ -362,7 +369,9 @@ var IMSintegration;
                 if (_this.roost_overlay) { return; }
                 // each.showDescription = "hide"
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#roost_page .feature-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#roost_page .feature-wrapper .items-wrapper').append($item);
 
             });
 
@@ -381,7 +390,9 @@ var IMSintegration;
                 if (_this.roost_overlay) { return; }
                 each.showDescription = "hide"
                 var item = Mustache.render(MenuLayout.itemWrapperInline, each);
-                $('#roost_page .sides-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#roost_page .sides-wrapper .items-wrapper').append($item);
 
             });
 
@@ -402,7 +413,9 @@ var IMSintegration;
                 if (_this.inspiredkitchen_overlay) { return; }
 
                 var item = Mustache.render(MenuLayout.itemWrapperInline, each);
-                $('#inspiredkitchen_page .feature-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#inspiredkitchen_page .feature-wrapper .items-wrapper').append($item);
 
             });
 
@@ -421,7 +434,9 @@ var IMSintegration;
                 if (_this.inspiredkitchen_overlay) { return; }
                 each.showDescription = "hide"
                 var item = Mustache.render(MenuLayout.itemWrapperInline, each);
-                $('#inspiredkitchen_page .sides-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#inspiredkitchen_page .sides-wrapper .items-wrapper').append($item);
 
             });
             // flame
@@ -439,7 +454,9 @@ var IMSintegration;
             flame_items.forEach(function (each) {
                 if (_this.flame_overlay) { return; }
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#flame_page .feature-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#flame_page .feature-wrapper .items-wrapper').append($item);
 
             });
             var flame_sides = dateValidated.filter(function (each) {
@@ -457,7 +474,9 @@ var IMSintegration;
                 if (_this.flame_overlay) { return; }
                 each.showDescription = "hide"
                 var item = Mustache.render(MenuLayout.itemWrapper, each);
-                $('#flame_page .sides-wrapper .items-wrapper').append(item);
+                var $item = $(item);
+                $item.find('.item-wrapper').data('nutrition', each);
+                $('#flame_page .sides-wrapper .items-wrapper').append($item);
             });
 
             $(".menu-item-wrapper .name").each(function () {
