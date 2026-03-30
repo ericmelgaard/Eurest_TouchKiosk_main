@@ -730,37 +730,46 @@ var IMSintegration;
 
             _this.lastScrollTop = 0;
 
-            // Use event delegation on document since .section-wrapper might not exist yet
-            $(document).on('scroll', '.section-wrapper', function () {
-                var scrollTop = $(this).scrollTop();
-                var scrollButton = $('.nav-scroll-top');
+            // Wait for DOM to be ready, then attach to all .section-wrapper elements
+            setTimeout(function() {
+                var wrappers = $('.section-wrapper');
+                console.log('Found section wrappers:', wrappers.length);
 
-                console.log('Scroll detected! scrollTop:', scrollTop);
+                wrappers.each(function() {
+                    console.log('Attaching scroll to:', this);
+                });
 
-                // Clear existing timeout
-                if (_this.scrollTimeout) {
-                    clearTimeout(_this.scrollTimeout);
-                }
+                wrappers.on('scroll', function () {
+                    var scrollTop = $(this).scrollTop();
+                    var scrollButton = $('.nav-scroll-top');
 
-                // Check if we're scrolling up or down
-                var isScrollingUp = scrollTop < _this.lastScrollTop;
+                    console.log('Scroll detected! scrollTop:', scrollTop);
 
-                if (scrollTop > scrollThreshold && isScrollingUp) {
-                    // Scrolling up past threshold - show button
-                    console.log('Showing scroll button');
-                    scrollButton.addClass('visible');
+                    // Clear existing timeout
+                    if (_this.scrollTimeout) {
+                        clearTimeout(_this.scrollTimeout);
+                    }
 
-                    // Hide after stop scrolling delay
-                    _this.scrollTimeout = setTimeout(function () {
+                    // Check if we're scrolling up or down
+                    var isScrollingUp = scrollTop < _this.lastScrollTop;
+
+                    if (scrollTop > scrollThreshold && isScrollingUp) {
+                        // Scrolling up past threshold - show button
+                        console.log('Showing scroll button');
+                        scrollButton.addClass('visible');
+
+                        // Hide after stop scrolling delay
+                        _this.scrollTimeout = setTimeout(function () {
+                            scrollButton.removeClass('visible');
+                        }, hideDelay);
+                    } else {
+                        // Scrolling down or near top - hide button
                         scrollButton.removeClass('visible');
-                    }, hideDelay);
-                } else {
-                    // Scrolling down or near top - hide button
-                    scrollButton.removeClass('visible');
-                }
+                    }
 
-                _this.lastScrollTop = scrollTop;
-            });
+                    _this.lastScrollTop = scrollTop;
+                });
+            }, 1000);
         };
 
         MenuLayout.prototype.scrollToTop = function () {
