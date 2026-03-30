@@ -336,7 +336,7 @@ var IMSintegration;
                     <div class="section-wrapper" style="margin-top: 80px;">
                         <div class="items-wrapper"></div>
                     </div>
-                    <div class="goHome">
+                    <div class="goHome" onclick="goHome(event)">
                         <img src="media/homebutton.png">
                     </div>
                 </div>

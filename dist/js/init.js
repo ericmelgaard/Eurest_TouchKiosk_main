@@ -390,6 +390,15 @@ function startHeartbeat() {
 function getRandomCheckInterval() {
     return Math.floor(Math.random() * (MAX_CHECK_INTERVAL - MIN_CHECK_INTERVAL + 1)) + MIN_CHECK_INTERVAL;
 }
+function goHome(event) {
+    event.stopPropagation();
+    console.log('Home button clicked');
+    $('.page').hide();
+    $('.home').show();
+    if (menuLayout && typeof menuLayout.resetInactivityTimer === 'function') {
+        menuLayout.resetInactivityTimer();
+    }
+}
 function startPeriodicCheck() {
     periodicCheckInterval = setInterval(function () {
         if (!isLeaderActive()) {
