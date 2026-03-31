@@ -1134,6 +1134,27 @@ display: flex;
     flex-shrink: 1;
 }
 
+.brand-logo-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    margin-right: 20px;
+    overflow: hidden;
+    max-width: calc(100% - 120px);
+    flex-shrink: 1;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+}
+
+.brand-logo-display img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
 /* Navigation Button Styles */
 .nav-btn {
     position: relative;

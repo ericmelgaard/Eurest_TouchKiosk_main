@@ -330,7 +330,7 @@ var IMSintegration;
         BrandManager.prototype.createDynamicMenuPage = function (brandKey) {
             var _this = this;
             var brand = _this.brands.find(function (b) { return b.brandKey === brandKey; });
-            var brandName = brand ? brand.displayName : '';
+            var brandLogoUrl = brand ? brand.logoUrl : '';
 
             var pageHtml = `
                 <div id="${brandKey}_page" class="page" style="display:none;">
@@ -341,7 +341,9 @@ var IMSintegration;
                                 <polyline points="12 19 5 12 12 5"/>
                             </svg>
                         </button>
-                        <span class="brand-name-display">${brandName}</span>
+                        <div class="brand-logo-display">
+                            <img src="${brandLogoUrl}" alt="Brand logo" />
+                        </div>
                     </div>
                     <div class="background">
                         <img id="${brandKey}_background" src="./media/texture.png" height="1920" width="1080"/>
