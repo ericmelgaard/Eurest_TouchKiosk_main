@@ -347,7 +347,10 @@ var IMSintegration;
 
         BrandManager.prototype.populateMenuPage = function (brand, menuPage) {
             var _this = this;
+            console.log('🔧 populateMenuPage called for brand:', brand.brandKey, brand);
+
             var sectionWrapper = menuPage.find('.section-wrapper');
+            console.log('🔧 sectionWrapper found:', sectionWrapper.length);
             sectionWrapper.empty();
 
             var stationGroups = {};
@@ -355,6 +358,7 @@ var IMSintegration;
             Object.keys(brand.stations).forEach(function (stationKey) {
                 var station = brand.stations[stationKey];
                 var cleanName = station.cleanedName || "Menu";
+                console.log('🔧 Processing station:', stationKey, '→ cleanName:', cleanName, 'items:', station.items.length);
 
                 if (!stationGroups[cleanName]) {
                     stationGroups[cleanName] = {
@@ -366,10 +370,17 @@ var IMSintegration;
                 stationGroups[cleanName].items = stationGroups[cleanName].items.concat(station.items);
             });
 
+            console.log('🔧 Final stationGroups:', stationGroups);
+
             Object.keys(stationGroups).forEach(function (groupName) {
                 var group = stationGroups[groupName];
 
-                if (group.items.length === 0) return;
+                if (group.items.length === 0) {
+                    console.log('🔧 Skipping empty group:', groupName);
+                    return;
+                }
+
+                console.log('🔧 Creating section:', groupName, 'with', group.items.length, 'items');
 
                 var featureWrapper = $('<div>').addClass('feature-wrapper');
 
@@ -389,7 +400,10 @@ var IMSintegration;
                 featureWrapper.append(sectionTitle);
                 featureWrapper.append(itemsWrapper);
                 sectionWrapper.append(featureWrapper);
+                console.log('🔧 Section appended:', groupName);
             });
+
+            console.log('🔧 populateMenuPage complete. Total sections in wrapper:', sectionWrapper.children('.feature-wrapper').length);
 
             _this.handleIconOrphans(menuPage);
         };
