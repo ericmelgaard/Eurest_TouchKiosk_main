@@ -459,7 +459,7 @@ var IMSintegration;
 
         BrandManager.prototype.init = function (integrationItems, resetTimerCallback) {
             var _this = this;
-console.log(integrationItems);
+            console.log(integrationItems);
             _this.analyzeBrands(integrationItems);
             _this.renderBrandCards('#weekly_menu_page .brand-list');
             _this.attachBrandHandlers(resetTimerCallback);
