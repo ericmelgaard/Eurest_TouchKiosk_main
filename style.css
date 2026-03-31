@@ -576,6 +576,7 @@ display: flex;
     margin: 0 auto;
     max-height: 1500px;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     scrollbar-width: thin;
@@ -677,7 +678,7 @@ display: flex;
 }
 
 /* Responsive breakpoints */
-@media (max-width: 1080px) {
+/* @media (max-width: 1080px) {
     .home,
     .page,
     .asset-wrapper {
@@ -690,9 +691,9 @@ display: flex;
         min-height: auto;
         padding: 20px 10px;
     }
-}
+} */
 
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
     .home {
         min-height: 100vh;
     }
@@ -767,9 +768,9 @@ display: flex;
         max-width: 90%;
         height: auto;
     }
-}
+} */
 
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
     .welcome-header {
         padding: 15px 0 10px;
     }
@@ -840,7 +841,7 @@ display: flex;
         width: 80px;
         height: 80px;
     }
-}
+} */
 
 /* Modal Styles */
 .modal {
@@ -1182,7 +1183,7 @@ display: flex;
     background: #2a3642;
 }
 
-@media (max-width: 1080px) {
+/* @media (max-width: 1080px) {
     .app-bar {
         width: 100%;
     }
@@ -1191,7 +1192,7 @@ display: flex;
 @media (max-width: 768px) {
     .app-bar {
         height: 72px;
-    }
+    } */
 
     .nav-btn {
         width: 48px;
