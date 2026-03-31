@@ -768,7 +768,7 @@ display: flex;
         max-width: 90%;
         height: auto;
     }
-} */
+}
 
 @media (max-width: 480px) {
     .welcome-header {
@@ -1183,7 +1183,7 @@ display: flex;
     background: #2a3642;
 }
 
-/* @media (max-width: 1080px) {
+@media (max-width: 1080px) {
     .app-bar {
         width: 100%;
     }
@@ -1192,7 +1192,7 @@ display: flex;
 @media (max-width: 768px) {
     .app-bar {
         height: 72px;
-    } */
+    }
 
     .nav-btn {
         width: 48px;
