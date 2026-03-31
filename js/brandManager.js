@@ -199,13 +199,8 @@ var IMSintegration;
         BrandManager.prototype.analyzeBrands = function (integrationItems) {
             var _this = this;
             var brandMap = {};
-            var currentDay = currentTime();
 
-            var dateValidated = integrationItems.filter(function (each) {
-                return new Date(each.date).toDateString() === new Date(currentDay).toDateString();
-            });
-
-            dateValidated.forEach(function (item) {
+            integrationItems.forEach(function (item) {
                 item.period = item.period || item.mealPeriod || item.imsDaypartName || item.daypart_label || "";
                 item.station = item.category || item.mealStation || item.menuZoneName || item.station || "";
 
