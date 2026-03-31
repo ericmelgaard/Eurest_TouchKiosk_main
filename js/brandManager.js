@@ -330,7 +330,7 @@ var IMSintegration;
         BrandManager.prototype.createDynamicMenuPage = function (brandKey) {
             var _this = this;
             var brand = _this.brands.find(function (b) { return b.brandKey === brandKey; });
-            var brandName = brand ? brand.name : '';
+            var brandName = brand ? brand.displayName : '';
 
             var pageHtml = `
                 <div id="${brandKey}_page" class="page" style="display:none;">

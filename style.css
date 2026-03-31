@@ -1127,6 +1127,11 @@ display: flex;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 120px);
+    flex-shrink: 1;
 }
 
 /* Navigation Button Styles */
