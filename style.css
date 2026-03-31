@@ -67,7 +67,6 @@ body {
     align-items: center;
     overflow-y: hidden;
     overflow-x: hidden;
-    background-color: #8B9AA4;
 }
 
 .welcome-header {
@@ -75,6 +74,7 @@ body {
     text-align: center;
     margin-top: 0;
     margin-bottom: 0;
+  background-color: #242d37;
 }
 
 .welcome-header img {
