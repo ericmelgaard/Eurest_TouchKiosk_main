@@ -1114,8 +1114,19 @@ display: flex;
     z-index: 1000;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.brand-name-display {
+    color: #ffffff;
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: 48px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 20px;
 }
 
 /* Navigation Button Styles */
@@ -1194,6 +1205,11 @@ display: flex;
         height: 72px;
     }
 
+    .brand-name-display {
+        font-size: 28px;
+        margin-right: 10px;
+    }
+
     .nav-btn {
         width: 48px;
         height: 48px;
@@ -1216,6 +1232,11 @@ display: flex;
 @media (max-width: 480px) {
     .app-bar {
         height: 60px;
+    }
+
+    .brand-name-display {
+        font-size: 20px;
+        margin-right: 5px;
     }
 
     .nav-btn {
