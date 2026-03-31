@@ -83,14 +83,16 @@ min-width: 900px;;
 }
 
 .cards-grid {
-    display: flex;
+display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 20px;
     padding: 0;
     margin-bottom: 30px;
+    margin-top: 60px;
     width: 100%;
     max-width: 1080px;
     margin-left: 200px;
+    min-height: 1200px;
 }
 
 .feature-card {
