@@ -513,14 +513,12 @@ p {
 }
 
 .nav-close {
-    top: 40px;
-    left: 40px;
+    left: 20px;
     display: none;
 }
 
 .nav-back {
-    top: 40px;
-    left: 40px;
+    left: 20px;
     display: none;
 }
 
