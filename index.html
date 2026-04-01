@@ -262,8 +262,31 @@
             </div>
         </div>
 
+        <!-- Inactivity Warning Modal -->
+        <div id="inactivity-warning-modal" class="inactivity-modal">
+            <div class="inactivity-modal-overlay"></div>
+            <div class="inactivity-modal-container">
+                <div class="countdown-circle">
+                    <svg width="120" height="120" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="#1a2332" stroke-width="8" fill="none"/>
+                        <circle id="countdown-circle-progress" cx="50" cy="50" r="45" stroke="#5B9BD5" stroke-width="8" fill="none"
+                                stroke-linecap="round" transform="rotate(-90 50 50)"
+                                style="stroke-dasharray: 282.7; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear;"/>
+                    </svg>
+                    <div id="inactivity-countdown" class="countdown-number">10</div>
+                </div>
+                <h2 class="inactivity-modal-heading">Are you still browsing?</h2>
+                <p class="inactivity-modal-message">You'll be returned to the home screen in <span id="inactivity-countdown-text">10</span> seconds</p>
+                <div class="inactivity-modal-buttons">
+                    <button id="continue-browsing-btn" class="inactivity-btn primary">Continue Browsing</button>
+                    <button id="return-home-btn" class="inactivity-btn secondary">Return to Home</button>
+                </div>
+            </div>
+        </div>
+
 
         <!--scripts-->
+        <script type="text/javascript" src="js/inactivityManager.js"></script>
         <script type="text/javascript" src="js/init.js"></script>
 </body>
 

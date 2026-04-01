@@ -68,12 +68,20 @@ function openNutritionModal(itemData) {
     $('#nutrition-potassium-dv').text(nutrition.potassium?.percentDailyValue || '0');
 
     modal.removeAttr('hidden').fadeIn(300);
+
+    if (typeof InactivityManager !== 'undefined') {
+        InactivityManager.extendForNutrition();
+    }
 }
 
 function closeNutritionModal() {
     $('#item-modal').fadeOut(300, function() {
         $(this).attr('hidden', true);
     });
+
+    if (typeof InactivityManager !== 'undefined') {
+        InactivityManager.reset();
+    }
 }
 
 $(document).ready(function() {

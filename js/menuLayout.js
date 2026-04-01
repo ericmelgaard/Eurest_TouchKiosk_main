@@ -74,6 +74,12 @@ var IMSintegration;
             } catch (e) {
                 console.error("Error in MenuLayout setupNutritionOverlayHandlers: ", e);
             }
+
+            try {
+                this.initInactivityManager();
+            } catch (e) {
+                console.error("Error initializing InactivityManager: ", e);
+            }
         };
         MenuLayout.prototype.handleSettings = function (IMSSettings) {
             var _this = this;
@@ -278,30 +284,77 @@ var IMSintegration;
             this.resetInactivityTimer();
         };
 
-        MenuLayout.prototype.resetInactivityTimer = function () {
+        MenuLayout.prototype.initInactivityManager = function () {
             var _this = this;
 
-            // Clear existing timer
-            if (this.inactivityTimer) {
-                clearTimeout(this.inactivityTimer);
+            if (typeof InactivityManager !== 'undefined') {
+                InactivityManager.init({
+                    warningDelay: 30000,
+                    countdownDuration: 10000,
+                    nutritionExtension: 30000,
+                    onTimeout: function () {
+                        _this.returnHome();
+                    },
+                    onReset: function () {
+                        console.log('Inactivity timer reset');
+                    },
+                    onWarning: function () {
+                        console.log('Inactivity warning shown');
+                    }
+                });
+            } else {
+                console.error('InactivityManager not found');
             }
+        };
 
-            // Set new timer
-            this.inactivityTimer = setTimeout(function () {
-                _this.returnHome();
-            }, this.inactivityTimeout);
+        MenuLayout.prototype.resetInactivityTimer = function () {
+            if (typeof InactivityManager !== 'undefined') {
+                InactivityManager.reset();
+            } else {
+                var _this = this;
+                if (this.inactivityTimer) {
+                    clearTimeout(this.inactivityTimer);
+                }
+                this.inactivityTimer = setTimeout(function () {
+                    _this.returnHome();
+                }, this.inactivityTimeout);
+            }
         };
 
         MenuLayout.prototype.returnHome = function () {
-            // Hide all menu sections and show home
+            var _this = this;
+
+            closeNutritionModal();
+
             $('.page').hide();
             $('.home').show();
 
-            // Clear navigation history
             this.navigationHistory = [];
 
-            // Update navigation buttons
             this.updateNavigationButtons();
+
+            $('.section-wrapper').scrollTop(0);
+            $('.brand-list').scrollTop(0);
+            window.scrollTo(0, 0);
+
+            if (this.breakfast_overlay) {
+                $(this.breakfast_overlay).hide();
+            }
+            if (this.tacocantina_overlay) {
+                $(this.tacocantina_overlay).hide();
+            }
+            if (this.bandb_overlay) {
+                $(this.bandb_overlay).hide();
+            }
+            if (this.roost_overlay) {
+                $(this.roost_overlay).hide();
+            }
+            if (this.inspiredkitchen_overlay) {
+                $(this.inspiredkitchen_overlay).hide();
+            }
+            if (this.flame_overlay) {
+                $(this.flame_overlay).hide();
+            }
 
             console.log('Returned to home due to inactivity');
         };
