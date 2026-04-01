@@ -309,6 +309,11 @@ var IMSintegration;
         };
 
         MenuLayout.prototype.resetInactivityTimer = function () {
+            // Don't reset timer if on home screen
+            if ($('.home').is(':visible')) {
+                return;
+            }
+
             if (typeof InactivityManager !== 'undefined') {
                 InactivityManager.reset();
             } else {
