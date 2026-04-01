@@ -333,13 +333,15 @@ var IMSintegration;
 
             this.updateNavigationButtons();
 
-            $('.section-wrapper').each(function() {
-                $(this).scrollTop(0);
+            document.querySelectorAll('.section-wrapper').forEach(function(el) {
+                el.scrollTop = 0;
             });
-            $('.brand-list').scrollTop(0);
-            $('.modal-content').scrollTop(0);
-            $('body').scrollTop(0);
-            $(window).scrollTop(0);
+            var brandList = document.querySelector('.brand-list');
+            if (brandList) brandList.scrollTop = 0;
+            document.querySelectorAll('.modal-content').forEach(function(el) {
+                el.scrollTop = 0;
+            });
+            window.scrollTo(0, 0);
 
             if (this.breakfast_overlay) {
                 $(this.breakfast_overlay).hide();
