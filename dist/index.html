@@ -12,6 +12,7 @@
     <script type="text/javascript" src="dependencies/math.min.js"></script>
     <script type="text/javascript" src="dependencies/lodash.min.js"></script>
     <script type="text/javascript" src="dependencies/wandLib.js"></script>
+    <script type="text/javascript" src="js/nutritionLabel.js"></script>
     <script type="text/javascript" src="js/integration.js"></script>
     <script type="text/javascript" src="js/brandManager.js"></script>
     <script type="text/javascript" src="js/menuLayout.js"></script>
@@ -24,7 +25,7 @@
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "vo149jt94m");
     </script>
-  <link rel="stylesheet" crossorigin href="/assets/main-Cg9e90xm.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-DKUxYNql.css">
 </head>
 
 <body>
@@ -43,7 +44,7 @@
         <!-- Welcome Screen -->
         <div class="home" onclick="">
             <div class="welcome-header">
-                <img src="/assets/header-DE2Ac2sh.png" alt="Welcome">
+                <img src="/assets/header_transparent-BibUqV01.png" alt="Welcome">
             </div>
             <div class="cards-grid">
                 <div class="feature-card" id="card-happening">
@@ -90,6 +91,12 @@
 
         <!-- Weekly Menu Page (formerly home) -->
         <div id="weekly_menu_page" class="page">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
             <div class="background">
                 <img src="./media/menuselect-dig-1.png" height="1920" width="1080" id="home">
                 <div class="password Name-27157"></div>
@@ -101,159 +108,125 @@
                 </div>
                 <div class="brand-list"></div>
             </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
         </div>
 
-        <div id="bfast_page" class="page">
-            <div class="background">
-                <img src="/assets/bfast-DSjJinny.png" height="1920" width="1080" id="wine">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
+        <!-- What's Happening Page -->
+        <div id="happening_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <div id="happening-content-background" class="content-background"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="/assets/icon_whatshappening-DWeVK60P.png" alt="What's Happening">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">What's Happening</h1>
+                    <p class="static-page-subtitle">We're cooking up something special</p>
+                    <div class="static-page-message">
+                        Stay tuned for exciting events, special offerings, and daily highlights from your cafe. Check back soon to discover what's new and trending.
+                    </div>
                 </div>
             </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
         </div>
 
-        <div id="tacocantina_page" class="page">
-            <div class="background">
-                <img src="/assets/tacocantina-Ba5bHbCh.png" height="1920" width="1080" id="premium">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
+        <!-- Beverage Page -->
+        <div id="beverage_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <div id="beverage-content-background" class="content-background"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="/assets/icon_bev-CX5UN36-.png" alt="Beverages">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Beverages</h1>
+                    <p class="static-page-subtitle">Refreshment is on its way</p>
+                    <div class="static-page-message">
+                        From artisan coffees to refreshing cold drinks, our full beverage menu is being prepared. Soon you'll be able to explore specialty drinks, smoothies, and more.
+                    </div>
                 </div>
             </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
         </div>
 
-        <div id="butcherbaker_page" class="page">
-            <div class="background">
-                <img src="/assets/butcherbaker-BFX3FZVj.png" height="1920" width="1080" id="food">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
-                </div>
-                <div class="soups-wrapper">
-                    <div class="header">soups</div>
-                    <div class="items-wrapper"></div>
-                </div>
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="roost_page" class="page">
-            <div class="background">
-                <img src="/assets/roost-uunEBf2d.png" height="1920" width="1080" id="food">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
-                </div>
-                <div class="sides-wrapper">
-                    <div class="header">sides</div>
-                    <div class="items-wrapper"></div>
+        <!-- You Pick It Page -->
+        <div id="youpickit_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <div id="youpickit-content-background" class="content-background"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="/assets/icon_youpickit-DYCBRGvr.png" alt="You Pick It">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">You Pick It</h1>
+                    <p class="static-page-subtitle">Your meal, your way</p>
+                    <div class="static-page-message">
+                        Build your perfect meal with complete customization options. Mix and match your favorite ingredients to create something uniquely yours. Launching soon.
+                    </div>
                 </div>
             </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
         </div>
 
-        <div id="piccolaitalia_page" class="page">
-            <div class="background">
-                <img src="/assets/piccola_italia-7az8UQaT.jpg" height="1920" width="1080" id="premium">
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="bigcitybbq_page" class="page">
-            <div class="background">
-                <img src="/assets/26_BIGCityBBQ-WAND-March-Dig-Vert-Dleigsg3.jpg" height="1920" width="1080" id="food">
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="sipsbites_page" class="page">
-            <div class="background">
-                <img src="/assets/sipsbites-Lx_SCVl1.png" height="1920" width="1080" id="premium">
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="mashup_page" class="page">
-            <div class="background">
-                <img src="./media/mashup_page.png" height="1920" width="1080" id="food">
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="graze_page" class="page">
-            <div class="background">
-                <img src="/assets/graze-CIFpjhah.png" height="1920" width="1080" id="premium">
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
-        </div>
-
-        <div id="inspiredkitchen_page" class="page">
-            <div class="background">
-                <img src="/assets/inspired_kitchen-RjmzWexy.png" height="1920" width="1080" id="food">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
-                </div>
-                <div class="sides-wrapper">
-                    <div class="header">sides</div>
-                    <div class="items-wrapper"></div>
+        <!-- Fit Page -->
+        <div id="fit_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <div id="fit-content-background" class="content-background"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="/assets/icon_fit-DnIAKXNG.png" alt="Fit">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Fit</h1>
+                    <p class="static-page-subtitle">Healthy choices made easy</p>
+                    <div class="static-page-message">
+                        Discover nutritious meals designed to fuel your day. Complete nutritional information and wellness-focused options will be available here soon.
+                    </div>
                 </div>
             </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
-            </div>
         </div>
 
-        <div id="flame_page" class="page">
-            <div class="background">
-                <img src="/assets/flame-Db7vwGhO.png" height="1920" width="1080" id="premium">
-            </div>
-            <div class="section-wrapper">
-                <div class="feature-wrapper">
-                    <div class="header">daily feature</div>
-                    <div class="items-wrapper"></div>
+        <!-- Mezze Page -->
+        <div id="mezze_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <div id="mezze-content-background" class="content-background"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="/assets/icon_mezze-D4i5ARoc.png" alt="Mezze">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Mezze</h1>
+                    <p class="static-page-subtitle">Mediterranean flavors await</p>
+                    <div class="static-page-message">
+                        Experience the vibrant tastes of the Mediterranean with our mezze selection. Small plates and sharing options are coming your way soon.
+                    </div>
                 </div>
-                <div class="sides-wrapper">
-                    <div class="header">sides</div>
-                    <div class="items-wrapper"></div>
-                </div>
-            </div>
-            <div class="goHome">
-                <img src="/assets/homebutton-D1a0l2QT.png">
             </div>
         </div>
 
@@ -261,8 +234,177 @@
             <img id="image" src="">
         </div>
 
+        <!-- Scroll to Top Button -->
+        <button class="nav-btn nav-scroll-top" aria-label="Scroll to top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/>
+                <polyline points="5 12 12 5 19 12"/>
+            </svg>
+        </button>
+
+        <!-- Nutrition Modal -->
+        <div id="item-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" hidden>
+            <div class="modal-overlay"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2 id="modal-title" class="modal-title"></h2>
+                    <button id="modal-close" class="icon-button" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <div class="modal-meta">
+                        <div class="item-quick-info">
+                            <span id="modal-price" class="item-price"></span>
+                            <span id="modal-calories" class="item-calories"></span>
+                            <span id="modal-serving" class="item-serving"></span>
+                        </div>
+                        <div id="modal-icons" class="item-icons"></div>
+                    </div>
+                    <p id="modal-description" class="item-description"></p>
+
+                    <section class="item-section">
+                        <h3 class="section-title">Ingredients</h3>
+                        <p id="modal-ingredients" class="ingredients-list"></p>
+                    </section>
+
+                    <section class="item-section" id="allergens-section">
+                        <h3 class="section-title">Allergens</h3>
+                        <p id="modal-allergens" class="allergens-list"></p>
+                    </section>
+
+                    <section class="item-section">
+                        <h3 class="section-title">Nutrition Facts</h3>
+                        <div class="nutrition-label">
+                            <div class="nutrition-header">
+                                <div class="nutrition-title-group">
+                                    <h4 class="nutrition-title">Nutrition Facts</h4>
+                                    <p class="nutrition-serving"><span class="serving-label">Serving Size</span> <span id="nutrition-serving"></span></p>
+                                </div>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-row major">
+                                <span class="nutrition-label-text">Calories</span>
+                                <span id="nutrition-calories" class="nutrition-value bold"></span>
+                            </div>
+                            <div class="nutrition-divider"></div>
+
+                            <div class="nutrition-row daily-value-header">
+                                <span></span>
+                                <span class="nutrition-value bold">% Daily Value*</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Total Fat</strong> <span id="nutrition-fat"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-fat-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Saturated Fat <span id="nutrition-sat-fat"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-sat-fat-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Trans Fat <span id="nutrition-trans-fat"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Cholesterol</strong> <span id="nutrition-cholesterol"></span>mg</span>
+                                <span class="nutrition-value bold"><span id="nutrition-cholesterol-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Sodium</strong> <span id="nutrition-sodium"></span>mg</span>
+                                <span class="nutrition-value bold"><span id="nutrition-sodium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Total Carbohydrate</strong> <span id="nutrition-carbs"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-carbs-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Dietary Fiber <span id="nutrition-fiber"></span>g</span>
+                                <span class="nutrition-value bold"><span id="nutrition-fiber-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row indent">
+                                <span class="nutrition-label-text">Total Sugars <span id="nutrition-sugars"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+
+                            <div class="nutrition-row">
+                                <span class="nutrition-label-text"><strong>Protein</strong> <span id="nutrition-protein"></span>g</span>
+                                <span class="nutrition-value"></span>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Vitamin D <span id="nutrition-vitamin-d"></span>mcg</span>
+                                <span class="nutrition-value"><span id="nutrition-vitamin-d-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Calcium <span id="nutrition-calcium"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-calcium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Iron <span id="nutrition-iron"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-iron-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thin"></div>
+                            <div class="nutrition-row micronutrient">
+                                <span class="nutrition-label-text">Potassium <span id="nutrition-potassium"></span>mg</span>
+                                <span class="nutrition-value"><span id="nutrition-potassium-dv"></span>%</span>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+
+                            <div class="nutrition-footnote">
+                                * Percent Daily Values are based on a 2,000 calorie diet. Your daily values may be higher or lower depending on your calorie needs.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inactivity Warning Modal -->
+        <div id="inactivity-warning-modal" class="inactivity-modal">
+            <div class="inactivity-modal-overlay"></div>
+            <div class="inactivity-modal-container">
+                <div class="countdown-circle">
+                    <svg width="120" height="120" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="#1a2332" stroke-width="8" fill="none"/>
+                        <circle id="countdown-circle-progress" cx="50" cy="50" r="45" stroke="#5B9BD5" stroke-width="8" fill="none"
+                                stroke-linecap="round" transform="rotate(-90 50 50)"
+                                style="stroke-dasharray: 282.7; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear;"/>
+                    </svg>
+                    <div id="inactivity-countdown" class="countdown-number">10</div>
+                </div>
+                <h2 class="inactivity-modal-heading">Are you still browsing?</h2>
+                <p class="inactivity-modal-message">You'll be returned to the home screen in <span id="inactivity-countdown-text">10</span> seconds</p>
+                <div class="inactivity-modal-buttons">
+                    <button id="continue-browsing-btn" class="inactivity-btn primary">Continue Browsing</button>
+                    <button id="return-home-btn" class="inactivity-btn secondary">Return to Home</button>
+                </div>
+            </div>
+        </div>
+
 
         <!--scripts-->
+        <script type="text/javascript" src="js/inactivityManager.js"></script>
+        <script type="text/javascript" src="js/swipeGestureManager.js"></script>
         <script type="text/javascript" src="js/init.js"></script>
 </body>
 
