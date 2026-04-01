@@ -333,14 +333,6 @@ var IMSintegration;
 
             this.updateNavigationButtons();
 
-            document.querySelectorAll('.section-wrapper').forEach(function(el) {
-                el.scrollTop = 0;
-            });
-            var brandList = document.querySelector('.brand-list');
-            if (brandList) brandList.scrollTop = 0;
-            document.querySelectorAll('.modal-content').forEach(function(el) {
-                el.scrollTop = 0;
-            });
             window.scrollTo(0, 0);
 
             if (this.breakfast_overlay) {
@@ -408,11 +400,13 @@ var IMSintegration;
             // Show the target page
             $('#' + pageId).show();
 
+            // Reset scroll position of the page we're navigating TO
+            $('#' + pageId + ' .section-wrapper').scrollTop(0);
+            $('#' + pageId + ' .brand-list').scrollTop(0);
+            window.scrollTo(0, 0);
+
             // Update navigation buttons
             this.updateNavigationButtons();
-
-            // Scroll to top of new page
-            window.scrollTo(0, 0);
         };
 
         MenuLayout.prototype.navigateBack = function () {
