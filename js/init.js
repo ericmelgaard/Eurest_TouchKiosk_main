@@ -49,8 +49,8 @@ var Store_Key = "6091";
 var Zone_ID = "";
 var Duration = "";
 var Partner_API = "webtrition";
-var Brand = "44226";
-var Establishment = "35220";
+var Brand = "1629";
+var Establishment = "5824";
 var apiKey = "N2RiZDYxZTMtMjEyZS00MjE5LWFjNzktZGI3MTU4YzAwYTgy";
 //yyyy-mm-dd ex.2026-02-23
 var dateToRequest = "";
