@@ -499,12 +499,13 @@ var IMSintegration;
 
             var pageHtml = `
                 <div id="${brandKey}_page" class="page" style="display:none;">
-                    <button class="floating-nav-btn floating-nav-back" aria-label="Back to Menu Selection">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"/>
-                            <polyline points="12 19 5 12 12 5"/>
-                        </svg>
-                        <span class="floating-nav-label">Menu</span>
+                    <button class="edge-nav-back" aria-label="Back to Menu Selection">
+                        <div class="edge-nav-chevron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                        </div>
+                        <span class="edge-nav-label">Menus</span>
                     </button>
                     <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -534,7 +535,7 @@ var IMSintegration;
             console.log('🔧 populateMenuPage called for brand:', brand.brandKey, brand);
 
             // Attach back button handler for this menu page
-            menuPage.find('.floating-nav-back').off('click').on('click', function (e) {
+            menuPage.find('.edge-nav-back').off('click').on('click', function (e) {
                 e.stopPropagation();
                 if (window.menuLayout && typeof menuLayout.navigateBack === 'function') {
                     menuLayout.navigateBack();

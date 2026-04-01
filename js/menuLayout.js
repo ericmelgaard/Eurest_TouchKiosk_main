@@ -381,8 +381,8 @@ var IMSintegration;
                 _this.resetInactivityTimer();
             });
 
-            // Back button - returns to previous page
-            $(document).on('click', '.floating-nav-back', function (e) {
+            // Edge back button - returns to menu selection from brand pages
+            $(document).on('click', '.edge-nav-back', function (e) {
                 e.stopPropagation();
                 _this.navigateBack();
                 _this.resetInactivityTimer();

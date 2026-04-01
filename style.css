@@ -1176,11 +1176,72 @@ display: flex;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Position floating nav buttons */
-.floating-nav-back {
-    left: 50px;
+/* Edge-based back navigation (left side, swipe-like) */
+.edge-nav-back {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 160px;
+    border: none;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 80%, transparent 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top-right-radius: 80px;
+    border-bottom-right-radius: 80px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-left: 8px;
+    z-index: 1001;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+    gap: 6px;
 }
 
+.edge-nav-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edge-nav-back svg {
+    width: 40px;
+    height: 40px;
+    color: #2c2c2c;
+    transition: all 0.3s ease;
+}
+
+.edge-nav-label {
+    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c2c2c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    writing-mode: horizontal-tb;
+    text-align: center;
+}
+
+.edge-nav-back:hover {
+    width: 95px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 80%, transparent 100%);
+    box-shadow: 6px 0 28px rgba(0, 0, 0, 0.18);
+}
+
+.edge-nav-back:hover svg {
+    transform: translateX(-4px) scale(1.1);
+}
+
+.edge-nav-back:active {
+    width: 90px;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Position floating nav buttons */
 .floating-nav-home {
     right: 50px;
 }
@@ -1247,12 +1308,26 @@ display: flex;
         font-size: 16px;
     }
 
-    .floating-nav-back {
-        left: 35px;
-    }
-
     .floating-nav-home, .floating-nav-close {
         right: 35px;
+    }
+
+    .edge-nav-back {
+        width: 65px;
+        height: 140px;
+    }
+
+    .edge-nav-back svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .edge-nav-label {
+        font-size: 14px;
+    }
+
+    .edge-nav-back:hover {
+        width: 75px;
     }
 
     .brand-header-logo {
@@ -1287,12 +1362,26 @@ display: flex;
         font-size: 14px;
     }
 
-    .floating-nav-back {
-        left: 25px;
-    }
-
     .floating-nav-home, .floating-nav-close {
         right: 25px;
+    }
+
+    .edge-nav-back {
+        width: 55px;
+        height: 120px;
+    }
+
+    .edge-nav-back svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .edge-nav-label {
+        font-size: 12px;
+    }
+
+    .edge-nav-back:hover {
+        width: 65px;
     }
 
     .brand-header-logo {
