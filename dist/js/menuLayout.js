@@ -296,10 +296,10 @@ var IMSintegration;
                         _this.returnHome();
                     },
                     onReset: function () {
-                        console.log('Inactivity timer reset');
+                        // Timer reset silently
                     },
                     onWarning: function () {
-                        console.log('Inactivity warning shown');
+                        // Warning shown silently
                     }
                 });
             } else {
@@ -353,8 +353,6 @@ var IMSintegration;
             if (this.flame_overlay) {
                 $(this.flame_overlay).hide();
             }
-
-            console.log('Returned to home due to inactivity');
         };
 
         MenuLayout.prototype.setupNavigationButtons = function () {
