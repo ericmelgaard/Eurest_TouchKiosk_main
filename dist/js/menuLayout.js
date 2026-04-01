@@ -353,6 +353,11 @@ var IMSintegration;
             if (this.flame_overlay) {
                 $(this.flame_overlay).hide();
             }
+
+            // Pause inactivity timer when on home screen
+            if (typeof InactivityManager !== 'undefined') {
+                InactivityManager.pause();
+            }
         };
 
         MenuLayout.prototype.setupNavigationButtons = function () {
@@ -405,6 +410,11 @@ var IMSintegration;
 
             // Update navigation buttons
             this.updateNavigationButtons();
+
+            // Resume inactivity timer when navigating away from home
+            if (typeof InactivityManager !== 'undefined') {
+                InactivityManager.resume();
+            }
         };
 
         MenuLayout.prototype.navigateBack = function () {
@@ -441,6 +451,11 @@ var IMSintegration;
 
             // Scroll to top
             window.scrollTo(0, 0);
+
+            // Pause inactivity timer when on home screen
+            if (typeof InactivityManager !== 'undefined') {
+                InactivityManager.pause();
+            }
         };
 
         MenuLayout.prototype.updateNavigationButtons = function () {
