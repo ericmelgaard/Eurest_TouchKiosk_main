@@ -142,6 +142,7 @@ function openNutritionModal(itemData) {
         }
 
         const rowId = `#nutrition-${opt.id}-row`;
+        const dividerId = `#nutrition-${opt.id}-divider`;
 
         if (nutrient && nutrient.value && nutrient.value !== '-' && nutrient.value !== '0') {
             const value = nutrient.value;
@@ -151,8 +152,10 @@ function openNutritionModal(itemData) {
             $(`#nutrition-${opt.id}`).text(value);
             $(`#nutrition-${opt.id}-dv`).text(dv);
             $(`#nutrition-${opt.id}-unit`).text(unit);
+            $(dividerId).show();
             $(rowId).show();
         } else {
+            $(dividerId).hide();
             $(rowId).hide();
         }
     });
