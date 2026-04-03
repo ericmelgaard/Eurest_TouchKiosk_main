@@ -805,8 +805,7 @@ var IMSintegration;
                     "&MenuDate=" +
                     currentTime() +
                     "&SourceSystem=1" +
-                    "&Days=3&IncludeNutrition=true&IncludeAllergens=true&IncludeIngredients=true" +
-                    "&IncludeRecipe=" + includeRecipes;
+                    "&Days=3&IncludeNutrients=true";
             }
             if (_this.API === "bonappetit") {
                 url = "https://" + _this.wand + "/integrations/" + _this.API + "?campus=" + _this.brand + "&cafe=" + _this.establishment + "&menuDate=" + currentTime();
