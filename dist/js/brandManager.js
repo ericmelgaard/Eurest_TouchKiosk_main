@@ -5,354 +5,111 @@ var IMSintegration;
     var BrandManager = (function () {
         function BrandManager() {
             this.logoBaseUrl = "https://trm.wandcorp.com/cms_mediafiles/DIGITAL_ASSETS_NX01/297748/eurest_logos/";
-            this.brandConfig = {
-                graze: {
-                    logoFilename: "graze.png",
-                    keywords: ["graze"],
-                    displayName: "Graze",
-                    stationTypes: [
-                        { pattern: "Graze - BYO", cleanName: "BYO" },
-                        { pattern: "Graze - Daily Features", cleanName: "Daily Features" },
-                        { pattern: "Graze - Sides", cleanName: "Sides" }
-                    ]
-                },
-                piccolaitalia: {
-                    logoFilename: "piccolaitalia.png",
-                    keywords: ["piccola", "italia"],
-                    displayName: "Piccola Italia",
-                    stationTypes: [
-                        { pattern: "Piccola Italia - Entree + 1", cleanName: "Entree + 1" },
-                        { pattern: "Piccola Italia - Entree + 2", cleanName: "Entree + 2" }
-                    ]
-                },
-                bigcitybbq: {
-                    logoFilename: "bigcitybbq.png",
-                    keywords: ["big city", "bigcity", "bbq"],
-                    displayName: "Big City BBQ",
-                    stationTypes: [
-                        { pattern: "Big City BBQ - Core + Sides", cleanName: "Core + Sides" }
-                    ]
-                },
-                tacocantina: {
-                    logoFilename: "tacocantina.png",
-                    keywords: ["taco", "cantina"],
-                    displayName: "Taco Cantina",
-                    stationTypes: [
-                        { pattern: "Taco Cantina - Express", cleanName: "Express" },
-                        { pattern: "Taco Cantina - A La Carte", cleanName: "A La Carte" }
-                    ]
-                },
-                butcherbaker: {
-                    logoFilename: "butcherbaker.png",
-                    keywords: ["butcher", "baker", "b&b"],
-                    displayName: "Butcher & Baker",
-                    stationTypes: [
-                        { pattern: "Butcher & Baker - BYO Omelet", cleanName: "BYO Omelet" },
-                        { pattern: "Butcher & Baker - Daily Features", cleanName: "Daily Features" }
-                    ]
-                },
-                roost: {
-                    logoFilename: "roost1996.png",
-                    keywords: ["roost", "1996"],
-                    displayName: "Roost 1996",
-                    stationTypes: [
-                        { pattern: "Roost 1996 - By the Slice", cleanName: "By the Slice" },
-                        { pattern: "Roost 1996 - Individual Pizza", cleanName: "Individual Pizza" }
-                    ]
-                },
-                flame: {
-                    logoFilename: "flame.png",
-                    keywords: ["flame"],
-                    displayName: "Flame",
-                    stationTypes: [
-                        { pattern: "Flame - BYO", cleanName: "BYO" },
-                        { pattern: "Flame - Daily Features", cleanName: "Daily Features" }
-                    ]
-                },
-                create: {
-                    logoFilename: "create.png",
-                    keywords: ["create"],
-                    displayName: "Create",
-                    stationTypes: [
-                        { pattern: "Create - BYO", cleanName: "BYO" },
-                        { pattern: "Create - Sides", cleanName: "Sides" }
-                    ]
-                },
-                bibimbap: {
-                    logoFilename: "bibimbap.png",
-                    keywords: ["bibimbap"],
-                    displayName: "Bibimbap",
-                    stationTypes: [
-                        { pattern: "Bibimbap - BYO", cleanName: "BYO" },
-                        { pattern: "Bibimbap - Express", cleanName: "Express" }
-                    ]
-                },
-                bokchoy: {
-                    logoFilename: "bokchoy.png",
-                    keywords: ["bok choy", "bokchoy"],
-                    displayName: "Bok Choy",
-                    stationTypes: [
-                        { pattern: "Bok Choy - BYO", cleanName: "BYO" },
-                        { pattern: "Bok Choy - Express", cleanName: "Express" }
-                    ]
-                },
-                crave: {
-                    logoFilename: "crave.png",
-                    keywords: ["crave"],
-                    displayName: "Crave",
-                    stationTypes: [
-                        { pattern: "Crave - BYO", cleanName: "BYO" },
-                        { pattern: "Crave - Daily Features", cleanName: "Daily Features" }
-                    ]
-                },
-                crisp: {
-                    logoFilename: "crisp.png",
-                    keywords: ["crisp"],
-                    displayName: "Crisp",
-                    stationTypes: [
-                        { pattern: "Crisp - BYO", cleanName: "BYO" },
-                        { pattern: "Crisp - Sides", cleanName: "Sides" }
-                    ]
-                },
-                earthbowl: {
-                    logoFilename: "earthbowl.png",
-                    keywords: ["earth bowl", "earthbowl"],
-                    displayName: "Earth Bowl",
-                    stationTypes: [
-                        { pattern: "Earth Bowl - BYO", cleanName: "BYO" },
-                        { pattern: "Earth Bowl - Express", cleanName: "Express" }
-                    ]
-                },
-                fishmarket: {
-                    logoFilename: "fishmarket.png",
-                    keywords: ["fish market", "fishmarket"],
-                    displayName: "Fish Market",
-                    stationTypes: [
-                        { pattern: "Fish Market - BYO", cleanName: "BYO" },
-                        { pattern: "Fish Market - Daily Features", cleanName: "Daily Features" }
-                    ]
-                },
-                justburgers: {
-                    logoFilename: "justburgers.png",
-                    keywords: ["just burgers", "justburgers"],
-                    displayName: "Just Burgers",
-                    stationTypes: [
-                        { pattern: "Just Burgers - BYO", cleanName: "BYO" },
-                        { pattern: "Just Burgers - Express", cleanName: "Express" }
-                    ]
-                },
-                kitchenco: {
-                    logoFilename: "kitchenco.png",
-                    keywords: ["kitchen co", "kitchenco"],
-                    displayName: "Kitchen Co",
-                    stationTypes: [
-                        { pattern: "Kitchen Co - Daily Features", cleanName: "Daily Features" },
-                        { pattern: "Kitchen Co - Sides", cleanName: "Sides" }
-                    ]
-                },
-                maccheeseology: {
-                    logoFilename: "maccheeseology.png",
-                    keywords: ["mac cheeseology", "maccheeseology", "mac cheese"],
-                    displayName: "Mac Cheeseology",
-                    stationTypes: [
-                        { pattern: "Mac Cheeseology - BYO", cleanName: "BYO" },
-                        { pattern: "Mac Cheeseology - Express", cleanName: "Express" }
-                    ]
-                },
-                machuperu: {
-                    logoFilename: "machuperu.png",
-                    keywords: ["machu peru", "machuperu"],
-                    displayName: "Machu Peru",
-                    stationTypes: [
-                        { pattern: "Machu Peru - BYO", cleanName: "BYO" },
-                        { pattern: "Machu Peru - Express", cleanName: "Express" }
-                    ]
-                },
-                madetomelt: {
-                    logoFilename: "madetomelt.png",
-                    keywords: ["made to melt", "madetomelt"],
-                    displayName: "Made to Melt",
-                    stationTypes: [
-                        { pattern: "Made to Melt - Express", cleanName: "Express" },
-                        { pattern: "Made to Melt - A La Carte", cleanName: "A La Carte" }
-                    ]
-                },
-                marketfresh: {
-                    logoFilename: "marketfresh.png",
-                    keywords: ["market fresh", "marketfresh"],
-                    displayName: "Market Fresh",
-                    stationTypes: [
-                        { pattern: "Market Fresh - BYO", cleanName: "BYO" },
-                        { pattern: "Market Fresh - Sides", cleanName: "Sides" }
-                    ]
-                },
-                masala: {
-                    logoFilename: "masala_685x300.png",
-                    keywords: ["masala"],
-                    displayName: "Masala",
-                    stationTypes: [
-                        { pattern: "Masala - BYO", cleanName: "BYO" },
-                        { pattern: "Masala - Express", cleanName: "Express" }
-                    ]
-                },
-                meatballinc: {
-                    logoFilename: "meatballInc.png",
-                    keywords: ["meatball", "meatballinc"],
-                    displayName: "Meatball Inc",
-                    stationTypes: [
-                        { pattern: "Meatball Inc - Express", cleanName: "Express" },
-                        { pattern: "Meatball Inc - A La Carte", cleanName: "A La Carte" }
-                    ]
-                },
-                mezze: {
-                    logoFilename: "mezze.png",
-                    keywords: ["mezze"],
-                    displayName: "Mezze",
-                    stationTypes: [
-                        { pattern: "Mezze - BYO", cleanName: "BYO" },
-                        { pattern: "Mezze - Express", cleanName: "Express" }
-                    ]
-                },
-                picomesa: {
-                    logoFilename: "picomesa.png",
-                    keywords: ["pico mesa", "picomesa"],
-                    displayName: "Pico Mesa",
-                    stationTypes: [
-                        { pattern: "Pico Mesa - BYO", cleanName: "BYO" },
-                        { pattern: "Pico Mesa - Express", cleanName: "Express" }
-                    ]
-                },
-                piripiri: {
-                    logoFilename: "piripiri.png",
-                    keywords: ["piri piri", "piripiri"],
-                    displayName: "Piri Piri",
-                    stationTypes: [
-                        { pattern: "Piri Piri - BYO", cleanName: "BYO" },
-                        { pattern: "Piri Piri - Express", cleanName: "Express" }
-                    ]
-                },
-                revolutionnoodle: {
-                    logoFilename: "revolutionnoodle.png",
-                    keywords: ["revolution noodle", "revolutionnoodle"],
-                    displayName: "Revolution Noodle",
-                    stationTypes: [
-                        { pattern: "Revolution Noodle - BYO", cleanName: "BYO" },
-                        { pattern: "Revolution Noodle - Express", cleanName: "Express" }
-                    ]
-                },
-                rootsandseeds: {
-                    logoFilename: "rootsandsseds.png",
-                    keywords: ["roots and seeds", "rootsandseeds"],
-                    displayName: "Roots and Seeds",
-                    stationTypes: [
-                        { pattern: "Roots and Seeds - BYO", cleanName: "BYO" },
-                        { pattern: "Roots and Seeds - Sides", cleanName: "Sides" }
-                    ]
-                },
-                soulkitchen: {
-                    logoFilename: "soulkitchen.png",
-                    keywords: ["soul kitchen", "soulkitchen"],
-                    displayName: "Soul Kitchen",
-                    stationTypes: [
-                        { pattern: "Soul Kitchen - Daily Features", cleanName: "Daily Features" },
-                        { pattern: "Soul Kitchen - Sides", cleanName: "Sides" }
-                    ]
-                },
-                soup: {
-                    logoFilename: "soup.png",
-                    keywords: ["soup"],
-                    displayName: "Soup",
-                    stationTypes: [
-                        { pattern: "Soup - Daily Features", cleanName: "Daily Features" }
-                    ]
-                }
-            };
+
+            this.includePatterns = [
+                "Graze - BYO",
+                "Graze - Daily Features",
+                "Graze - Sides",
+                "Piccola Italia - Entree + 1",
+                "Piccola Italia - Entree + 2",
+                "Big City BBQ - Core + Sides",
+                "Taco Cantina - Express",
+                "Taco Cantina - A La Carte",
+                "Butcher & Baker - BYO Omelet",
+                "Butcher & Baker - Daily Features",
+                "Roost 1996 - By the Slice",
+                "Roost 1996 - Individual Pizza",
+                "Flame - BYO",
+                "Flame - Daily Features",
+                "Create - BYO",
+                "Create - Sides",
+                "Bibimbap - BYO",
+                "Bibimbap - Express",
+                "Bok Choy - BYO",
+                "Bok Choy - Express",
+                "Crave - BYO",
+                "Crave - Daily Features",
+                "Crisp - BYO",
+                "Crisp - Sides",
+                "Earth Bowl - BYO",
+                "Earth Bowl - Express",
+                "Fish Market - BYO",
+                "Fish Market - Daily Features",
+                "Just Burgers - BYO",
+                "Just Burgers - Express",
+                "Kitchen Co - Daily Features",
+                "Kitchen Co - Sides",
+                "Mac Cheeseology - BYO",
+                "Mac Cheeseology - Express",
+                "Machu Peru - BYO",
+                "Machu Peru - Express",
+                "Made to Melt - Express",
+                "Made to Melt - A La Carte",
+                "Market Fresh - BYO",
+                "Market Fresh - Sides",
+                "Masala - BYO",
+                "Masala - Express",
+                "Meatball Inc - Express",
+                "Meatball Inc - A La Carte",
+                "Mezze - BYO",
+                "Mezze - Express",
+                "Pico Mesa - BYO",
+                "Pico Mesa - Express",
+                "Piri Piri - BYO",
+                "Piri Piri - Express",
+                "Revolution Noodle - BYO",
+                "Revolution Noodle - Express",
+                "Roots and Seeds - BYO",
+                "Roots and Seeds - Sides",
+                "Soul Kitchen - Daily Features",
+                "Soul Kitchen - Sides",
+                "Soup - Daily Features"
+            ];
+
             this.brands = [];
             this.currentBrand = null;
         }
 
-        BrandManager.prototype.normalizeString = function (str) {
-            return (str || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-        };
-
-        BrandManager.prototype.normalizeStationName = function (stationName) {
+        BrandManager.prototype.sanitizeStationName = function (stationName) {
             if (!stationName) return "";
-            return stationName
-                .trim()
-                .replace(/[\s\-–—]+/g, " ")
-                .toLowerCase();
+            return stationName.trim();
         };
 
-        BrandManager.prototype.matchStationPattern = function (stationName, brandKey) {
+        BrandManager.prototype.matchesIncludePattern = function (stationName) {
             var _this = this;
-            if (!brandKey || !_this.brandConfig[brandKey]) {
-                return null;
-            }
+            var sanitized = _this.sanitizeStationName(stationName);
 
-            var brand = _this.brandConfig[brandKey];
-            if (!brand.stationTypes || brand.stationTypes.length === 0) {
-                return null;
-            }
-
-            var normalizedStation = _this.normalizeStationName(stationName);
-
-            for (var i = 0; i < brand.stationTypes.length; i++) {
-                var stationType = brand.stationTypes[i];
-                var normalizedPattern = _this.normalizeStationName(stationType.pattern);
-
-                if (normalizedStation === normalizedPattern) {
-                    return {
-                        pattern: stationType.pattern,
-                        cleanName: stationType.cleanName
-                    };
-                }
-            }
-
-            return null;
-        };
-
-        BrandManager.prototype.extractBrandFromStation = function (stationName) {
-            var _this = this;
-            var normalized = this.normalizeString(stationName);
-            var normalizedLower = (stationName || "").toLowerCase();
-
-            for (var brandKey in _this.brandConfig) {
-                var brand = _this.brandConfig[brandKey];
-                for (var i = 0; i < brand.keywords.length; i++) {
-                    var keyword = _this.normalizeString(brand.keywords[i]);
-                    var keywordLower = brand.keywords[i].toLowerCase();
-
-                    if (normalized.indexOf(keyword) >= 0 || normalizedLower.indexOf(keywordLower) >= 0) {
-                        return brandKey;
-                    }
+            for (var i = 0; i < _this.includePatterns.length; i++) {
+                if (sanitized === _this.includePatterns[i]) {
+                    return _this.includePatterns[i];
                 }
             }
             return null;
         };
 
-        BrandManager.prototype.cleanStationName = function (stationName, brandKey) {
+        BrandManager.prototype.extractBrandAndSubstation = function (stationName) {
+            var dashIndex = stationName.indexOf(' - ');
+            if (dashIndex === -1) {
+                return { brandName: stationName.trim(), substationName: "" };
+            }
+
+            return {
+                brandName: stationName.substring(0, dashIndex).trim(),
+                substationName: stationName.substring(dashIndex + 3).trim()
+            };
+        };
+
+        BrandManager.prototype.sanitizeBrandForLogo = function (brandName) {
+            return brandName
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '');
+        };
+
+        BrandManager.prototype.generateLogoUrl = function (brandName) {
             var _this = this;
-            if (!brandKey || !_this.brandConfig[brandKey]) {
-                return stationName;
-            }
-
-            var matchedStation = _this.matchStationPattern(stationName, brandKey);
-            if (matchedStation) {
-                return matchedStation.cleanName;
-            }
-
-            var cleaned = stationName;
-            var brand = _this.brandConfig[brandKey];
-
-            brand.keywords.forEach(function (keyword) {
-                var regex = new RegExp(keyword, 'gi');
-                cleaned = cleaned.replace(regex, '');
-            });
-
-            cleaned = cleaned.replace(/^[\s\-–—]+|[\s\-–—]+$/g, '');
-            cleaned = cleaned.replace(/\s+/g, ' ');
-
-            return cleaned.trim();
+            var sanitized = _this.sanitizeBrandForLogo(brandName);
+            var filename = sanitized + '.png';
+            return _this.logoBaseUrl + filename;
         };
 
         BrandManager.prototype.analyzeBrands = function (integrationItems) {
@@ -365,38 +122,36 @@ var IMSintegration;
 
                 if (!item.station) return;
 
-                var brandKey = _this.extractBrandFromStation(item.station);
-                if (!brandKey) return;
+                var sanitizedStation = _this.sanitizeStationName(item.station);
+                var matchedPattern = _this.matchesIncludePattern(sanitizedStation);
 
-                var matchedStation = _this.matchStationPattern(item.station, brandKey);
-                if (!matchedStation && _this.brandConfig[brandKey].stationTypes && _this.brandConfig[brandKey].stationTypes.length > 0) {
-                    return;
-                }
+                if (!matchedPattern) return;
+
+                var extracted = _this.extractBrandAndSubstation(matchedPattern);
+                var brandName = extracted.brandName;
+                var substationName = extracted.substationName;
+                var brandKey = _this.sanitizeBrandForLogo(brandName);
 
                 if (!brandMap[brandKey]) {
                     brandMap[brandKey] = {
                         brandKey: brandKey,
-                        displayName: _this.brandConfig[brandKey].displayName,
-                        logoFilename: _this.brandConfig[brandKey].logoFilename,
-                        logoUrl: _this.logoBaseUrl + _this.brandConfig[brandKey].logoFilename,
+                        displayName: brandName,
+                        logoUrl: _this.generateLogoUrl(brandName),
                         stations: {},
                         items: []
                     };
                 }
 
-                var cleanedStation = _this.cleanStationName(item.station, brandKey);
-                var stationKey = cleanedStation || item.station;
-
-                if (!brandMap[brandKey].stations[stationKey]) {
-                    brandMap[brandKey].stations[stationKey] = {
-                        originalName: item.station,
-                        cleanedName: cleanedStation,
+                if (!brandMap[brandKey].stations[substationName]) {
+                    brandMap[brandKey].stations[substationName] = {
+                        originalName: matchedPattern,
+                        cleanedName: substationName,
                         period: item.period,
                         items: []
                     };
                 }
 
-                brandMap[brandKey].stations[stationKey].items.push(item);
+                brandMap[brandKey].stations[substationName].items.push(item);
                 brandMap[brandKey].items.push(item);
             });
 
