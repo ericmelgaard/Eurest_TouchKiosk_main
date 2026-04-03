@@ -6,71 +6,227 @@ var IMSintegration;
         function BrandManager() {
             this.logoBaseUrl = "https://trm.wandcorp.com/cms_mediafiles/DIGITAL_ASSETS_NX01/297748/eurest_logos/";
 
-            this.includePatterns = [
-                "Bibimbap - BYO",
-                "Bibimbap - Express",
-                "Big City BBQ - Core + Sides",
-                "Bok Choy - BYO",
-                "Bok Choy - Express",
-                "Butcher & Baker - BYO omelet",
-                "Butcher & Baker - Daily features",
-                "Crave - BYO",
-                "Crave - Daily features",
-                "Create - BYO",
-                "Create - Sides",
-                "Crisp - BYO",
-                "Crisp - Sides",
-                "Earth Bowl - BYO",
-                "Earth Bowl - Express",
-                "El Mollete - BYO",
-                "El Mollete - Express",
-                "Fish Market - BYO",
-                "Fish Market - Daily features",
-                "Flame - BYO",
-                "Flame - Daily features",
-                "Graze - BYO",
-                "Graze - Daily features",
-                "Graze - Sides",
-                "Just Burgers - BYO",
-                "Just Burgers - Express",
-                "Kitchen Co - Daily features",
-                "Kitchen Co - Sides",
-                "Leaf & Ladle - BYO",
-                "Leaf & Ladle - Express",
-                "Mac Cheeseology - BYO",
-                "Mac Cheeseology - Express",
-                "Machu Peru - BYO",
-                "Machu Peru - Express",
-                "Made to Melt - A La Carte",
-                "Made to Melt - Express",
-                "Market Fresh - BYO",
-                "Market Fresh - Sides",
-                "Masala - BYO",
-                "Masala - Express",
-                "Meatball Inc - A La Carte",
-                "Meatball Inc - Express",
-                "Mezze - BYO",
-                "Mezze - Express",
-                "piccola italia pizza - daily features",
-                "piccola italia pizza - individual pizza",
-                "Piccola Italia - Entree + 1",
-                "Piccola Italia - Entree + 2",
-                "Pico Mesa - BYO",
-                "Pico Mesa - Express",
-                "Piri Piri - BYO",
-                "Piri Piri - Express",
-                "Revolution Noodle - BYO",
-                "Revolution Noodle - Express",
-                "Roost 1996 - By the slice",
-                "Roost 1996 - Individual pizza",
-                "Roots and Seeds - BYO",
-                "Roots and Seeds - Sides",
-                "Soul Kitchen - Daily features",
-                "Soul Kitchen - Sides",
-                "Soup - Daily features",
-                "Taco Cantina - A La Carte",
-                "Taco Cantina - Express"
-            ];
+            // Brand configuration mapping stations to unified brand names
+            this.brandConfig = {
+                "bibimbap": {
+                    displayName: "Bibimbap",
+                    stations: [
+                        "bibimbap - byo",
+                        "bibimbap - express"
+                    ]
+                },
+                "bigcitybbq": {
+                    displayName: "Big City BBQ",
+                    stations: [
+                        "big city bbq - core + sides"
+                    ]
+                },
+                "bokchoy": {
+                    displayName: "Bok Choy",
+                    stations: [
+                        "bok choy - byo",
+                        "bok choy - express"
+                    ]
+                },
+                "butcherbaker": {
+                    displayName: "Butcher & Baker",
+                    stations: [
+                        "butcher & baker - byo omelet",
+                        "butcher & baker - daily features"
+                    ]
+                },
+                "crave": {
+                    displayName: "Crave",
+                    stations: [
+                        "crave - byo",
+                        "crave - daily features"
+                    ]
+                },
+                "create": {
+                    displayName: "Create",
+                    stations: [
+                        "create - byo",
+                        "create - sides"
+                    ]
+                },
+                "crisp": {
+                    displayName: "Crisp",
+                    stations: [
+                        "crisp - byo",
+                        "crisp - sides"
+                    ]
+                },
+                "earthbowl": {
+                    displayName: "Earth Bowl",
+                    stations: [
+                        "earth bowl - byo",
+                        "earth bowl - express"
+                    ]
+                },
+                "elmollete": {
+                    displayName: "El Mollete",
+                    stations: [
+                        "el mollete - byo",
+                        "el mollete - express"
+                    ]
+                },
+                "fishmarket": {
+                    displayName: "Fish Market",
+                    stations: [
+                        "fish market - byo",
+                        "fish market - daily features"
+                    ]
+                },
+                "flame": {
+                    displayName: "Flame",
+                    stations: [
+                        "flame - byo",
+                        "flame - daily features"
+                    ]
+                },
+                "graze": {
+                    displayName: "Graze",
+                    stations: [
+                        "graze - byo",
+                        "graze - daily features",
+                        "graze - sides"
+                    ]
+                },
+                "justburgers": {
+                    displayName: "Just Burgers",
+                    stations: [
+                        "just burgers - byo",
+                        "just burgers - express"
+                    ]
+                },
+                "kitchenco": {
+                    displayName: "Kitchen Co",
+                    stations: [
+                        "kitchen co - daily features",
+                        "kitchen co - sides"
+                    ]
+                },
+                "leafladle": {
+                    displayName: "Leaf & Ladle",
+                    stations: [
+                        "leaf & ladle - byo",
+                        "leaf & ladle - express"
+                    ]
+                },
+                "maccheeseology": {
+                    displayName: "Mac Cheeseology",
+                    stations: [
+                        "mac cheeseology - byo",
+                        "mac cheeseology - express"
+                    ]
+                },
+                "machuperu": {
+                    displayName: "Machu Peru",
+                    stations: [
+                        "machu peru - byo",
+                        "machu peru - express"
+                    ]
+                },
+                "madetomelt": {
+                    displayName: "Made to Melt",
+                    stations: [
+                        "made to melt - express",
+                        "made to melt - a la carte"
+                    ]
+                },
+                "marketfresh": {
+                    displayName: "Market Fresh",
+                    stations: [
+                        "market fresh - byo",
+                        "market fresh - sides"
+                    ]
+                },
+                "masala": {
+                    displayName: "Masala",
+                    stations: [
+                        "masala - byo",
+                        "masala - express"
+                    ]
+                },
+                "meatballinc": {
+                    displayName: "Meatball Inc",
+                    stations: [
+                        "meatball inc - express",
+                        "meatball inc - a la carte"
+                    ]
+                },
+                "mezze": {
+                    displayName: "Mezze",
+                    stations: [
+                        "mezze - byo",
+                        "mezze - express"
+                    ]
+                },
+                "piccolaitalia": {
+                    displayName: "Piccola Italia",
+                    stations: [
+                        "piccola italia (pizza) - by the slice",
+                        "piccola italia (pizza) - individual pizza",
+                        "piccola italia (pasta) - entree + 1 side",
+                        "piccola italia (pasta) - entree + 2 sides"
+                    ]
+                },
+                "picomesa": {
+                    displayName: "Pico Mesa",
+                    stations: [
+                        "pico mesa - byo",
+                        "pico mesa - express"
+                    ]
+                },
+                "piripiri": {
+                    displayName: "Piri Piri",
+                    stations: [
+                        "piri piri - byo",
+                        "piri piri - express"
+                    ]
+                },
+                "revolutionnoodle": {
+                    displayName: "Revolution Noodle",
+                    stations: [
+                        "revolution noodle - byo",
+                        "revolution noodle - express"
+                    ]
+                },
+                "roost1996": {
+                    displayName: "Roost 1996",
+                    stations: [
+                        "roost 1996 - by the slice",
+                        "roost 1996 - individual pizza"
+                    ]
+                },
+                "rootsandseeds": {
+                    displayName: "Roots and Seeds",
+                    stations: [
+                        "roots and seeds - byo",
+                        "roots and seeds - sides"
+                    ]
+                },
+                "soulkitchen": {
+                    displayName: "Soul Kitchen",
+                    stations: [
+                        "soul kitchen - daily features",
+                        "soul kitchen - sides"
+                    ]
+                },
+                "soup": {
+                    displayName: "Soup",
+                    stations: [
+                        "soup - daily features"
+                    ]
+                },
+                "tacocantina": {
+                    displayName: "Taco Cantina",
+                    stations: [
+                        "taco cantina - express",
+                        "taco cantina - a la carte"
+                    ]
+                }
+            };
 
             this.brands = [];
             this.currentBrand = null;
@@ -83,11 +239,19 @@ var IMSintegration;
 
         BrandManager.prototype.matchesIncludePattern = function (stationName) {
             var _this = this;
-            var sanitized = _this.sanitizeStationName(stationName);
+            var sanitized = _this.sanitizeStationName(stationName).toLowerCase();
 
-            for (var i = 0; i < _this.includePatterns.length; i++) {
-                if (sanitized === _this.includePatterns[i]) {
-                    return _this.includePatterns[i];
+            // Search through all brand configs to find matching station
+            for (var brandKey in _this.brandConfig) {
+                var brand = _this.brandConfig[brandKey];
+                for (var i = 0; i < brand.stations.length; i++) {
+                    if (sanitized === brand.stations[i]) {
+                        return {
+                            matchedStation: brand.stations[i],
+                            brandKey: brandKey,
+                            displayName: brand.displayName
+                        };
+                    }
                 }
             }
             return null;
@@ -129,14 +293,17 @@ var IMSintegration;
                 if (!item.station) return;
 
                 var sanitizedStation = _this.sanitizeStationName(item.station);
-                var matchedPattern = _this.matchesIncludePattern(sanitizedStation);
+                var matchResult = _this.matchesIncludePattern(sanitizedStation);
 
-                if (!matchedPattern) return;
+                if (!matchResult) return;
 
-                var extracted = _this.extractBrandAndSubstation(matchedPattern);
-                var brandName = extracted.brandName;
+                var brandKey = matchResult.brandKey;
+                var brandName = matchResult.displayName;
+                var matchedStation = matchResult.matchedStation;
+
+                // Extract substation name from matched station pattern
+                var extracted = _this.extractBrandAndSubstation(matchedStation);
                 var substationName = extracted.substationName;
-                var brandKey = _this.sanitizeBrandForLogo(brandName);
 
                 if (!brandMap[brandKey]) {
                     brandMap[brandKey] = {
@@ -150,7 +317,7 @@ var IMSintegration;
 
                 if (!brandMap[brandKey].stations[substationName]) {
                     brandMap[brandKey].stations[substationName] = {
-                        originalName: matchedPattern,
+                        originalName: matchedStation,
                         cleanedName: substationName,
                         period: item.period,
                         items: []
