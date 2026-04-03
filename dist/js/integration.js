@@ -79,11 +79,11 @@ var IMSintegration;
             //          //***QA Environment***
             //          this.orderStatus = "orderstatus-qa.wanddigital.com";
             //          this.IMSwand = "https://api-qa.wanddigital.com";
-            // this.wand = "api-qa.wanddigital.com";
+            this.wand = "api-qa.wanddigital.com";
             //***Production Environment***
             this.orderStatus = "orderstatus-prod.wanddigital.com";
             this.IMSwand = "https://api.wanddigital.com";
-            this.wand = "api.wanddigital.com";
+            // this.wand = "api.wanddigital.com";
             this.init(isLeader, isUsingIndexedDB);
         }
         Integration.prototype.init = function (isLeader, isUsingIndexedDB) {
@@ -796,7 +796,7 @@ var IMSintegration;
             if (_this.API === "webtrition") {
                 var url = "https://" +
                     _this.wand +
-                    "/services/webtrition/client/wds" +
+                    "/services/webtrition/client/v3/wds" +
                     "?SapCode=" +
                     _this.brand +
                     "&Venue=" +
