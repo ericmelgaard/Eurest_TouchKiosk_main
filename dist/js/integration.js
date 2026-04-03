@@ -904,7 +904,7 @@ var IMSintegration;
             }
             if (_this.API === "webtrition") {
                 action = "update";
-                products = data.response.menuItems ? _this.formatWebtrition(data.response.menuItems) : {};
+                products = data.menuItems ? _this.formatWebtrition(data.menuItems) : {};
             }
             if (_this.API === "bonappetit") {
                 action = "update";
