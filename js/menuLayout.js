@@ -245,6 +245,24 @@ var IMSintegration;
                 _this.resetInactivityTimer();
             });
 
+            $('#card-connectwithus').on('click', function (e) {
+                e.stopPropagation();
+                _this.navigateToPage('connectwithus_page');
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-ambassador').on('click', function (e) {
+                e.stopPropagation();
+                _this.navigateToPage('ambassador_page');
+                _this.resetInactivityTimer();
+            });
+
+            $('#card-foodwithpurpose').on('click', function (e) {
+                e.stopPropagation();
+                _this.navigateToPage('foodwithpurpose_page');
+                _this.resetInactivityTimer();
+            });
+
             return true;
         };
         MenuLayout.prototype.handleProducts = function (IMSProducts) {

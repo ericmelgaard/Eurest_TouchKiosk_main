@@ -52,33 +52,51 @@
                     <div class="card-icon">
                         <img src="./media/icon_whatshappening.png" alt="What's Happening">
                     </div>
-                    <div class="card-label">What's Happening<br>in March</div>
+                    <div class="card-label">What's Happening<br>This Month</div>
                 </div>
                 <div class="feature-card" id="card-weeklymenu">
                     <div class="card-icon">
                         <img src="./media/icon_weeklymenu.png" alt="Weekly Menu">
                     </div>
-                    <div class="card-label">Weekly Menu</div>
+                    <div class="card-label">What's on the Menu</div>
                 </div>
-                <div class="feature-card" id="card-beverage">
+                <div class="feature-card" id="card-connectwithus">
                     <div class="card-icon">
-                        <img src="./media/icon_bev.png" alt="Beverage">
+                        <img src="./media/icon_connectwithus.png" alt="Connect with Us">
                     </div>
-                    <div class="card-label">Beverage Anyone?<br>Meet Our Vendors</div>
+                    <div class="card-label">Connect with Us</div>
                 </div>
                 <div class="feature-card" id="card-youpickit">
                     <div class="card-icon">
                         <img src="./media/icon_youpickit.png" alt="You Pick It">
                     </div>
-                    <div class="card-label">You Pick It,<br>We Serve It! Vote Now</div>
+                    <div class="card-label">Vote</div>
                 </div>
-                <div class="feature-card" id="card-fit">
+                <div class="feature-card" id="card-ambassador">
+                    <div class="card-icon">
+                        <img src="./media/icon_meetambasador.png" alt="Meet Your Ingredient Ambassadors">
+                    </div>
+                    <div class="card-label">Meet Your Ingredient<br>Ambassadors</div>
+                </div>
+                <div class="feature-card" id="card-foodwithpurpose">
+                    <div class="card-icon">
+                        <img src="./media/icon_fwp.png" alt="Food with Purpose">
+                    </div>
+                    <div class="card-label">Food with Purpose</div>
+                </div>
+                <div class="feature-card" id="card-beverage" style="display: none;">
+                    <div class="card-icon">
+                        <img src="./media/icon_bev.png" alt="Beverage">
+                    </div>
+                    <div class="card-label">Beverage Anyone?<br>Meet Our Vendors</div>
+                </div>
+                <div class="feature-card" id="card-fit" style="display: none;">
                     <div class="card-icon">
                         <img src="./media/icon_fit.png" alt="Fit">
                     </div>
                     <div class="card-label">New! Fit Just<br>Got Fitter</div>
                 </div>
-                <div class="feature-card" id="card-mezze">
+                <div class="feature-card" id="card-mezze" style="display: none;">
                     <div class="card-icon">
                         <img src="./media/icon_mezze.png" alt="Mezze">
                     </div>
@@ -113,7 +131,7 @@
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="happening-content-background" class="content-background"></div>
+            <div id="happening-content-background" class="content-background" style="background-image: url('./media/placeholder_happening.jpg');"></div>
             <div class="content-area">
                 <div class="static-page-container">
                     <div class="static-page-icon">
@@ -208,6 +226,69 @@
                     <p class="static-page-subtitle">Mediterranean flavors await</p>
                     <div class="static-page-message">
                         Experience the vibrant tastes of the Mediterranean with our mezze selection. Small plates and sharing options are coming your way soon.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connect with Us Page -->
+        <div id="connectwithus_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <img src="./media/homebutton.png" alt="Home">
+            </button>
+            <div id="connectwithus-content-background" class="content-background" style="background-image: url('./media/placeholder_connectwithus.jpg');"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="media/icon_connectwithus.png" alt="Connect with Us">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Connect with Us</h1>
+                    <p class="static-page-subtitle">Stay in touch</p>
+                    <div class="static-page-message">
+                        Join our community and stay connected. Get the latest updates, share feedback, and connect with us on social media. More ways to engage coming soon.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meet Your Ingredient Ambassadors Page -->
+        <div id="ambassador_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <img src="./media/homebutton.png" alt="Home">
+            </button>
+            <div id="ambassador-content-background" class="content-background" style="background-image: url('./media/placeholder_ambassador.jpg');"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="media/icon_meetambasador.png" alt="Meet Your Ingredient Ambassadors">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Meet Your Ingredient Ambassadors</h1>
+                    <p class="static-page-subtitle">Passionate about great food</p>
+                    <div class="static-page-message">
+                        Discover the faces behind your favorite dishes. Our ingredient ambassadors are excited to share their expertise and passion for quality ingredients with you.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food with Purpose Page -->
+        <div id="foodwithpurpose_page" class="page" style="display: none;">
+            <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
+                <img src="./media/homebutton.png" alt="Home">
+            </button>
+            <div id="foodwithpurpose-content-background" class="content-background" style="background-image: url('./media/placeholder_foodwithpurpose.jpg');"></div>
+            <div class="content-area">
+                <div class="static-page-container">
+                    <div class="static-page-icon">
+                        <img src="media/icon_fwp.png" alt="Food with Purpose">
+                    </div>
+                    <span class="static-page-badge">Coming Soon</span>
+                    <h1 class="static-page-title">Food with Purpose</h1>
+                    <p class="static-page-subtitle">Sustainable dining choices</p>
+                    <div class="static-page-message">
+                        Learn about our commitment to sustainability, local sourcing, and making a positive impact. Discover how we're working toward a better food future.
                     </div>
                 </div>
             </div>
