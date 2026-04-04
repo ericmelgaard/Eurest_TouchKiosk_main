@@ -77,13 +77,25 @@ body {
     text-align: center;
     margin-top: 0;
     margin-bottom: 0;
-  background-color: #242d37;
-  padding: 20px;
+    background-color: #242d37;
+    padding: 20px;
 }
 
 .welcome-header img {
 min-width: 900px;;
 }
+
+.cms-image {
+    object-fit: contain;
+    height: 1920px;
+    width: 1080px;
+}
+
+.cms-image img {
+    height: 1920px;
+    width: 1080px;
+}
+
 
 .cards-grid {
 display: flex;
@@ -560,6 +572,7 @@ display: flex;
 
 .feature-wrapper .header,
 .sides-wrapper .header {
+    font-family: "Montserrat-ExtraBold";
     font-size: 56px;
     font-weight: 600;
     color: #2c2c2c;
@@ -1074,11 +1087,6 @@ display: flex;
     right: 50px;
 }
 
-
-/* Remove page padding that was needed for app bar */
-.page {
-    padding-top: 40px;
-}
 
 #weekly_menu_page {
     padding-top: 40px;
