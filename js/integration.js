@@ -642,7 +642,7 @@ var IMSintegration;
         };
         Integration.prototype.getPagedWebtritionData = function (requestOptions) {
             var _this = this;
-            var pageSize = parseInt(_this.webtritionPageSize, 10) > 0 ? parseInt(_this.webtritionPageSize, 10) : 2000;
+            var pageSize = this.webtritionPageSize;
             var endpoint = requestOptions && requestOptions.url ? requestOptions.url : "";
             var baseBody = requestOptions && requestOptions.body ? requestOptions.body : {};
             function getPage(offset) {
