@@ -136,6 +136,13 @@ var shouldObserve = checkSiblings(); //exclude from leader election process if b
         return;
     }
 
+    var isDevMode = Boolean(window.development) || Boolean(window.isPreview) || Boolean(window.isCF);
+
+    if (isDevMode) {
+        console.info("Service workers disabled in development/preview/CF mode.");
+        return;
+    }
+
     window.addEventListener("load", function () {
         navigator.serviceWorker.register("./sw-images.js").then(function (registration) {
             console.info("Image service worker registered with scope:", registration.scope);
@@ -214,7 +221,7 @@ $(document).ready(function () {
     if (development && !client) {
         AssetConfiguration.leader = true;
         setupOptionsMenu();
-        console.log("initializing application with configuration", AssetConfiguration);
+        console.log("🚀 Initializing application with configuration", AssetConfiguration);
         leader = true;
         ready(true);
         return;
