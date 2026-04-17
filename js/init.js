@@ -94,7 +94,7 @@ var shouldObserve = checkSiblings(); //exclude from leader election process if b
         var isDevMode = Boolean(window.development) || Boolean(window.isPreview) || Boolean(window.isCF);
 
         if (isDevMode) {
-            console.info("Clarity disabled in development/preview/CF mode.");
+            console.info("🛑 Clarity disabled in development/preview/CF mode.");
             return;
         }
 
@@ -132,26 +132,26 @@ var shouldObserve = checkSiblings(); //exclude from leader election process if b
     }
 
     if (!("serviceWorker" in navigator)) {
-        console.warn("Service workers are not supported in this runtime.");
+        console.warn("🛑 Service workers are not supported in this runtime.");
         return;
     }
 
     var isDevMode = Boolean(window.development) || Boolean(window.isPreview) || Boolean(window.isCF);
 
     if (isDevMode) {
-        console.info("Service workers disabled in development/preview/CF mode.");
+        console.info("🛑 Service workers disabled in development/preview/CF mode.");
         return;
     }
 
     window.addEventListener("load", function () {
         navigator.serviceWorker.register("./sw-images.js").then(function (registration) {
-            console.info("Image service worker registered with scope:", registration.scope);
+            console.info("✅ Image service worker registered with scope:", registration.scope);
         }).catch(function (error) {
             if (!window.isSecureContext) {
-                console.warn("Image service worker blocked: this page is not in a secure context (HTTPS or localhost).", error);
+                console.warn("🛑 Image service worker blocked: this page is not in a secure context (HTTPS or localhost).", error);
                 return;
             }
-            console.warn("Image service worker registration failed:", error);
+            console.warn("🛑 Image service worker registration failed:", error);
         });
     });
 })();
