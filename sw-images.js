@@ -6,13 +6,6 @@ function isImageRequest(request) {
     return request.method === "GET" && request.destination === "image";
 }
 
-function updateImageCache(cache, request, response) {
-    if (response && (response.ok || response.type === "opaque")) {
-        cache.put(request, response.clone());
-    }
-    return response;
-}
-
 self.addEventListener("install", function (event) {
     event.waitUntil(self.skipWaiting());
 });
@@ -33,29 +26,28 @@ self.addEventListener("activate", function (event) {
     );
 });
 
-self.addEventListener("fetch", function (event) {
+//stale with refresh strategy for images - serve from cache immediately.
+//let browser handle the request and update the cache in the background for next time.
+//this most effient and quickly updates the cache without blocking the user with a network request.
+self.addEventListener("fetch", event => {
     const request = event.request;
 
-    if (!isImageRequest(request)) {
-        return;
-    }
+    if (!isImageRequest(request)) return;
 
     event.respondWith(
-        caches.open(IMAGE_CACHE_NAME).then(function (cache) {
-            return cache.match(request).then(function (cachedResponse) {
+        caches.open(IMAGE_CACHE_NAME).then(cache => {
+            return cache.match(request).then(cachedResponse => {
                 const networkFetch = fetch(request)
-                    .then(function (networkResponse) {
-                        return updateImageCache(cache, request, networkResponse);
+                    .then(networkResponse => {
+                        // Only cache valid responses
+                        if (networkResponse && networkResponse.ok) {
+                            cache.put(request, networkResponse.clone());
+                        }
+                        return networkResponse;
                     })
-                    .catch(function () {
-                        return cachedResponse;
-                    });
+                    .catch(() => cachedResponse);
 
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-
-                return networkFetch;
+                return cachedResponse || networkFetch;
             });
         })
     );

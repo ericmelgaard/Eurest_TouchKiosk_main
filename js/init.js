@@ -136,10 +136,10 @@ var shouldObserve = checkSiblings(); //exclude from leader election process if b
         return;
     }
 
-    var isDevMode = Boolean(window.development) || Boolean(window.isPreview) || Boolean(window.isCF);
+    var isDevMode = Boolean(window.isPreview) || Boolean(window.isCF);
 
     if (isDevMode) {
-        console.info("🛑 Service workers disabled in development/preview/CF mode.");
+        console.info("🛑 Service workers disabled in preview/CF mode.");
         return;
     }
 
