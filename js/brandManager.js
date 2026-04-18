@@ -808,7 +808,6 @@ var IMSintegration;
             container.empty();
 
             if (!_this.brands || _this.brands.length === 0) {
-                console.warn("No brands available to render");
                 return;
             }
 
@@ -1065,7 +1064,12 @@ var IMSintegration;
             _this.renderBrandCards('#weekly_menu_page .brand-list');
             _this.attachBrandHandlers(resetTimerCallback);
 
-            console.log("BrandManager initialized with", _this.brands.length, "brands");
+            if(_this.brands.length === 0) {
+                console.log("🛑 BrandManager initialized with", _this.brands.length, "brands");
+            } else {
+                console.log("✅ BrandManager initialized with", _this.brands.length, "brands");
+            }
+            return _this.brands.length;
         };
 
         BrandManager.itemWrapper = `

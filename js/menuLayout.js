@@ -42,10 +42,16 @@ var IMSintegration;
             }
             try {
                 var filteredIntegrationItems = validateItems(integrationItems, "", "", "");
-                brandManager.init(filteredIntegrationItems, null);
+                var brandCount = brandManager.init(filteredIntegrationItems, null);
+                if (brandCount === 0) {
+                    $('#card-weeklymenu').hide();
+                } else {
+                    $('#card-weeklymenu').show();
+                }
             } catch (e) {
                 console.error("Error in BrandManager init: ", e);
                 IMSintegration.Integration.prototype.showConnect(true, "Red", "brandManager", e, "error");
+                $('#card-weeklymenu').hide();
             }
 
             //optional starts

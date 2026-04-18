@@ -53,7 +53,7 @@ var Partner_API = "webtrition";
 var Brand = "71985";
 var Establishment = "72099";
 var apiKey = "";
-//yyyy-mm-dd ex.2026-02-23
+//yyyy-mm-dd ex.2026-04-20
 var dateToRequest = "";
 var devSiteKeys = ["6091", "4873", "4907", "5448", "4756", "6820"];
 //end development & preview values
@@ -221,7 +221,7 @@ $(document).ready(function () {
     if (development && !client) {
         AssetConfiguration.leader = true;
         setupOptionsMenu();
-        console.log("🚀 Initializing application with configuration", AssetConfiguration);
+        console.log("🚀 Initializing application with configuration 🚀", AssetConfiguration);
         leader = true;
         ready(true);
         return;
