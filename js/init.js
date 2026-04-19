@@ -221,7 +221,7 @@ $(document).ready(function () {
     if (development && !client) {
         AssetConfiguration.leader = true;
         setupOptionsMenu();
-        console.log("🚀 Initializing application with configuration 🚀", AssetConfiguration);
+        console.log("🚀 Initializing application with configuration 🚀", "", AssetConfiguration);
         leader = true;
         ready(true);
         return;
