@@ -345,6 +345,19 @@ function resetSync() {
     });
 }
 
+//clean up on exits or closes so new leader can be elected.
+//should I do something more in content forecaster..
+window.addEventListener('beforeunload', function (event) {
+    // Perform actions before the page unloads
+    if (platform === "webos") {
+        releaseVideos();
+    }
+    if (leader) {
+        self.localStorage.removeItem(heartbeatKey);
+    }
+});
+
+
 function clearAssetRuntimeCache() {
     var cachePrefix = "wand-asset-cache";
 
