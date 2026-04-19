@@ -357,6 +357,21 @@ window.addEventListener('beforeunload', function (event) {
     }
 });
 
+//04.16.2025 - detect date changes in content forecaster preview and clear heartbeat to trigger new leader election and data refresh on next load
+$(document).ready(function () {
+    if (isCF) {
+        const btn = self.top.document.querySelector('.preview-button');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                self.localStorage.removeItem(heartbeatKey);
+                console.log("⏳ Content Forecaster: Date/Time change detected.");
+            });
+        } else {
+            console.warn("⚠️ Content Forecaster: Preview button not found");
+        }
+    }
+});
+
 
 function clearAssetRuntimeCache() {
     var cachePrefix = "wand-asset-cache";
