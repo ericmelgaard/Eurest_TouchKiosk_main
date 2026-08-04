@@ -1,7 +1,7 @@
 "use strict";
 //***wandLib.js***
-//Date: 10.17.2025
-//Version: 60.7
+//Date: 06.22.2026
+//Version: 65.0
 
 $(document).ready(function () {
     let cursorIdleTimeout;
@@ -195,15 +195,9 @@ function animateObserver() {
                 if (mutation.type === "attributes" && mutation.attributeName === "trm-playing") {
                     if (trmPlaying.getAttribute("trm-playing") === "false") {
                         menuLayout.trmAnimate(false);
-                        if(isCF){
-                            $(document).hide();
-                        }
                     }
                     if (trmPlaying.getAttribute("trm-playing") === "true") {
                         menuLayout.trmAnimate(true);
-                        if(isCF){
-                            $(document).show();
-                        }
                     }
                 }
             });
@@ -234,7 +228,6 @@ function animateObserver() {
 var scale = 1; // Initial scale
 var isScaled = true;
 $(document).ready(function () {
-    // return;
     var outer = $("body");
     var wrapper = $("html");
     var maxWidth = $("body").width();
@@ -310,7 +303,7 @@ function rotateAsset(elm, deg) {
 //get Current Time
 function currentTime() {
     if (isCF) {
-        return CFTime.split("T")[0] + "T00:00:00";
+        return cfCurrentTime.split("T")[0] + "T00:00:00";
     } else {
         if (!development || dateToRequest === "") {
             var tzoffset = new Date().getTimezoneOffset() * 60000;
@@ -345,93 +338,67 @@ function resetSync() {
     });
 }
 
-//clean up on exits or closes so new leader can be elected.
-//should I do something more in content forecaster..
-window.addEventListener('beforeunload', function (event) {
-    // Perform actions before the page unloads
-    if (platform === "webos") {
-        releaseVideos();
-    }
-    if (leader) {
-        self.localStorage.removeItem(heartbeatKey);
-    }
-});
-
-//04.16.2025 - detect date changes in content forecaster preview and clear heartbeat to trigger new leader election and data refresh on next load
-$(document).ready(function () {
-    if (isCF) {
-        const btn = self.top.document.querySelector('.preview-button');
-        if (btn) {
-            btn.addEventListener('click', () => {
-                self.localStorage.removeItem(heartbeatKey);
-                console.log("⏳ Content Forecaster: Date/Time change detected.");
-            });
-        } else {
-            console.warn("⚠️ Content Forecaster: Preview button not found");
-        }
-    }
-});
-
-
-function clearAssetRuntimeCache() {
-    var cachePrefix = "wand-asset-cache";
-
-    if (typeof caches === "undefined") {
-        console.warn("Cache Storage API unavailable; skipping runtime cache clear.");
-        return Promise.resolve();
-    }
-
-    return caches.keys().then(function (keys) {
-        var deletions = keys.filter(function (key) {
-            return key.toLowerCase().indexOf(cachePrefix) > -1;
-        }).map(function (key) {
-            console.log("Deleting cache.. " + key);
-            return caches.delete(key);
-        });
-
-        if (deletions.length === 0) {
-            console.log("No matching runtime caches found to delete.");
-        }
-
-        return Promise.all(deletions).then(function (results) {
-            var deletedCount = results.filter(function (result) { return result === true; }).length;
-            console.log("Runtime cache deletion complete. Deleted " + deletedCount + " cache(s).");
-            return results;
-        });
-    }).catch(function (error) {
-        console.warn("Unable to clear Cache Storage:", error);
+function releaseVideos() {
+    $('video').each(function () {
+        $(this).attr('src', '');
+        $(this).find('source').attr('src', ''); //catch nested sources
+        this.load(); // Reload the video element to apply the changes
     });
 }
-
 document.refreshAsset = function () {
-    $("body").toggleClass("blink");
-
     if (leader) {
+        $("body").toggleClass("blink")
         integration.cached_start();
+        setTimeout(function () {
+            $("body").toggleClass("blink")
+        }, 1000)
+    } else {
+        $("body").toggleClass("blink")
+        setTimeout(function () {
+            $("body").toggleClass("blink")
+        }, 1000)
     }
-
-    setTimeout(function () {
-        $("body").toggleClass("blink");
-    }, 1000);
-
-    return "Simulate refreshAsset() event";
+    return "Simualte refreshAsset() event";
 };
 //future add to digital to clear remotely
 //switched to synthetic reload
 document.clearAssetStorage = function () {
-    var resetWork = leader
-        ? Promise.all([clearDatabases(), clearAssetRuntimeCache()])
-        : clearAssetRuntimeCache();
-
-    resetWork.then(function () {
-        integration.init(leader, isUsingIndexedDB);
-    }).catch(function (error) {
-        console.warn("Storage reset warning:", error);
-        integration.init(leader, isUsingIndexedDB);
+    //full display refresh: drop every cache except the client's own (WAND_APP), then reinit
+    clearAssetCaches().then(function () {
+        if (leader) {
+            return new Promise(function (resolve, reject) {
+                clearDatabases()
+                    .then(resolve)
+                    .catch(reject);
+            }).then(function () {
+                integration.init(leader, isUsingIndexedDB)
+            });
+        }
+        integration.init(leader, isUsingIndexedDB)
     });
-
     return "Simulate clearAssetStorage() event";
 };
+//clearAssetStorage is a whole-display refresh, so drop every cache on this
+//origin EXCEPT the client's own caches (identified by the "WAND_APP" marker).
+//Deleted caches are transparently refetched on the next request.
+function clearAssetCaches() {
+    if (typeof caches === "undefined") {
+        return Promise.resolve();
+    }
+    var CLIENT_CACHE_MARKER = "WAND_APP";
+    return caches.keys().then(function (keys) {
+        var deletions = keys.filter(function (key) {
+            //preserve client files; remove asset/other-app caches
+            return key.toUpperCase().indexOf(CLIENT_CACHE_MARKER) === -1;
+        }).map(function (key) {
+            console.log("Clearing cache: " + key);
+            return caches.delete(key);
+        });
+        return Promise.all(deletions);
+    }).catch(function (err) {
+        console.error("Error clearing asset caches:", err);
+    });
+}
 //function used by asset to clear storage and ignore TRM or client dependencies
 function clearDatabases() {
     console.log("Database maintenance start..");
@@ -522,6 +489,33 @@ function clearLocalStorage(resolve) {
     console.log("Local Storage maintenance complete");
     resolve();
 }
+//clean up on exits or closes so new leader can be elected.
+//should I do something more in content forecaster..
+window.addEventListener('beforeunload', function (event) {
+    // Perform actions before the page unloads
+    if (platform === "webos") {
+        releaseVideos();
+    }
+    if (leader) {
+        self.localStorage.removeItem(heartbeatKey);
+    }
+});
+
+//04.16.2025 - detect date changes in content forecaster preview and clear heartbeat to trigger new leader election and data refresh on next load
+$(document).ready(function () {
+    if (isCF) {
+        const btn = self.top.document.querySelector('.preview-button');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                self.localStorage.removeItem(heartbeatKey);
+                clientDB = null; // Clear clientDB to force fresh data fetch on next load
+                console.log("⏳ Content Forecaster: Date/Time change detected.");
+            });
+        } else {
+            console.warn("⚠️ Content Forecaster: Preview button not found");
+        }
+    }
+});
 
 function hideFallback() {
     $(".fallback-wrapper").hide();
@@ -768,10 +762,24 @@ var Rotate = /** @class */ (function () {
             this.items = $zone.children().toArray();
             $zone.attr("isRotating", "true");
             this.page = -1;
+            this.heightRemainderOffset = 0;
             this.items.forEach(function (eachItem) {
+                var adjustedTop = eachItem.offsetTop + (_this.zoneProperties.overflowingHeight ? _this.heightRemainderOffset : 0);
                 _this.pageCalc = _this.zoneProperties.overflowingHeight
-                    ? Math.floor((eachItem.offsetTop + (eachItem.offsetHeight >= _this.zoneProperties.height ? 0 : eachItem.offsetHeight)) / _this.zoneProperties.height)
+                    ? Math.floor((adjustedTop + (eachItem.offsetHeight >= _this.zoneProperties.height ? 0 : eachItem.offsetHeight)) / _this.zoneProperties.height)
                     : Math.floor((eachItem.offsetLeft + (eachItem.offsetWidth >= _this.zoneProperties.width ? 0 : eachItem.offsetWidth)) / _this.zoneProperties.width);
+
+                if (_this.zoneProperties.overflowingHeight && eachItem.offsetHeight > 0 && eachItem.offsetHeight < _this.zoneProperties.height) {
+                    var topWithinPage = adjustedTop % _this.zoneProperties.height;
+                    var visibleOnCurrentPage = _this.zoneProperties.height - topWithinPage;
+                    if (visibleOnCurrentPage > 0 && eachItem.offsetHeight > visibleOnCurrentPage) {
+                        var overflowOnNextPage = eachItem.offsetHeight - visibleOnCurrentPage;
+                        if (visibleOnCurrentPage > overflowOnNextPage) {
+                            _this.heightRemainderOffset += visibleOnCurrentPage;
+                        }
+                    }
+                }
+
                 if (_this.pageCalc > _this.page) {
                     _this.page = _this.pageCalc;
                     _this.groupProperties.push(createDiv());
@@ -794,7 +802,7 @@ var Rotate = /** @class */ (function () {
                         .css("left", "0px");
                     $(div).attr("target", true);
                     if (_this.page > 0) {
-                        $(div).css("opacity", "0");
+                        $(div).css("visibility", "hidden");
                         _this.hiddenDiv.push(div);
                     }
                     return div;
@@ -959,7 +967,7 @@ var Rotate = /** @class */ (function () {
         _this.zone = zone;
         $(menus).hide();
         $(menus[0]).show();
-        $(menus).css("opacity", "");
+        $(menus).css("visibility", "");
         if (length === 1) {
             return;
         }
@@ -1039,223 +1047,6 @@ if (!Array.prototype.includes) {
         return false;
     };
 }
-/**
- * textFit v2.3.1
- * Previously known as jQuery.textFit
- * 11/2014 by STRML (strml.github.com)
- * MIT License
- *
- * To use: textFit(document.getElementById('target-div'), options);
- *
- * Will make the *text* content inside a container scale to fit the container
- * The container is required to have a set width and height
- * Uses binary search to fit text with minimal layout calls.
- * Version 2.0 does not use jQuery.
- */
-/*global define:true, document:true, window:true, HTMLElement:true*/
-(function (root, factory) {
-    "use strict";
-    // UMD shim
-    if (typeof define === "function" && define.amd) {
-        // AMD
-        define([], factory);
-    } else if (typeof exports === "object") {
-        // Node/CommonJS
-        module.exports = factory();
-    } else {
-        // Browser
-        root.textFit = factory();
-    }
-}(typeof global === "object" ? global : this, function () {
-    "use strict";
-    var defaultSettings = {
-        alignVert: false, // if true, textFit will align vertically using css tables
-        alignHoriz: false, // if true, textFit will set text-align: center
-        multiLine: true, // if true, textFit will not set white-space: no-wrap
-        detectMultiLine: true, // disable to turn off automatic multi-line sensing
-        minFontSize: 28,
-        maxFontSize: 50,
-        reProcess: false, // if true, textFit will re-process already-fit nodes. Set to 'false' for better performance
-        widthOnly: true, // if true, textFit will fit text to element width, regardless of text height
-        alignVertWithFlexbox: true, // if true, textFit will use flexbox for vertical alignment
-    };
-    return function textFit(els, options) {
-        if (!options)
-            options = {};
-        // Extend options.
-        var settings = {};
-        for (var key in defaultSettings) {
-            if (options.hasOwnProperty(key)) {
-                settings[key] = options[key];
-            } else {
-                settings[key] = defaultSettings[key];
-            }
-        }
-        // Convert jQuery objects into arrays
-        if (typeof els.toArray === "function") {
-            els = els.toArray();
-        }
-        // Support passing a single el
-        var elType = Object.prototype.toString.call(els);
-        if (elType !== '[object Array]' && elType !== '[object NodeList]' &&
-            elType !== '[object HTMLCollection]') {
-            els = [els];
-        }
-        // Process each el we've passed.
-        for (var i = 0; i < els.length; i++) {
-            processItem(els[i], settings);
-        }
-    };
-    /**
-     * The meat. Given an el, make the text inside it fit its parent.
-     * @param  {DOMElement} el       Child el.
-     * @param  {Object} settings     Options for fit.
-     */
-    function processItem(el, settings) {
-        if (!isElement(el) || (!settings.reProcess && el.getAttribute('textFitted'))) {
-            return false;
-        }
-        // Set textFitted attribute so we know this was processed.
-        if (!settings.reProcess) {
-            el.setAttribute('textFitted', 1);
-        }
-        var innerSpan, originalHeight, originalHTML, originalWidth;
-        var low, mid, high;
-        // Get element data.
-        originalHTML = el.innerHTML;
-        originalWidth = innerWidth(el);
-        originalHeight = innerHeight(el);
-        // Don't process if we can't find box dimensions
-        if (!originalWidth || (!settings.widthOnly && !originalHeight)) {
-            if (!settings.widthOnly)
-                throw new Error('Set a static height and width on the target element ' + el.outerHTML +
-                    ' before using textFit!');
-            else
-                throw new Error('Set a static width on the target element ' + el.outerHTML +
-                    ' before using textFit!');
-        }
-        // Add textFitted span inside this container.
-        if (originalHTML.indexOf('textFitted') === -1) {
-            innerSpan = document.createElement('span');
-            innerSpan.className = 'textFitted';
-            // Inline block ensure it takes on the size of its contents, even if they are enclosed
-            // in other tags like <p>
-            innerSpan.style['display'] = 'inline-block';
-            innerSpan.innerHTML = originalHTML;
-            el.innerHTML = '';
-            el.appendChild(innerSpan);
-        } else {
-            // Reprocessing.
-            innerSpan = el.querySelector('span.textFitted');
-            // Remove vertical align if we're reprocessing.
-            if (hasClass(innerSpan, 'textFitAlignVert')) {
-                innerSpan.className = innerSpan.className.replace('textFitAlignVert', '');
-                innerSpan.style['height'] = '';
-                el.className.replace('textFitAlignVertFlex', '');
-            }
-        }
-        // Prepare & set alignment
-        if (settings.alignHoriz) {
-            el.style['text-align'] = 'center';
-            innerSpan.style['text-align'] = 'center';
-        }
-        // Check if this string is multiple lines
-        // Not guaranteed to always work if you use wonky line-heights
-        var multiLine = settings.multiLine;
-        if (settings.detectMultiLine && !multiLine &&
-            innerSpan.getBoundingClientRect().height >= parseInt(window.getComputedStyle(innerSpan)['font-size'], 10) * 2) {
-            multiLine = true;
-        }
-        // If we're not treating this as a multiline string, don't let it wrap.
-        if (!multiLine) {
-            el.style['white-space'] = 'nowrap';
-        }
-        low = settings.minFontSize;
-        high = settings.maxFontSize;
-        // Binary search for highest best fit
-        var size = low;
-        while (low <= high) {
-            mid = (high + low) >> 1;
-            innerSpan.style.fontSize = mid + 'px';
-            var innerSpanBoundingClientRect = innerSpan.getBoundingClientRect();
-            if (innerSpanBoundingClientRect.width <= originalWidth &&
-                (settings.widthOnly || innerSpanBoundingClientRect.height <= originalHeight)) {
-                size = mid;
-                low = mid + 1;
-            } else {
-                high = mid - 1;
-            }
-            // await injection point
-        }
-        // found, updating font if differs:
-        if (innerSpan.style.fontSize != size + 'px')
-            innerSpan.style.fontSize = size + 'px';
-        // Our height is finalized. If we are aligning vertically, set that up.
-        if (settings.alignVert) {
-            addStyleSheet();
-            var height = innerSpan.scrollHeight;
-            if (window.getComputedStyle(el)['position'] === "static") {
-                el.style['position'] = 'relative';
-            }
-            if (!hasClass(innerSpan, "textFitAlignVert")) {
-                innerSpan.className = innerSpan.className + " textFitAlignVert";
-            }
-            innerSpan.style['height'] = height + "px";
-            if (settings.alignVertWithFlexbox && !hasClass(el, "textFitAlignVertFlex")) {
-                el.className = el.className + " textFitAlignVertFlex";
-            }
-        }
-    }
-    // Calculate height without padding.
-    function innerHeight(el) {
-        var style = window.getComputedStyle(el, null);
-        return el.getBoundingClientRect().height -
-            parseInt(style.getPropertyValue('padding-top'), 10) -
-            parseInt(style.getPropertyValue('padding-bottom'), 10);
-    }
-    // Calculate width without padding.
-    function innerWidth(el) {
-        var style = window.getComputedStyle(el, null);
-        return el.getBoundingClientRect().width -
-            parseInt(style.getPropertyValue('padding-left'), 10) -
-            parseInt(style.getPropertyValue('padding-right'), 10);
-    }
-    //Returns true if it is a DOM element
-    function isElement(o) {
-        return (typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
-            o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName === "string");
-    }
-
-    function hasClass(element, cls) {
-        return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
-    }
-    // Better than a stylesheet dependency
-    function addStyleSheet() {
-        if (document.getElementById("textFitStyleSheet"))
-            return;
-        var style = [
-            ".textFitAlignVert{",
-            "position: absolute;",
-            "top: 0; right: 0; bottom: 0; left: 0;",
-            "margin: auto;",
-            "display: flex;",
-            "justify-content: center;",
-            "flex-direction: column;",
-            "}",
-            ".textFitAlignVertFlex{",
-            "display: flex;",
-            "}",
-            ".textFitAlignVertFlex .textFitAlignVert{",
-            "position: static;",
-            "}",
-        ].join("");
-        var css = document.createElement("style");
-        css.type = "text/css";
-        css.id = "textFitStyleSheet";
-        css.innerHTML = style;
-        document.body.appendChild(css);
-    }
-}));
 
 // MenuRotator: private scoped menu rotation logic
 var MenuRotator = (function () {
@@ -1340,3 +1131,1078 @@ var MenuRotator = (function () {
 })();
 
 var rotateMenus = MenuRotator.rotateMenus;
+
+//fullscren error template and function
+
+var FULLSCREENERROR = `
+<div class="full-screen-error-wrapper {{source}}">
+    <div class="full-screen-error">
+        <div class="error-text">
+            <div class="errorHeader">{{{issue}}}</div>
+            <div class="errorDescription">{{{detail}}}</div>
+            <div class="errorContact">
+                <img height="50" src="resources/phone-icon.png" alt="Phone Icon" />
+            </div>
+        </div>
+        <div class="error-QR">
+            <img height="175" src="resources/supportQR.png" alt="Support QR Code" />
+        </div>
+    </div>
+</div>
+`
+var showFullScreenError = function (toggle, issue, detail) {
+    //will be removing to global function
+    var obj = {
+        "issue": issue || null,
+        "detail": detail || null,
+    };
+    var issue = Mustache.to_html(FULLSCREENERROR, obj);
+    $(".loading-wrapper").remove();
+    //handle toggle
+    if (toggle === "replace") {
+        $(".full-screen-error-wrapper").replaceWith(issue);
+        return
+    }
+    if (!toggle) {
+        $(".full-screen-error-wrapper").remove();
+        return;
+    }
+    if (toggle) {
+        if (!$(".full-screen-error-wrapper").length) {
+            $("body").append(issue);
+            return;
+        }
+    }
+}
+
+//TRM Data Inteface
+//get TRM data with indexedDB, filter by options, and return promise with results
+
+async function readClientDB(options = {}) {
+  const DIG_DB_NAME = "Dig";
+  const now = new Date();
+  const nowEpoch = Math.floor(now.getTime() / 1000);
+  const daypartIdFilter = options.daypartId != null ? Number(options.daypartId) : null;
+  const storeKeyFilter = options.storeKey != null ? Number(options.storeKey) : null;
+  const storeIdFilter = options.storeId != null ? String(options.storeId) : null;
+  const zoneIdFilter = options.zoneId != null ? Number(options.zoneId) : null;
+  const assetZoneIdFilter = options.assetZoneId != null ? Number(options.assetZoneId) : null;
+  const assetIdFilter = options.assetId != null ? Number(options.assetId) : null;
+  const displayIdFilter = options.displayId != null ? Number(options.displayId) : null;
+  const deviceNumberFilter = options.deviceNumber != null ? Number(options.deviceNumber) : null;
+  const displayNumberFilter = options.displayNumber != null ? Number(options.displayNumber) : null;
+  const requestedPlatform = options.platform != null ? String(options.platform).toLowerCase() : "";
+  const explicitPlatformBasePath = options.platformBasePath != null ? String(options.platformBasePath) : "";
+
+  function deriveElectronPlatformBasePathFromLocation(loc) {
+    if (!loc || String(loc.protocol).toLowerCase() !== "file:") return "";
+
+    var pathname = decodeURIComponent(loc.pathname || "").replace(/\\/g, "/");
+    pathname = pathname.replace(/\/index\.html.*$/i, "/");
+
+    // Windows file URL pathnames are usually /C:/...
+    if (/^\/[A-Za-z]:\//.test(pathname)) {
+      pathname = pathname.substring(1);
+    }
+
+    pathname = pathname.replace(/\/+$/, "");
+    return "file:///" + pathname + "/content/";
+  }
+
+  const derivedElectronPlatformBasePath =
+    requestedPlatform === "electron" && !explicitPlatformBasePath && typeof location !== "undefined"
+      ? deriveElectronPlatformBasePathFromLocation(location)
+      : "";
+
+  function openDb(dbName) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(dbName);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error("Failed to open DB"));
+      req.onupgradeneeded = () => {
+        // We are not managing schema here.
+        // If this fires, DB may not exist yet in this context.
+      };
+    });
+  }
+
+  function getDisplayNumberFromLocation() {
+    if (typeof location === "undefined") return null;
+
+    try {
+      const parsed = new URL(String(location.href || ""));
+      const raw = parsed.searchParams.get("displayNumber");
+      if (raw == null || raw === "") return null;
+      const num = Number(raw);
+      return Number.isFinite(num) ? num : null;
+    } catch (err) {
+      var href = String((location && location.href) || "");
+      var match = href.match(/[?&]displayNumber=([^&#]+)/i);
+      if (!match) return null;
+      var fromHref = Number(match[1]);
+      return Number.isFinite(fromHref) ? fromHref : null;
+    }
+  }
+
+  function readStore(db, storeName) {
+    return new Promise((resolve, reject) => {
+      if (!db.objectStoreNames.contains(storeName)) {
+        resolve([]);
+        return;
+      }
+      const tx = db.transaction(storeName, "readonly");
+      const store = tx.objectStore(storeName);
+
+      const rows = [];
+      const req = store.openCursor();
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          rows.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(rows);
+        }
+      };
+      req.onerror = () => reject(req.error || new Error(`Failed reading ${storeName}`));
+    });
+  }
+
+  function toArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function isEffectiveNow(record, epoch) {
+    if (!record) return false;
+    const eff = Number(record.EffectiveEpoch || 0);
+    const term = Number(record.TerminateEpoch || 0);
+    if (eff > epoch) return false;
+    return term === 0 || term >= epoch;
+  }
+
+  function isTimeRangeActive(startSeconds, endSeconds, currentSeconds) {
+    if (startSeconds === endSeconds) return true;
+    if (endSeconds < startSeconds) return currentSeconds >= startSeconds || currentSeconds < endSeconds;
+    return currentSeconds >= startSeconds && currentSeconds < endSeconds;
+  }
+
+  function isDayAndTimeActiveNow(record, date) {
+    const dayFlags = [
+      !!record.Sunday, !!record.Monday, !!record.Tuesday, !!record.Wednesday,
+      !!record.Thursday, !!record.Friday, !!record.Saturday
+    ];
+    if (!dayFlags[date.getDay()]) return false;
+    const nowSeconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+    return isTimeRangeActive(Number(record.StartSeconds || 0), Number(record.EndSeconds || 0), nowSeconds);
+  }
+
+  function isLayerDaypartActiveNow(layer, dayparts, date, epoch) {
+    if (daypartIdFilter !== null && Number(layer.DaypartId) !== daypartIdFilter) {
+      return false;
+    }
+
+    const matches = dayparts.filter((dp) =>
+      dp.Active &&
+      dp.DaypartActive &&
+      dp.WeekScheduleActive &&
+      dp.DaypartId === layer.DaypartId &&
+      isEffectiveNow(dp, epoch)
+    );
+    return matches.some((dp) => isDayAndTimeActiveNow(dp, date));
+  }
+
+  function matchesStoreFilter() {
+    if (storeKeyFilter === null && !storeIdFilter) {
+      return true;
+    }
+
+    for (var i = 0; i < arguments.length; i++) {
+      var record = arguments[i];
+      if (!record) continue;
+
+      var recStoreKey = record.StoreKey != null ? Number(record.StoreKey) : null;
+      var recStoreId = record.StoreId != null ? String(record.StoreId) : null;
+
+      var storeKeyOk = storeKeyFilter === null || recStoreKey === storeKeyFilter;
+      var storeIdOk = !storeIdFilter || recStoreId === storeIdFilter;
+
+      if (storeKeyOk && storeIdOk && (recStoreKey !== null || recStoreId !== null)) {
+        return true;
+      }
+    }
+
+    // If a store filter was requested but store fields are missing in this DB version,
+    // keep records rather than hard-failing to maximize compatibility.
+    return true;
+  }
+
+  function buildImagePath(primaryFile) {
+    if (!primaryFile) return "";
+    const clientPath = String(primaryFile.ClientPath || "").replace(/^\/+/, "");
+    return clientPath + String(primaryFile.Filename || "");
+  }
+
+  function buildPlatformPath(asset) {
+    if (!asset) return "";
+
+    function normalizeBasePath(basePath) {
+      var normalized = String(basePath || "");
+      if (normalized === "") return "";
+      if (normalized.charAt(normalized.length - 1) !== "/") normalized += "/";
+      return normalized;
+    }
+
+    if (explicitPlatformBasePath) {
+      return normalizeBasePath(explicitPlatformBasePath) + String(asset.AssetId) + "/";
+    }
+
+    if (derivedElectronPlatformBasePath) {
+      return normalizeBasePath(derivedElectronPlatformBasePath) + String(asset.AssetId) + "/";
+    }
+
+    var shouldUseWebOsContentPath =
+      options.useWebOsContentPath === true
+      || requestedPlatform === "webos"
+      || requestedPlatform === "web_os"
+      || requestedPlatform === "lgwebos";
+
+    // Runtime hint for WebOS app container paths.
+    if (!shouldUseWebOsContentPath && typeof location !== "undefined") {
+      var href = String(location.href || "").toLowerCase();
+      if (href.indexOf("com.lg.app.signage") > -1) {
+        shouldUseWebOsContentPath = true;
+      }
+    }
+
+    if (shouldUseWebOsContentPath) {
+      return "./content/" + String(asset.AssetId) + "/";
+    }
+
+    if (asset.BaseUrl) {
+      return normalizeBasePath(asset.BaseUrl) + String(asset.AssetId) + "/";
+    }
+
+    // Safe fallback for local playback when BaseUrl is absent.
+    return "./content/" + String(asset.AssetId) + "/";
+  }
+
+  // Re-home an asset URL onto the origin that served the parent app. The CMS
+  // mints absolute URLs on the TRM/media host (e.g. trm-qa.wandcorp.com), which
+  // is a different origin than the client host serving this app
+  // (e.g. client-qa.wanddigital.com). Same-origin is required for embedded HTML
+  // assets (window.frameElement / direct DOM), so we rewrite the origin while
+  // keeping the path — the parent host proxies/redirects /cms_mediafiles/... .
+  function toParentOriginUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
+    if (typeof location === "undefined") return rawUrl;
+    // Only meaningful over http(s); leave file:// (Electron/WebOS) untouched.
+    if (location.protocol !== "http:" && location.protocol !== "https:") return rawUrl;
+    try {
+      var resolved = new URL(rawUrl, location.href);
+      // Relative URLs and already-matching origins need no change.
+      if (resolved.origin === location.origin) return rawUrl;
+      return location.origin + resolved.pathname + resolved.search + resolved.hash;
+    } catch (err) {
+      return rawUrl;
+    }
+  }
+
+  function toFileType(assetTypeName) {
+    switch (String(assetTypeName || "").toUpperCase()) {
+      case "JPEG":
+      case "JPG":
+      case "GIF":
+      case "PNG":
+        return "image";
+      case "MP4":
+      case "WEBM":
+      case "MKV":
+      case "OGG":
+        return "video";
+      case "HTML":
+      case "HTML5":
+      case "COMPONENT":
+      case "WEB APP":
+        return "html";
+      case "SWF":
+        return "swf";
+      default:
+        return "unknown";
+    }
+  }
+
+  function buildElementId(parts) {
+    parts = parts || {};
+
+    // gen=1 flags this id as generated by the data interface so embedded
+    // assets can be treated differently.
+    // Order and keys match the id string consumed by the player:
+    // Aid=..;Zid=..;AZid=..;type=..;DISid=..;DAYid=..;SId=..;SKey=..;gen=1
+    var withMeta = {
+      Aid: parts.Aid,
+      Zid: parts.Zid,
+      AZid: parts.AZid,
+      type: parts.type,
+      DISid: parts.DISid,
+      DAYid: parts.DAYid,
+      SId: parts.SId,
+      SKey: parts.SKey,
+      gen: 1
+    };
+
+    var order = ["Aid", "Zid", "AZid", "type", "DISid", "DAYid", "SId", "SKey", "gen"];
+    var pieces = [];
+    for (var i = 0; i < order.length; i++) {
+      var key = order[i];
+      var value = withMeta[key];
+      pieces.push(key + "=" + (value == null ? "" : String(value)));
+    }
+    return pieces.join(";");
+  }
+
+  function ext(name) {
+    if (!name || !String(name).includes(".")) return "";
+    return String(name).split(".").pop().toLowerCase();
+  }
+
+  function baseName(name) {
+    if (!name || !String(name).includes(".")) return String(name || "");
+    const n = String(name);
+    return n.slice(0, n.lastIndexOf("."));
+  }
+
+  function getScheduleUrl(sourceUrl) {
+    if (!sourceUrl) return null;
+
+    function isContentScheduleUrl(value) {
+      if (!value || typeof value !== "string") return false;
+      var cleaned = value.split("?")[0].split("#")[0];
+      return /displaycontentschedule\.json$/i.test(cleaned) || /contentschedule\.json$/i.test(cleaned);
+    }
+
+    if (isContentScheduleUrl(sourceUrl)) {
+      return sourceUrl;
+    }
+
+    try {
+      var parsed = new URL(sourceUrl, typeof location !== "undefined" ? location.href : undefined);
+      var found = null;
+      parsed.searchParams.forEach(function (paramValue) {
+        if (!found && isContentScheduleUrl(paramValue)) {
+          found = decodeURIComponent(paramValue);
+        }
+      });
+      if (found) return found;
+    } catch (err) {
+      // fallback below
+    }
+
+    var allParams = String(sourceUrl).match(/[?&][^=]+=([^&]+)/gi) || [];
+    for (var i = 0; i < allParams.length; i++) {
+      var entry = allParams[i];
+      var eq = entry.indexOf("=");
+      if (eq === -1) continue;
+      var candidate = entry.slice(eq + 1);
+      try {
+        candidate = decodeURIComponent(candidate);
+      } catch (decodeErr) {
+        // keep candidate as-is
+      }
+      if (isContentScheduleUrl(candidate)) return candidate;
+    }
+
+    return null;
+  }
+
+  function getFrameSource(frameElement) {
+    function readSrc(element) {
+      if (!element) return "";
+      if (element.getAttribute && element.getAttribute("src")) {
+        return element.getAttribute("src");
+      }
+      if (element.src) {
+        return element.src;
+      }
+      return "";
+    }
+
+    try {
+      var currentWindow = typeof window !== "undefined" ? window : null;
+      var lastSrc = "";
+
+      while (currentWindow && currentWindow.frameElement) {
+        var currentFrame = currentWindow.frameElement;
+        var directFrameSrc = readSrc(currentFrame);
+        if (directFrameSrc) {
+          lastSrc = directFrameSrc;
+        }
+
+        if (currentFrame.parentElement) {
+          var parentSrc = readSrc(currentFrame.parentElement);
+          if (parentSrc) {
+            lastSrc = parentSrc;
+          }
+        }
+
+        if (currentWindow.parent === currentWindow) {
+          break;
+        }
+
+        currentWindow = currentWindow.parent;
+      }
+
+      if (lastSrc) {
+        return lastSrc;
+      }
+
+      var frame = frameElement || (typeof window !== "undefined" ? window.frameElement : null);
+      var parent = frame && frame.parentElement ? frame.parentElement : null;
+
+      if (parent) {
+        var fromParent = readSrc(parent);
+        if (fromParent) {
+          return fromParent;
+        }
+      }
+      if (frame) {
+        var fromFrame = readSrc(frame);
+        if (fromFrame) {
+          return fromFrame;
+        }
+      }
+    } catch (err) {
+      // ignore and return empty
+    }
+
+    return "";
+  }
+
+  function getPricingUrl(scheduleUrl) {
+    if (!scheduleUrl || typeof scheduleUrl !== "string") return null;
+    var clean = scheduleUrl.split("?")[0].split("#")[0];
+    if (!/displaycontentschedule\.json$/i.test(clean)) return null;
+    return scheduleUrl.replace(/displaycontentschedule\.json/ig, "Pricing.json");
+  }
+
+  function toSeconds(value) {
+    if (!value) return 0;
+    if (typeof value === "string") {
+      var parts = value.split(":");
+      return (Number(parts[0] || 0) * 3600) + (Number(parts[1] || 0) * 60) + Number(parts[2] || 0);
+    }
+    if (typeof value === "object") {
+      return (Number(value.hours || 0) * 3600) + (Number(value.minutes || 0) * 60) + Number(value.seconds || 0);
+    }
+    return 0;
+  }
+
+  function isCfAssetDayAndTimeActive(asset, date) {
+    if (!asset || !asset.Engage || asset.Deploy === false) return false;
+    var dayKeys = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var dayKey = dayKeys[date.getDay()];
+    if (asset[dayKey] !== true) return false;
+    var nowSeconds = (date.getHours() * 3600) + (date.getMinutes() * 60) + date.getSeconds();
+    return isTimeRangeActive(toSeconds(asset.StartTime), toSeconds(asset.EndTime), nowSeconds);
+  }
+
+  function normalizePricingText(value) {
+    if (value == null) return "";
+
+    if (Array.isArray(value)) {
+      var parts = [];
+      for (var i = 0; i < value.length; i++) {
+        var normalizedPart = normalizePricingText(value[i]);
+        if (normalizedPart) parts.push(normalizedPart);
+      }
+      return parts.join(" | ");
+    }
+
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value);
+      } catch (err) {
+        return String(value);
+      }
+    }
+
+    return String(value)
+      .replace(/↵/g, " ")
+      .replace(/\r\n|\r|\n/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function extractMenuItemsFromPricing(pricingData) {
+    var customItems = pricingData && Array.isArray(pricingData.CustomItems) ? pricingData.CustomItems : [];
+    var pricingMenuItems = pricingData && Array.isArray(pricingData.MenuItems) ? pricingData.MenuItems : [];
+    var all = customItems.concat(pricingMenuItems);
+
+    return all.map(function (item) {
+      var normalized = Object.assign({}, item);
+      var textValue = normalizePricingText(normalized.TextValue || normalized.Value);
+      var priceValue = normalizePricingText(normalized.Price);
+      var resolvedValue = textValue || priceValue || "";
+
+      if (!Object.prototype.hasOwnProperty.call(normalized, "Value") || normalized.Value == null || String(normalized.Value).trim() === "") {
+        normalized.Value = resolvedValue;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(normalized, "TextValue")) {
+        normalized.TextValue = normalizePricingText(normalized.TextValue);
+      }
+      if (Object.prototype.hasOwnProperty.call(normalized, "Value")) {
+        normalized.Value = normalizePricingText(normalized.Value);
+      }
+      if (Object.prototype.hasOwnProperty.call(normalized, "Price")) {
+        normalized.Price = normalizePricingText(normalized.Price);
+      }
+
+      if (Object.prototype.hasOwnProperty.call(normalized, "value")) {
+        delete normalized.value;
+      }
+
+      return normalized;
+    });
+  }
+
+  function extractAssetDetailFromSchedule(scheduleData, scheduleUrl) {
+    var rows = [];
+    var displayGroups = scheduleData && Array.isArray(scheduleData.DisplayGroups) ? scheduleData.DisplayGroups : [];
+    var basePath = "";
+    if (scheduleUrl && typeof scheduleUrl === "string") {
+      var idx = scheduleUrl.lastIndexOf("/");
+      basePath = idx > -1 ? scheduleUrl.slice(0, idx + 1) : "";
+    }
+
+    displayGroups.forEach(function (group) {
+      var deployments = group && Array.isArray(group.Deployments) ? group.Deployments : [];
+      deployments.forEach(function (deployment) {
+        var dayparts = deployment && Array.isArray(deployment.Dayparts) ? deployment.Dayparts : [];
+        dayparts.forEach(function (daypart) {
+          if (daypartIdFilter !== null && Number(daypart.ID || daypart.DaypartID || 0) !== daypartIdFilter) {
+            return;
+          }
+
+          var layersInDaypart = daypart && Array.isArray(daypart.Layers) ? daypart.Layers : [];
+          layersInDaypart.forEach(function (layer) {
+            var layerRegions = layer && Array.isArray(layer.Regions) ? layer.Regions : [];
+            layerRegions.forEach(function (region) {
+              var cfZones = region && Array.isArray(region.Zones) ? region.Zones : [];
+              cfZones.forEach(function (zone) {
+                if (zoneIdFilter !== null && Number(zone.ID || zone.ZoneId || 0) !== zoneIdFilter) {
+                  return;
+                }
+
+                var cfAssets = zone && Array.isArray(zone.Assets) ? zone.Assets : [];
+                cfAssets.forEach(function (asset) {
+                  if (assetZoneIdFilter !== null && Number(asset.AssetZoneId || 0) !== assetZoneIdFilter) {
+                    return;
+                  }
+
+                  if (assetIdFilter !== null && Number(asset.ID || asset.AssetId || 0) !== assetIdFilter) {
+                    return;
+                  }
+
+                  if (!isCfAssetDayAndTimeActive(asset, now)) {
+                    return;
+                  }
+
+                  var rawFile = String(asset.AssetFile || "");
+                  var assetIdString = String(asset.ID || asset.AssetId || "");
+                  var normalizedFile = String(rawFile).replace(/^\/+/, "");
+                  try {
+                    normalizedFile = decodeURIComponent(normalizedFile);
+                  } catch (decodeErr) {
+                    // Keep original when malformed escape sequences are present.
+                  }
+                  normalizedFile = normalizedFile.replace(/\/{2,}/g, "/");
+                  var fileNameOnly = normalizedFile.indexOf("/") > -1
+                    ? normalizedFile.split("/").pop()
+                    : normalizedFile;
+
+                  var imagePath = normalizedFile.indexOf("/") > -1
+                    ? normalizedFile
+                    : (assetIdString + "/" + normalizedFile).replace(/^\/+/, "");
+
+                  var platformPath = basePath;
+                  if (/\/cms_mediafiles\/preview\//i.test(basePath) && assetIdString !== "") {
+                    platformPath = basePath.replace(/\/cms_mediafiles\/preview\/[^\/]+\/[^\/]+\//i, "/cms_mediafiles/DIGITAL_ASSETS_NX01/") + assetIdString + "/";
+                    // Keep nested asset paths (e.g., HTML app folders) in CF preview mode.
+                    imagePath = normalizedFile.indexOf("/") > -1 ? normalizedFile : fileNameOnly;
+                  }
+                  var fullPath = toParentOriginUrl(platformPath + imagePath);
+                  var cfFileType = toFileType(asset.AssetType);
+                  var cfElementId = buildElementId({
+                    Aid: asset.ID || asset.AssetId,
+                    Zid: zone.ID || asset.ZoneId,
+                    AZid: asset.AssetZoneId,
+                    type: cfFileType,
+                    DISid: displayIdFilter,
+                    DAYid: daypart.ID || daypart.DaypartID || daypartIdFilter,
+                    SId: storeIdFilter,
+                    SKey: storeKeyFilter
+                  });
+
+                  rows.push({
+                    assetId: String(asset.ID || ""),
+                    assetName: String(asset.Name || ""),
+                    azId: String(asset.AssetZoneId || ""),
+                    duration: Number(asset.DurationSeconds || 0),
+                    elementId: cfElementId,
+                    fileExtension: ext(rawFile),
+                    fileName: baseName(rawFile),
+                    fileType: cfFileType,
+                    fullPath: fullPath,
+                    imageLayer: String(layer.ID || ""),
+                    layerZOrder: Number(layer.ZOrder || 0),
+                    imagePath: imagePath,
+                    platformPath: platformPath,
+                    sequence: String(asset.SequenceNumber || 0),
+                    zoneId: String(zone.ID || asset.ZoneId || ""),
+                    zoneName: String(zone.Name || ""),
+                    regionName: String(region.Name || ""),
+                    isDayAndTimeActive: true,
+                    isCurrentDaypartActive: true,
+                    isCampaignActive: true,
+                    isCurrentDaypartAndCampaignActive: true
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    return rows;
+  }
+
+  async function fetchJson(url) {
+    if (!url) throw new Error("Missing URL to fetch JSON.");
+    var response = await fetch(url, { method: "GET", credentials: "same-origin" });
+    if (!response.ok) {
+      throw new Error("Request failed with status " + response.status + " for " + url);
+    }
+    return response.json();
+  }
+
+  function toUnifiedResponse(payload) {
+    var safePayload = payload || {};
+    return {
+      source: safePayload.source || "unknown",
+      assetDetail: Array.isArray(safePayload.assetDetail) ? safePayload.assetDetail : [],
+      menuItems: Array.isArray(safePayload.menuItems) ? safePayload.menuItems : [],
+      scheduleUrl: safePayload.scheduleUrl || null,
+      pricingUrl: safePayload.pricingUrl || null
+    };
+  }
+
+  async function loadFromCfPath() {
+    var sourceUrl = options.scheduleUrl || options.cfScheduleUrl || null;
+    if (!sourceUrl) {
+      sourceUrl = options.sourceUrl || options.frameUrl || options.frameSrc || "";
+    }
+    if (!sourceUrl) {
+      sourceUrl = getFrameSource(typeof window !== "undefined" ? window.frameElement : null);
+    }
+
+    var resolvedScheduleUrl = getScheduleUrl(sourceUrl);
+    if (!resolvedScheduleUrl && sourceUrl && /contentschedule\.json/i.test(sourceUrl)) {
+      resolvedScheduleUrl = sourceUrl;
+    }
+
+    if (!resolvedScheduleUrl) {
+      throw new Error("CF path requires options.scheduleUrl (or sourceUrl/frameUrl containing DisplayContentSchedule.json).");
+    }
+
+    var scheduleData = await fetchJson(resolvedScheduleUrl);
+    var resolvedPricingUrl = options.pricingUrl || getPricingUrl(resolvedScheduleUrl);
+
+    var pricingData = null;
+    if (resolvedPricingUrl) {
+      try {
+        pricingData = await fetchJson(resolvedPricingUrl);
+      } catch (err) {
+        pricingData = null;
+      }
+    }
+
+    return toUnifiedResponse({
+      source: "cf",
+      assetDetail: extractAssetDetailFromSchedule(scheduleData, resolvedScheduleUrl),
+      menuItems: extractMenuItemsFromPricing(pricingData),
+      scheduleUrl: resolvedScheduleUrl,
+      pricingUrl: resolvedPricingUrl
+    });
+  }
+
+  var forceCf =
+    requestedPlatform === "cf"
+    || options.source === "cf"
+    || options.path === "cf"
+    || options.mode === "cf"
+    || options.dataSource === "cf";
+  var hasCfUrl = !!(options.scheduleUrl || options.cfScheduleUrl || options.sourceUrl || options.frameUrl || options.frameSrc);
+  if (forceCf || hasCfUrl) {
+    return loadFromCfPath();
+  }
+
+  const db = await openDb(DIG_DB_NAME);
+  try {
+    const [
+      displayDeployments,
+      displaySchedules,
+      campaigns,
+      layers,
+      dayparts,
+      zones,
+      regions,
+      assetZones,
+      deploymentAssetZones,
+      assets,
+      assetFiles,
+      menuItems,
+      menuItemDetails,
+      displays,
+      devices,
+      kvstorage
+    ] = await Promise.all([
+      readStore(db, "displayDeployments"),
+      readStore(db, "displaySchedules"),
+      readStore(db, "campaigns"),
+      readStore(db, "layers"),
+      readStore(db, "dayparts"),
+      readStore(db, "zones"),
+      readStore(db, "regions"),
+      readStore(db, "assetZones"),
+      readStore(db, "deploymentAssetZones"),
+      readStore(db, "assets"),
+      readStore(db, "assetFiles"),
+      readStore(db, "menuItems"),
+      readStore(db, "menuItemDetails"),
+      readStore(db, "displays"),
+      readStore(db, "devices"),
+      readStore(db, "kvstorage")
+    ]);
+
+    let resolvedDisplayId = displayIdFilter;
+    const inferredDisplayNumberRaw =
+      displayNumberFilter !== null
+        ? displayNumberFilter
+        : getDisplayNumberFromLocation();
+    const inferredDisplayNumber = inferredDisplayNumberRaw !== null
+      ? inferredDisplayNumberRaw
+      : 1;
+
+    const displayDataEntry = kvstorage.find((row) =>
+      row && String(row.key || "").toLowerCase() === "displaydata"
+    );
+    const cachedDisplayData = Array.isArray(displayDataEntry && displayDataEntry.value)
+      ? displayDataEntry.value
+      : [];
+
+    // Match client behavior: resolve current display by displayNumber whenever possible.
+    if (resolvedDisplayId === null) {
+      const matchedDisplay = displays.find((d) =>
+        d.Active && Number(d.DisplayNumber) === Number(inferredDisplayNumber)
+      );
+      if (matchedDisplay) {
+        resolvedDisplayId = Number(matchedDisplay.DisplayId);
+      }
+    }
+
+    if (resolvedDisplayId === null) {
+      const cachedDisplay = cachedDisplayData.find((d) =>
+        d && Number(d.DisplayNumber) === Number(inferredDisplayNumber)
+      );
+      if (cachedDisplay && cachedDisplay.DisplayId != null) {
+        resolvedDisplayId = Number(cachedDisplay.DisplayId);
+      }
+    }
+
+    if (resolvedDisplayId === null) {
+      if (deviceNumberFilter === null) {
+        throw new Error("Unable to resolve display. Provide displayId/deviceNumber or run from a URL with ?displayNumber=");
+      }
+      const device = devices.find((d) => d.Active && Number(d.DeviceNumber) === deviceNumberFilter);
+      if (!device) throw new Error(`No active device for deviceNumber ${deviceNumberFilter}`);
+      const display = displays.find((d) =>
+        d.Active
+        && d.DeviceId === device.DeviceId
+        && (inferredDisplayNumber === null || Number(d.DisplayNumber) === Number(inferredDisplayNumber))
+      ) || displays.find((d) => d.Active && d.DeviceId === device.DeviceId);
+      if (!display) throw new Error(`No active display for deviceId ${device.DeviceId}`);
+      resolvedDisplayId = Number(display.DisplayId);
+    }
+
+    const activeDeployments = displayDeployments.filter((dd) =>
+      dd.Active && Number(dd.DisplayId) === resolvedDisplayId && isEffectiveNow(dd, nowEpoch)
+    );
+
+    const activeDeploymentIds = activeDeployments.map((d) => d.DisplayDeploymentId);
+    const activeScheduleIds = activeDeployments.map((d) => d.DisplayScheduleId);
+
+    const activeSchedules = displaySchedules.filter((ds) =>
+      ds.Active && activeScheduleIds.includes(ds.DisplayScheduleId) && isEffectiveNow(ds, nowEpoch)
+    );
+
+    const activeCampaignIds = activeSchedules.map((ds) => ds.CampaignId);
+    const activeCampaigns = campaigns.filter((c) => c.Active && activeCampaignIds.includes(c.CampaignId));
+
+    const activeLayers = layers.filter((l) =>
+      (daypartIdFilter === null || Number(l.DaypartId) === daypartIdFilter) &&
+      l.Active && activeCampaigns.some((c) => c.CampaignId === l.CampaignId)
+    );
+
+    const activeZones = zones.filter((z) =>
+      (zoneIdFilter === null || Number(z.ZoneId) === zoneIdFilter) &&
+      z.Active && isEffectiveNow(z, nowEpoch) && activeLayers.some((l) => l.LayerId === z.LayerId)
+    );
+
+    const zoneIds = new Set(activeZones.map((z) => z.ZoneId));
+    const baseAZs = assetZones.filter((az) =>
+      az.Active
+      && zoneIds.has(az.ZoneId)
+      && (assetZoneIdFilter === null || Number(az.AssetZoneId) === assetZoneIdFilter)
+      && (assetIdFilter === null || Number(az.AssetId) === assetIdFilter)
+    );
+
+    const effectiveOverrides = deploymentAssetZones.filter((daz) =>
+      daz.Active &&
+      isEffectiveNow(daz, nowEpoch) &&
+      activeDeploymentIds.includes(daz.DisplayDeploymentId) &&
+      baseAZs.some((az) => az.AssetZoneId === daz.AssetZoneId)
+    );
+
+    const result = [];
+    for (const az of baseAZs) {
+      const override = effectiveOverrides.find((o) => o.AssetZoneId === az.AssetZoneId);
+      const effectiveAZ = override || az;
+      if (!(isEffectiveNow(az, nowEpoch) || !!override)) continue;
+      if (!effectiveAZ.ShouldEngage) continue;
+      if (!isDayAndTimeActiveNow(effectiveAZ, now)) continue;
+
+      const zone = activeZones.find((z) => z.ZoneId === az.ZoneId);
+      if (!zone) continue;
+
+      const layer = activeLayers.find((l) => l.LayerId === zone.LayerId);
+      if (!layer) continue;
+
+      const campaign = activeCampaigns.find((c) => c.CampaignId === layer.CampaignId);
+      if (!campaign) continue;
+
+      const isCurrentDaypartActive = isLayerDaypartActiveNow(layer, dayparts, now, nowEpoch);
+      if (!isCurrentDaypartActive) continue;
+
+      const region = regions.find((r) => r.Active && r.RegionId === zone.RegionId);
+      const asset = assets.find((a) => a.Active && a.AssetId === az.AssetId);
+      if (!asset) continue;
+
+      if (!matchesStoreFilter(effectiveAZ, zone, layer, region, asset)) continue;
+
+      const primary = assetFiles.find((af) => af.Active && af.AssetId === asset.AssetId && af.IsPrimaryFile) ||
+                      assetFiles.find((af) => af.Active && af.AssetId === asset.AssetId);
+
+      const imagePath = buildImagePath(primary);
+      const platformPath = buildPlatformPath(asset);
+      const fullPath = toParentOriginUrl(platformPath + imagePath);
+      const fileType = toFileType(asset.AssetTypeName);
+      const elementId = buildElementId({
+        Aid: asset.AssetId,
+        Zid: zone.ZoneId,
+        AZid: az.AssetZoneId,
+        type: fileType,
+        DISid: resolvedDisplayId,
+        DAYid: layer.DaypartId,
+        SId: storeIdFilter,
+        SKey: storeKeyFilter
+      });
+
+      result.push({
+        assetId: String(asset.AssetId),
+        assetName: asset.AssetName || "",
+        azId: String(az.AssetZoneId),
+        duration: Number(effectiveAZ.Duration || 0),
+        elementId,
+        fileExtension: ext(primary && primary.Filename),
+        fileName: baseName(primary && primary.Filename),
+        fileType,
+        fullPath,
+        imageLayer: String(layer.LayerId),
+        layerZOrder: Number(layer.ZOrder || 0),
+        imagePath,
+        platformPath,
+        sequence: String(effectiveAZ.Sequence ?? ""),
+        zoneId: String(zone.ZoneId),
+        zoneName: zone.ZoneName || "",
+        regionName: (region && region.RegionName) || "",
+        isDayAndTimeActive: true,
+        isCurrentDaypartActive: true,
+        isCampaignActive: true,
+        isCurrentDaypartAndCampaignActive: true
+      });
+    }
+
+    var menuItem = toArray(menuItems).filter(function (item) {
+      if (!item || !item.Active) return false;
+
+      if (storeIdFilter && item.StoreId && String(item.StoreId) !== storeIdFilter) {
+        return false;
+      }
+
+      return true;
+    });
+
+    var menuItemDetail = toArray(menuItemDetails).filter(function (item) {
+      if (!item || !item.Active) return false;
+      if (!isEffectiveNow(item, nowEpoch)) return false;
+
+      if (storeIdFilter && item.StoreId && String(item.StoreId) !== storeIdFilter) {
+        return false;
+      }
+
+      return true;
+    });
+
+    var menuById = {};
+    menuItem.forEach(function (mi) {
+      menuById[String(mi.MenuItemId)] = {
+        menuItem: mi,
+        details: []
+      };
+    });
+
+    menuItemDetail.forEach(function (mid) {
+      var key = String(mid.MenuItemId);
+      if (!menuById[key]) {
+        menuById[key] = {
+          menuItem: null,
+          details: []
+        };
+      }
+      menuById[key].details.push(mid);
+    });
+
+    function normalizeMenuText(value) {
+      if (value == null) return "";
+
+      if (Array.isArray(value)) {
+        var arrParts = [];
+        for (var i = 0; i < value.length; i++) {
+          var normalizedPart = normalizeMenuText(value[i]);
+          if (normalizedPart) arrParts.push(normalizedPart);
+        }
+        return arrParts.join(" | ");
+      }
+
+      if (typeof value === "object") {
+        var jsonText = "";
+        try {
+          jsonText = JSON.stringify(value);
+        } catch (err) {
+          jsonText = String(value);
+        }
+        return jsonText;
+      }
+
+      var text = String(value);
+
+      // Convert visible line-break glyph and real line breaks to spaces.
+      text = text.replace(/↵/g, " ")
+                 .replace(/\r\n|\r|\n/g, " ")
+                 .replace(/\s+/g, " ")
+                 .trim();
+
+      // If text is serialized JSON (array/object), parse and normalize recursively.
+      if ((text.charAt(0) === "[" && text.charAt(text.length - 1) === "]")
+        || (text.charAt(0) === "{" && text.charAt(text.length - 1) === "}")) {
+        try {
+          return normalizeMenuText(JSON.parse(text));
+        } catch (e) {
+          // Keep original normalized text when malformed JSON-like content.
+        }
+      }
+
+      return text;
+    }
+
+    function getMenuValue(menuObj) {
+      var textValue = normalizeMenuText(menuObj && menuObj.TextValue);
+      if (textValue !== "") {
+        return textValue;
+      }
+
+      var priceValue = normalizeMenuText(menuObj && menuObj.Price);
+      if (priceValue !== "") {
+        return priceValue;
+      }
+
+      return "";
+    }
+
+    var menuItemCombined = [];
+    for (var menuKey in menuById) {
+      if (Object.prototype.hasOwnProperty.call(menuById, menuKey)) {
+        var grouped = menuById[menuKey];
+        var baseMenu = grouped.menuItem || { MenuItemId: Number(menuKey) };
+
+        if (!grouped.details || grouped.details.length === 0) {
+          if (baseMenu.TextValue != null) {
+            baseMenu.TextValue = normalizeMenuText(baseMenu.TextValue);
+          }
+          if (baseMenu.Price != null) {
+            baseMenu.Price = normalizeMenuText(baseMenu.Price);
+          }
+          baseMenu.Value = getMenuValue(baseMenu);
+          if (Object.prototype.hasOwnProperty.call(baseMenu, "value")) {
+            delete baseMenu.value;
+          }
+          menuItemCombined.push(baseMenu);
+          continue;
+        }
+
+        for (var d = 0; d < grouped.details.length; d++) {
+          var detail = grouped.details[d] || {};
+          var merged = {};
+
+          // overlay detail fields on top of menu item fields
+          for (var mk in baseMenu) {
+            if (Object.prototype.hasOwnProperty.call(baseMenu, mk)) {
+              merged[mk] = baseMenu[mk];
+            }
+          }
+
+          for (var dk in detail) {
+            if (Object.prototype.hasOwnProperty.call(detail, dk)) {
+              merged[dk] = detail[dk];
+            }
+          }
+
+          if (merged.TextValue != null) {
+            merged.TextValue = normalizeMenuText(merged.TextValue);
+          }
+          if (merged.Price != null) {
+            merged.Price = normalizeMenuText(merged.Price);
+          }
+
+          merged.Value = getMenuValue(merged);
+          if (Object.prototype.hasOwnProperty.call(merged, "value")) {
+            delete merged.value;
+          }
+
+          menuItemCombined.push(merged);
+        }
+      }
+    }
+
+    return toUnifiedResponse({
+      source: "client",
+      assetDetail: result,
+      menuItems: menuItemCombined,
+      scheduleUrl: null,
+      pricingUrl: null
+    });
+  } finally {
+    db.close();
+  }
+}

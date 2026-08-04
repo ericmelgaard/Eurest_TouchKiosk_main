@@ -13,11 +13,10 @@
     <script type="text/javascript" src="dependencies/dexie.min.js"></script>
     <script type="text/javascript" src="dependencies/math.min.js"></script>
     <script type="text/javascript" src="dependencies/lodash.min.js"></script>
+    <script type="text/javascript" src="dependencies/playlistEngine.js"></script>
     <script type="text/javascript" src="dependencies/wandLib.js"></script>
-    <script type="text/javascript" src="js/imageStoreManager.js"></script>
-    <script type="text/javascript" src="js/nutritionLabel.js"></script>
+    <script type="text/javascript" src="js/playlistController.js"></script>
     <script type="text/javascript" src="js/integration.js"></script>
-    <script type="text/javascript" src="js/brandManager.js"></script>
     <script type="text/javascript" src="js/menuLayout.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
 
@@ -42,41 +41,41 @@
                 <img src="./media/header_transparent.png" alt="Welcome">
             </div>
             <div class="cards-grid">
-                <div class="feature-card" id="card-happening">
+                <div class="feature-card" data-overlay-layer="10" data-target-page="layer_10_page" data-media-selector="#layer_10_media">
                     <div class="card-icon">
-                        <img src="./media/icon_whatshappening.png" alt="What's Happening">
+                        <img src="./media/icon_whatshappening.png" alt="Category 1">
                     </div>
-                    <div class="card-label">What's Happening<br>This Month</div>
+                    <div class="card-label">Category 1</div>
                 </div>
-                <div class="feature-card" id="card-weeklymenu">
+                <div class="feature-card" data-overlay-layer="20" data-target-page="layer_20_page" data-media-selector="#layer_20_media">
                     <div class="card-icon">
-                        <img src="./media/icon_weeklymenu.png" alt="Weekly Menu">
+                        <img src="./media/icon_connectwithus.png" alt="Category 2">
                     </div>
-                    <div class="card-label">What's on the Menu</div>
+                    <div class="card-label">Category 2</div>
                 </div>
-                <div class="feature-card" id="card-connectwithus">
+                <div class="feature-card" data-overlay-layer="30" data-target-page="layer_30_page" data-media-selector="#layer_30_media">
                     <div class="card-icon">
-                        <img src="./media/icon_connectwithus.png" alt="Connect with Us">
+                        <img src="./media/icon_youpickit.png" alt="Category 3">
                     </div>
-                    <div class="card-label">Connect with Us</div>
+                    <div class="card-label">Category 3</div>
                 </div>
-                <div class="feature-card" id="card-vote">
+                <div class="feature-card" data-overlay-layer="40" data-target-page="layer_40_page" data-media-selector="#layer_40_media">
                     <div class="card-icon">
-                        <img src="./media/icon_youpickit.png" alt="You Pick It">
+                        <img src="./media/icon_meetambasador.png" alt="Category 4">
                     </div>
-                    <div class="card-label">Vote</div>
+                    <div class="card-label">Category 4</div>
                 </div>
-                <div class="feature-card" id="card-ambassador">
+                <div class="feature-card" style="display: none;" data-overlay-layer="50" data-target-page="layer_50_page" data-media-selector="#layer_50_media">
                     <div class="card-icon">
-                        <img src="./media/icon_meetambasador.png" alt="Meet Your Ingredient Ambassadors">
+                        <img src="./media/icon_fit.png" alt="Category 5">
                     </div>
-                    <div class="card-label">Meet Your Ingredient<br>Ambassadors</div>
+                    <div class="card-label">Category 5</div>
                 </div>
-                <div class="feature-card" id="card-foodwithpurpose">
+                <div class="feature-card" data-overlay-layer="60" data-target-page="layer_60_page" data-media-selector="#layer_60_media">
                     <div class="card-icon">
-                        <img src="./media/icon_fwp.png" alt="Food with Purpose">
+                        <img src="./media/icon_fit.png" alt="Category 6">
                     </div>
-                    <div class="card-label">Food with Purpose</div>
+                    <div class="card-label">Category 6</div>
                 </div>
             </div>
             <div class="eurest-logo">
@@ -98,12 +97,12 @@
             </div>
         </div>
 
-        <!-- What's Happening Page -->
-        <div id="happening_page" class="page">
+        <!-- Layer 10 Page -->
+        <div id="layer_10_page" class="page">
             <button class="floating-nav-btn floating-nav-home" style="display: none;" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="happening-content-background" class="cms-image">
+            <div id="layer_10_media" class="cms-media">
                 <img src="">
             </div>
         </div>
@@ -118,52 +117,52 @@
             </div>
         </div>
 
-        <!-- Vote Page -->
-        <div id="vote_page" class="page" style="display: none;">
+        <!-- Layer 30 Page -->
+        <div id="layer_30_page" class="page" style="display: none;">
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-           <div id="vote-content-background" class="frame-content">
+           <div id="layer_30_media" class="cms-media">
                 <img src="">
             </div>
         </div>
 
-        <!-- Fit Page -->
-        <div id="fit_page" class="page" style="display: none;">
+        <!-- Layer 50 Page -->
+        <div id="layer_50_page" class="page" style="display: none;">
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="fit-content-background" class="content-background">
+            <div id="layer_50_media" class="cms-media">
                 <img src="">
             </div>
         </div>
 
-        <!-- Connect with Us Page -->
-        <div id="connectwithus_page" class="page" style="display: none;">
+        <!-- Layer 20 Page -->
+        <div id="layer_20_page" class="page" style="display: none;">
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="connectwithus-content-background" class="cms-image">
+            <div id="layer_20_media" class="cms-media">
                 <img src="">
             </div>
         </div>
 
-        <!-- Meet Your Ingredient Ambassadors Page -->
-        <div id="ambassador_page" class="page" style="display: none;">
+        <!-- Layer 40 Page -->
+        <div id="layer_40_page" class="page" style="display: none;">
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="ambassador-content-background" class="cms-image">
+            <div id="layer_40_media" class="cms-media">
                 <img src="">
             </div>
         </div>
 
-        <!-- Food with Purpose Page -->
-        <div id="foodwithpurpose_page" class="page" style="display: none;">
+        <!-- Layer 60 Page -->
+        <div id="layer_60_page" class="page" style="display: none;">
             <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
                 <img src="./media/homebutton.png" alt="Home">
             </button>
-            <div id="foodwithpurpose-content-background" class="cms-image">
+            <div id="layer_60_media" class="cms-media">
                 <img src="">
             </div>
 

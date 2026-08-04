@@ -42,8 +42,7 @@ const InactivityManager = (function() {
   let modalElement = null;
   let countdownDisplay = null;
   let circleProgress = null;
-  let nutritionModalOpen = false;
-  let nutritionExtensionApplied = false;
+  let isExtended = false;
 
   function shouldTrackActivity() {
     if (typeof config.shouldTrackActivity === 'function') {
@@ -75,7 +74,10 @@ const InactivityManager = (function() {
     if (!shouldTrackActivity()) {
       return;
     }
-    reset();
+    // Don't reset during extended viewing (nutrition, playlist, etc.)
+    if (!isExtended) {
+      reset();
+    }
   }
 
   function bindActivityEvents() {
@@ -132,10 +134,16 @@ const InactivityManager = (function() {
   }
 
   function reset() {
+    if(isExtended){return}
+
+    if (!shouldTrackActivity()) {
+      pause();
+      return;
+    }
+
     clearAllTimers();
     hideModal();
     state = 'idle';
-    nutritionExtensionApplied = false;
 
     warningTimer = setTimeout(() => {
       showWarning();
@@ -153,28 +161,43 @@ const InactivityManager = (function() {
   }
 
   function resume() {
+    if (!shouldTrackActivity()) {
+      pause();
+      return;
+    }
+
     if (state === 'idle' && !warningTimer) {
       reset();
     }
   }
 
-  function extendForNutrition() {
-    if (!nutritionExtensionApplied) {
-      nutritionExtensionApplied = true;
+  function extend(extensionMs) {
+    const parsedExtensionMs = parseInt(extensionMs, 10);
+    if (isNaN(parsedExtensionMs) || parsedExtensionMs <= 0) {
+      return;
+    }
 
-      if (state === 'idle' && warningTimer) {
-        clearTimeout(warningTimer);
-        warningTimer = setTimeout(() => {
-          showWarning();
-        }, config.warningDelay + config.nutritionExtension);
-      } else if (state === 'warning') {
-        remainingSeconds += Math.floor(config.nutritionExtension / 1000);
-        updateCountdownDisplay();
-      }
+    if (!shouldTrackActivity()) {
+      return;
+    }
+
+    if (state === 'idle') {
+      isExtended = true;
+      const delayUntilWarning = Math.max(parsedExtensionMs, config.warningDelay || 0);
+
+      clearTimeout(warningTimer);
+      warningTimer = setTimeout(() => {
+        showWarning();
+      }, delayUntilWarning);
     }
   }
 
   function showWarning() {
+    if (!shouldTrackActivity()) {
+      pause();
+      return;
+    }
+
     state = 'warning';
     clearTimeout(warningTimer);
     warningTimer = null;
@@ -238,12 +261,14 @@ const InactivityManager = (function() {
   }
 
   function handleContinueBrowsing() {
+    isExtended = false;
     reset();
   }
 
   function handleReturnHome() {
     clearAllTimers();
     hideModal();
+    isExtended = false;
 
     if (config.onTimeout) {
       config.onTimeout();
@@ -252,6 +277,7 @@ const InactivityManager = (function() {
 
   function timeout() {
     state = 'idle';
+    isExtended = false;
     hideModal();
 
     if (config.onTimeout) {
@@ -292,7 +318,7 @@ const InactivityManager = (function() {
     reset,
     pause,
     resume,
-    extendForNutrition,
+    extend,
     destroy,
     getState
   };

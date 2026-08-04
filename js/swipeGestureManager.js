@@ -13,16 +13,7 @@ const SwipeGestureManager = (function() {
   let isSwiping = false;
   let swipeIndicator = null;
 
-  function isTouchSupported() {
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  }
-
   function init(userConfig = {}) {
-    if (!isTouchSupported()) {
-      console.log('🛑 SwipeGestureManager: touch not supported, skipping init');
-      return;
-    }
-
     config = { ...DEFAULT_CONFIG, ...userConfig };
 
     const savedState = localStorage.getItem('swipeGestureEnabled');
@@ -65,7 +56,7 @@ const SwipeGestureManager = (function() {
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
 
-    console.log('✅ SwipeGestureManager enabled');
+    console.log('SwipeGestureManager enabled');
   }
 
   function disable() {
