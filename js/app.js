@@ -41,10 +41,12 @@ var IMSintegration;
                         if (API && BRAND) {
                             _this.API = API;
                             _this.BRAND = BRAND;
+                            IMSintegration.Integration.prototype.showConnect(false, "slate", "setup", "integration setting issue", "error");
                             resolve(API);
                         }
                         else {
                             setTimeout(retry, 2000);
+                            IMSintegration.Integration.prototype.showConnect(true, "slate", "setup", "integration setting issue", "error");
                         }
                     }
                     retry();
