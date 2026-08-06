@@ -1471,14 +1471,14 @@ async function readClientDB(options = {}) {
     return n.slice(0, n.lastIndexOf("."));
   }
 
+  function isContentScheduleUrl(value) {
+    if (!value || typeof value !== "string") return false;
+    var cleaned = value.split("?")[0].split("#")[0];
+    return /displaycontentschedule\.json$/i.test(cleaned) || /contentschedule\.json$/i.test(cleaned);
+  }
+
   function getScheduleUrl(sourceUrl) {
     if (!sourceUrl) return null;
-
-    function isContentScheduleUrl(value) {
-      if (!value || typeof value !== "string") return false;
-      var cleaned = value.split("?")[0].split("#")[0];
-      return /displaycontentschedule\.json$/i.test(cleaned) || /contentschedule\.json$/i.test(cleaned);
-    }
 
     if (isContentScheduleUrl(sourceUrl)) {
       return sourceUrl;
@@ -1514,64 +1514,24 @@ async function readClientDB(options = {}) {
     return null;
   }
 
-  function getFrameSource(frameElement) {
-    function readSrc(element) {
-      if (!element) return "";
-      if (element.getAttribute && element.getAttribute("src")) {
-        return element.getAttribute("src");
-      }
-      if (element.src) {
-        return element.src;
-      }
-      return "";
-    }
-
+  function getCfSourceUrl() {
+    // Content Forecaster: source URL is either preview panel #2 src or the current location.
     try {
-      var currentWindow = typeof window !== "undefined" ? window : null;
-      var lastSrc = "";
-
-      while (currentWindow && currentWindow.frameElement) {
-        var currentFrame = currentWindow.frameElement;
-        var directFrameSrc = readSrc(currentFrame);
-        if (directFrameSrc) {
-          lastSrc = directFrameSrc;
-        }
-
-        if (currentFrame.parentElement) {
-          var parentSrc = readSrc(currentFrame.parentElement);
-          if (parentSrc) {
-            lastSrc = parentSrc;
+      if (typeof window !== "undefined" && window.parent && window.parent.document) {
+        var panels = window.parent.document.querySelectorAll(".preview-panel");
+        if (panels && panels.length > 1) {
+          var panelSrc = panels[1].getAttribute("src") || "";
+          if (panelSrc) {
+            return panelSrc;
           }
-        }
-
-        if (currentWindow.parent === currentWindow) {
-          break;
-        }
-
-        currentWindow = currentWindow.parent;
-      }
-
-      if (lastSrc) {
-        return lastSrc;
-      }
-
-      var frame = frameElement || (typeof window !== "undefined" ? window.frameElement : null);
-      var parent = frame && frame.parentElement ? frame.parentElement : null;
-
-      if (parent) {
-        var fromParent = readSrc(parent);
-        if (fromParent) {
-          return fromParent;
-        }
-      }
-      if (frame) {
-        var fromFrame = readSrc(frame);
-        if (fromFrame) {
-          return fromFrame;
         }
       }
     } catch (err) {
-      // ignore and return empty
+      // Cross-frame access can fail in some contexts; fallback to location.href.
+    }
+
+    if (typeof location !== "undefined" && location.href) {
+      return String(location.href);
     }
 
     return "";
@@ -1786,6 +1746,39 @@ async function readClientDB(options = {}) {
     return response.json();
   }
 
+  async function fetchJsonWithRetry(url, options) {
+    if (!url) throw new Error("Missing URL to fetch JSON.");
+
+    var cfg = options || {};
+    var attempts = Number(cfg.attempts || 30);
+    var delayMs = Number(cfg.delayMs || 1500);
+    var label = cfg.label || "resource";
+    var lastErr = null;
+
+    for (var i = 0; i < attempts; i++) {
+      try {
+        return await fetchJson(url);
+      } catch (err) {
+        lastErr = err;
+        var message = String((err && err.message) || "");
+        var isNotFound = message.indexOf("status 404") > -1;
+        var isNetworkError = message.indexOf("Failed to fetch") > -1 || message.indexOf("NetworkError") > -1;
+        var shouldRetry = isNotFound || isNetworkError;
+
+        if (!shouldRetry || i === attempts - 1) {
+          break;
+        }
+
+        console.warn("CF " + label + " not ready yet. Retry " + (i + 1) + "/" + attempts + " for " + url);
+        await new Promise(function (resolve) {
+          setTimeout(resolve, delayMs);
+        });
+      }
+    }
+
+    throw lastErr || new Error("Failed to fetch " + label + " JSON: " + url);
+  }
+
   function toUnifiedResponse(payload) {
     var safePayload = payload || {};
     return {
@@ -1798,13 +1791,7 @@ async function readClientDB(options = {}) {
   }
 
   async function loadFromCfPath() {
-    var sourceUrl = options.scheduleUrl || options.cfScheduleUrl || null;
-    if (!sourceUrl) {
-      sourceUrl = options.sourceUrl || options.frameUrl || options.frameSrc || "";
-    }
-    if (!sourceUrl) {
-      sourceUrl = getFrameSource(typeof window !== "undefined" ? window.frameElement : null);
-    }
+    var sourceUrl = getCfSourceUrl();
 
     var resolvedScheduleUrl = getScheduleUrl(sourceUrl);
     if (!resolvedScheduleUrl && sourceUrl && /contentschedule\.json/i.test(sourceUrl)) {
@@ -1812,16 +1799,24 @@ async function readClientDB(options = {}) {
     }
 
     if (!resolvedScheduleUrl) {
-      throw new Error("CF path requires options.scheduleUrl (or sourceUrl/frameUrl containing DisplayContentSchedule.json).");
+      throw new Error("CF path could not resolve schedule URL from preview panel src or location.href.");
     }
 
-    var scheduleData = await fetchJson(resolvedScheduleUrl);
-    var resolvedPricingUrl = options.pricingUrl || getPricingUrl(resolvedScheduleUrl);
+    var scheduleData = await fetchJsonWithRetry(resolvedScheduleUrl, {
+      attempts: 40,
+      delayMs: 1500,
+      label: "schedule"
+    });
+    var resolvedPricingUrl = getPricingUrl(resolvedScheduleUrl);
 
     var pricingData = null;
     if (resolvedPricingUrl) {
       try {
-        pricingData = await fetchJson(resolvedPricingUrl);
+        pricingData = await fetchJsonWithRetry(resolvedPricingUrl, {
+          attempts: 20,
+          delayMs: 1500,
+          label: "pricing"
+        });
       } catch (err) {
         pricingData = null;
       }
@@ -1838,12 +1833,8 @@ async function readClientDB(options = {}) {
 
   var forceCf =
     requestedPlatform === "cf"
-    || options.source === "cf"
-    || options.path === "cf"
-    || options.mode === "cf"
-    || options.dataSource === "cf";
-  var hasCfUrl = !!(options.scheduleUrl || options.cfScheduleUrl || options.sourceUrl || options.frameUrl || options.frameSrc);
-  if (forceCf || hasCfUrl) {
+    || (typeof isCF !== "undefined" && isCF === true);
+  if (forceCf) {
     return loadFromCfPath();
   }
 
