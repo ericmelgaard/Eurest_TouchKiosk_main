@@ -10,10 +10,10 @@ const version = 65;
 const isUsingSettings = true;
 const fullPreview = true;
 //leave settingKey blank for co-branded assets
-var settingKey = "OTA3MmI3N2EtM2U5Yi00OTZkLTgzN2QtN2YyMDRmZTgwZjY0";
-var settingId_PartnerAPI = ["607"];
-var settingsId_Brand = ["608"]; //Sap Code / Business Unit
-var settingId_PartnerSite = ["609"]; //Venue / Location
+var settingKey = "ZDE0OTNkMjItNGE5My00ZjQ5LWE4ZDMtMzI2NDBhMGZlYjYw";
+var settingId_PartnerAPI = ["432"];
+var settingsId_Brand = ["433"]; //Sap Code / Business Unit
+var settingId_PartnerSite = ["434"]; //Venue / Location
 //experimental placeholdder for Centrix
 //create
 // jeOl2jyXzotZWQa7ROvrIpOM4M473WT5Y1g0wDP1tr7Oq0lXzXUq0yNMAO13FK6jjJ8

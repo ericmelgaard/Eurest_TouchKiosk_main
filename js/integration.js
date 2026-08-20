@@ -1046,7 +1046,7 @@ var IMSintegration;
                             sapCode: _this.brand,
                             venue: _this.establishment,
                             menuDate: currentTime(),
-                            days: 7,
+                            days: 3,
                             includeNutrients: true,
                             channel: "stable"
                         }

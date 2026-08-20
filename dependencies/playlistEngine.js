@@ -413,6 +413,30 @@
         return $(item).is("video");
     };
 
+    PlaylistManager.prototype.isInfiniteDurationItem = function (item) {
+        var raw = $(item).attr("data-duration");
+        if (raw === undefined || raw === null || raw === "") {
+            return false;
+        }
+
+        var seconds = parseFloat(raw);
+        return !isNaN(seconds) && seconds === 0;
+    };
+
+    PlaylistManager.prototype.applyVideoLoopState = function (item, shouldLoop) {
+        if (!this.isVideoItem(item)) {
+            return;
+        }
+
+        var video = item;
+        video.loop = !!shouldLoop;
+        if (shouldLoop) {
+            video.setAttribute("loop", "loop");
+        } else {
+            video.removeAttribute("loop");
+        }
+    };
+
     PlaylistManager.prototype.prepareVideoForShow = function (item) {
         if (!this.isVideoItem(item)) {
             return;
@@ -510,6 +534,10 @@
     };
 
     PlaylistManager.prototype.getDurationMsForItem = function (item) {
+        if (this.isInfiniteDurationItem(item)) {
+            return 0;
+        }
+
         var duration = this.options.getDurationMs(item);
         if ((!duration || duration <= 0) && this.options.totalDurationMs > 0 && this.items.length > 0) {
             duration = Math.floor(this.options.totalDurationMs / this.items.length);
@@ -541,6 +569,7 @@
                 $(item).show().css("opacity", 1);
                 _this.prepareVideoForShow(item);
                 if (_this.isVideoItem(item)) {
+                    _this.applyVideoLoopState(item, _this.isInfiniteDurationItem(item) || _this.items.length === 1);
                     var playPromise = item.play();
                     if (playPromise && typeof playPromise.catch === "function") {
                         playPromise.catch(function () {
@@ -552,6 +581,7 @@
                     _this.options.onActivate(item, idx, _this);
                 }
             } else {
+                _this.applyVideoLoopState(item, false);
                 _this.unloadVideoIfNeeded(item);
                 $(item).hide().css("opacity", 0);
                 if (typeof _this.options.onDeactivate === "function") {
@@ -605,9 +635,11 @@
             $next: $(nextItem),
             duration: itemTransitionMs,
             done: function () {
+                _this.applyVideoLoopState(prevItem, false);
                 _this.unloadVideoIfNeeded(prevItem);
 
                 if (_this.isVideoItem(nextItem)) {
+                    _this.applyVideoLoopState(nextItem, _this.isInfiniteDurationItem(nextItem) || _this.items.length === 1);
                     var playPromise = nextItem.play();
                     if (playPromise && typeof playPromise.catch === "function") {
                         playPromise.catch(function () {
@@ -635,18 +667,26 @@
     PlaylistManager.prototype.scheduleNext = function () {
         var _this = this;
 
-        if (!this.isRunning || this.isPaused || this.currentIndex < 0 || this.items.length <= 1) {
+        if (!this.isRunning || this.isPaused || this.currentIndex < 0 || !this.items.length) {
+            return;
+        }
+
+        if (this.items.length === 1) {
             return;
         }
 
         var currentItem = this.items[this.currentIndex];
+        if (this.isInfiniteDurationItem(currentItem)) {
+            return;
+        }
+
         var waitMs = this.getDurationMsForItem(currentItem);
 
         this.timer = setTimeout(function () {
             _this.next();
         }, waitMs);
 
-        if (this.options.preloadNext) {
+        if (this.options.preloadNext && this.items.length > 1) {
             var nextIndex = (this.currentIndex + 1) % this.items.length;
             this.preloadItem(this.items[nextIndex]);
         }
@@ -712,7 +752,7 @@
         var startWork = function () {
             _this.goTo(startIndex, {
                 immediate: true,
-                scheduleNext: _this.items.length > 1
+                scheduleNext: _this.items.length > 0
             });
         };
 

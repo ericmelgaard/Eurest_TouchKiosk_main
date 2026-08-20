@@ -35,7 +35,7 @@
 
     function readDurationMs($item, fallbackMs) {
         var seconds = parseInt($item.attr("data-duration"), 10);
-        if (!isNaN(seconds) && seconds > 0) {
+        if (!isNaN(seconds) && seconds >= 0) {
             return seconds * 1000;
         }
         return fallbackMs;
@@ -138,13 +138,6 @@
 
         player.refresh();
 
-        if (state.count <= 1) {
-            player.stop({ reset: true });
-            updateContainerState($container, false);
-            callStateCallback(opts, state);
-            return state;
-        }
-
         var startDelayMs = toMs(opts.preloadDelayMs || opts.delayMs, 500);
         player.start({
             reset: opts.reset !== false,
@@ -199,15 +192,9 @@
             var state = buildState($container, player, opts);
             $container.attr("data-playlist-total-ms", state.totalDuration);
 
-            if (state.count <= 1) {
-                player.stop({ reset: true });
-                updateContainerState($container, false);
-                return;
-            }
-
             player.start({
                 reset: true,
-                delayMs: toMs(opts.preloadDelayMs || opts.delayMs, 500),
+                delayMs: toMs(opts.preloadDelayMs || opts.delayMs, 0),
                 startIndex: typeof opts.startIndex === "number" ? opts.startIndex : 0
             });
             updateContainerState($container, true);
