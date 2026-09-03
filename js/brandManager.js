@@ -895,7 +895,7 @@ var IMSintegration;
                         <img src="./media/homebutton.png" alt="Home">
                     </button>
                     <div class="background">
-                        <img id="${brandKey}_background" src="./media/texture.png" height="1920" width="1080"/>
+                        <img id="${brandKey}_background" src="/background_1080x1920.png" height="1920" width="1080"/>
                     </div>
                     <div class="section-wrapper">
                         <div class="brand-header-logo">

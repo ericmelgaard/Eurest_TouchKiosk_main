@@ -53,7 +53,7 @@ const Display_Name = "";
 const Daypart_ID = "";
 const Daypart_Name = "";
 const Store_ID = "";
-const Store_Key = "2174";
+const Store_Key = "4873";
 const Zone_ID = "";
 const Duration = "";
 const zoneHeight = "";
@@ -61,6 +61,8 @@ const zoneWidth = "";
 var Partner_API = "webtrition";
 var Brand = "31709";
 var Establishment = "21332";
+var Company_Key = "1376";
+var Concept_Key = "214";
 const apiKey = "";
 //yyyy-mm-dd ex.2026-02-23
 const dateToRequest = "";
