@@ -867,7 +867,12 @@ var configEditor = (function () {
         var $info = $('<div class="cfg-card-info"></div>');
         var slotLabel = (index + 1) + ". " + (card.name || "Untitled");
         $info.append($('<div class="cfg-card-title"></div>').text(slotLabel));
-        $info.append($('<div class="cfg-card-target"></div>').text(getTargetLabel(card)));
+        var targetLabel = getTargetLabel(card);
+        var $target = $('<div class="cfg-card-target"></div>').text(targetLabel);
+        if (!card.destination_value && card.active) {
+            $target.css("color", "#d35400").text("Needs a destination page to appear in app");
+        }
+        $info.append($target);
         $summary.append($info);
 
         var $actions = $('<div class="cfg-card-actions"></div>');
@@ -1297,7 +1302,9 @@ var configEditor = (function () {
             ensureSlots();
             // Persist the slots if the store had nothing yet.
             if (!results[1].length) {
-                return saveCardsNow({ find: function () { return $([]); } }).catch(function () {});
+                return saveCardsNow({ find: function () { return $([]); } }).catch(function (err) {
+                    console.error("configEditor: initial card seed save failed", err);
+                });
             }
         });
     }
