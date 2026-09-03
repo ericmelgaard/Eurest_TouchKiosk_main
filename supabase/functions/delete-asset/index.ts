@@ -1,5 +1,9 @@
 import { corsHeaders, handleOptions, jsonResponse } from "../_shared/cors.ts";
-import { buildPublicUrl, createAdminClient, KIOSK_ASSETS_BUCKET } from "../_shared/supabaseAdmin.ts";
+import {
+  buildPublicUrl,
+  createAdminClient,
+  KIOSK_ASSETS_BUCKET,
+} from "../_shared/supabaseAdmin.ts";
 import { isNonEmptyString, normalizeStoreKey } from "../_shared/validation.ts";
 
 const PURPOSES = ["background", "title", "custom-icon", "icon-catalog"] as const;

@@ -1,5 +1,8 @@
 import { corsHeaders, handleOptions, jsonResponse } from "../_shared/cors.ts";
-import { createAdminClient, KIOSK_ASSETS_BUCKET } from "../_shared/supabaseAdmin.ts";
+import {
+  createAdminClient,
+  KIOSK_ASSETS_BUCKET,
+} from "../_shared/supabaseAdmin.ts";
 import { isNonEmptyString, normalizeStoreKey } from "../_shared/validation.ts";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB

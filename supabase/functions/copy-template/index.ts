@@ -1,6 +1,6 @@
 import { corsHeaders, handleOptions, jsonResponse } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabaseAdmin.ts";
-import { normalizeStoreKey } from "../_shared/validation.ts";
+import { normalizeStoreKey } from "../_shared/validation.ts"; // store-key sanitizer
 
 // Explicit "copy template" action: materializes a full copy of another accessible
 // location's config (site_config + category_cards) into the current store's row.

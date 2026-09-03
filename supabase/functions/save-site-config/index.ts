@@ -1,6 +1,6 @@
 import { corsHeaders, handleOptions, jsonResponse } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabaseAdmin.ts";
-import {
+import { // config validation helpers
   isInactivityTarget,
   isMsInRange,
   isPlainObject,

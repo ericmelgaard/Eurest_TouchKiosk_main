@@ -15,3 +15,4 @@ verify_jwt = false
 
 [functions.upload-asset]
 verify_jwt = false
+
