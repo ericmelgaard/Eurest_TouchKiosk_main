@@ -5,5 +5,8 @@ export default defineConfig({
     port: 5173,
     host: true
   },
-  publicDir: false
+  publicDir: false,
+  optimizeDeps: {
+    include: ['@supabase/supabase-js']
+  }
 });

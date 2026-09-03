@@ -20,6 +20,9 @@
     <script type="text/javascript" src="js/menuLayout.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
 
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
 
 <body>
@@ -176,6 +179,10 @@
         <script type="text/javascript" src="js/inactivityManager.js"></script>
         <script type="text/javascript" src="js/swipeGestureManager.js"></script>
         <script type="text/javascript" src="js/init.js"></script>
+        <script type="module">
+            import { initDevConfigPanel } from './js/devConfigPanel.js';
+            initDevConfigPanel();
+        </script>
 </body>
 
 </html>
