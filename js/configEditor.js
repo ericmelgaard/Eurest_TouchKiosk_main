@@ -1298,9 +1298,11 @@ var configEditor = (function () {
             state.workingTheme = Object.assign({}, (state.siteConfig && state.siteConfig.theme) || {});
             state.workingBehavior = Object.assign({}, (state.siteConfig && state.siteConfig.behavior) || {});
             state.expandedCards = {};
-            // Give a new store a starting point instead of an empty list.
+            // Give a new store a starting point instead of an empty list,
+            // and persist the defaults so the live app sees them too.
             if (!state.cards.length) {
                 state.cards = [makeNewCard("Category 1"), makeNewCard("Category 2"), makeNewCard("Category 3")];
+                return saveCardsNow({ find: function () { return $([]); } }).catch(function () {});
             }
         });
     }
