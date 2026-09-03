@@ -1276,7 +1276,7 @@ var configEditor = (function () {
                 "box-shadow": "-4px 0 24px rgba(9,35,44,.12)"
             });
             $root.prop("hidden", false).css("display", "none");
-            $(modalHost).append($root);
+            $(hostDocument.documentElement).append($root);
             state._devInline = true;
         } else {
             $(modalHost).prepend($root);
