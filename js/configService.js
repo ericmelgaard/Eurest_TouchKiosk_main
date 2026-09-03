@@ -130,9 +130,13 @@ var configService = (function () {
             },
             body: formData
         }).then(function (res) {
-            return res.json().catch(function () { return {}; }).then(function (data) {
+            return res.text().then(function (text) {
+                var data;
+                try { data = JSON.parse(text); } catch (_e) { data = {}; }
                 if (!res.ok) {
-                    throw new Error((data && data.error) || "upload-asset failed with status " + res.status);
+                    var msg = (data && data.error) || "upload-asset failed with status " + res.status;
+                    if (data && data.debug) { msg += " | " + JSON.stringify(data.debug); }
+                    throw new Error(msg);
                 }
                 return data;
             });

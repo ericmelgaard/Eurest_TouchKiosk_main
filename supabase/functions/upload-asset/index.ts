@@ -20,6 +20,7 @@ function isPurpose(value: unknown): value is Purpose {
 }
 
 Deno.serve(async (req) => {
+  try {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
   if (!uploadRes.ok) {
     const detail = await uploadRes.text().catch(() => "");
     console.error("upload-asset: storage upload failed", uploadRes.status, detail);
-    return jsonResponse({ error: "Failed to upload asset" }, 500);
+    return jsonResponse({ error: "Failed to upload asset", debug: { status: uploadRes.status, detail } }, 500);
   }
 
   const iconUrl = `${supabaseUrl}/storage/v1/object/public/${KIOSK_ASSETS_BUCKET}/${path}`;
@@ -118,4 +119,9 @@ Deno.serve(async (req) => {
   }
 
   return jsonResponse({ url: iconUrl }, 200);
+
+  } catch (err) {
+    console.error("upload-asset: unhandled error", err);
+    return jsonResponse({ error: "Internal error", debug: String(err) }, 500);
+  }
 });
