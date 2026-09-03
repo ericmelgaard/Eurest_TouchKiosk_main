@@ -819,6 +819,7 @@ var IMSintegration;
                         storeKey: AssetConfiguration.SKey,
                         displayId: AssetConfiguration.DISid
                     }).then(data => {
+                        _this.showConnect(false, "darkorange", "TRM");
                         const normalizedData = normalizeTrmPayload(data);
                         if (clientDB && _.isEqual(clientDB, normalizedData)) {
                             // do nothing
@@ -828,7 +829,12 @@ var IMSintegration;
                             _this.addItems(normalizedData.menuItems, "update", "TRM_menuItems", "id");
                         }
                     }).catch(error => {
-                        console.error("Failed to read TRM data from IndexedDB:", error);
+                        var detail = "Failed to sync TRM data";
+                        if (error && error.message) {
+                            detail = detail + ": " + error.message;
+                        }
+                        _this.showConnect(true, "darkorange", "TRM", detail, "error");
+                        console.error("Failed to read TRM data (IndexedDB/CF):", error);
                     });
                     setTimeout(() => {
                         _this.getTrmData();

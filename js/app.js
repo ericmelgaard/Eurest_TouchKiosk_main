@@ -41,10 +41,12 @@ var IMSintegration;
                         if (API && BRAND) {
                             _this.API = API;
                             _this.BRAND = BRAND;
+                            IMSintegration.Integration.prototype.showConnect(false, "slate", "setup", "integration setting issue", "error");
                             resolve(API);
                         }
                         else {
                             setTimeout(retry, 2000);
+                            IMSintegration.Integration.prototype.showConnect(true, "slate", "setup", "integration setting issue", "error");
                         }
                     }
                     retry();
@@ -704,6 +706,15 @@ var IMSintegration;
                                 });
                             })
                             .then(() => {
+                                return Promise.all([
+                                    configService.fetchSiteConfig(_this.store),
+                                    configService.fetchCategoryCards(_this.store)
+                                ]).then(([siteConfig, categoryCards]) => {
+                                    _this.siteConfig = siteConfig;
+                                    _this.categoryCards = categoryCards;
+                                });
+                            })
+                            .then(() => {
                                 _this.priceSchedule(_this.IMSProducts);
                                 _this.validateIMS(_this.IMSProducts, _this.IMSItems);
                                 try {
@@ -714,7 +725,7 @@ var IMSintegration;
                                 if (_this.API === "trm" || _this.API === "ims") { _this.formatIMS(_this.IMSProducts); }
                                 if (_this.API === "webtrition") { _this.integrationItems = _this.formatWebtrition(_this.integrationItems); }
                                 _this.IMSItems = _this.mergeIMS(_this.IMSProducts, _this.IMSItems);
-                                menuLayout.init(_this.IMSItems, _this.IMSProducts, _this.IMSSettings, _this.integrationItems, _this.API, _this.TRMAssetZones, _this.TRMMenuItems);
+                                menuLayout.init(_this.IMSItems, _this.IMSProducts, _this.IMSSettings, _this.integrationItems, _this.API, _this.TRMAssetZones, _this.siteConfig, _this.categoryCards);
 
                                 $(".loading").hide();
                                 $(".asset-wrapper").removeClass("blur");
@@ -783,17 +794,25 @@ var IMSintegration;
                     catch (err) {
                         _this.TRMMenuItems = [];
                     }
-                    _this.priceSchedule(_this.IMSProducts);
-                    _this.validateIMS(_this.IMSProducts, _this.IMSItems);
-                    try {
-                        _this.alignItems(_this.integrationItems, _this.integrationMods, _this.integrationDiscounts, _this.IMSProducts);
-                    }
-                    catch (err) { }
-                    if (_this.API === "trm" || _this.API === "ims") { _this.formatIMS(_this.IMSProducts); }
-                    if (_this.API === "webtrition") { _this.integrationItems = _this.formatWebtrition(_this.integrationItems); }
-                    $(".loading").hide();
-                    _this.IMSItems = _this.mergeIMS(_this.IMSProducts, _this.IMSItems);
-                    menuLayout.init(_this.IMSItems, _this.IMSProducts, _this.IMSSettings, _this.integrationItems, _this.API, _this.TRMAssetZones, _this.TRMMenuItems);
+                    Promise.all([
+                        configService.fetchSiteConfig(_this.store),
+                        configService.fetchCategoryCards(_this.store)
+                    ]).then(([siteConfig, categoryCards]) => {
+                        _this.siteConfig = siteConfig;
+                        _this.categoryCards = categoryCards;
+
+                        _this.priceSchedule(_this.IMSProducts);
+                        _this.validateIMS(_this.IMSProducts, _this.IMSItems);
+                        try {
+                            _this.alignItems(_this.integrationItems, _this.integrationMods, _this.integrationDiscounts, _this.IMSProducts);
+                        }
+                        catch (err) { }
+                        if (_this.API === "trm" || _this.API === "ims") { _this.formatIMS(_this.IMSProducts); }
+                        if (_this.API === "webtrition") { _this.integrationItems = _this.formatWebtrition(_this.integrationItems); }
+                        $(".loading").hide();
+                        _this.IMSItems = _this.mergeIMS(_this.IMSProducts, _this.IMSItems);
+                        menuLayout.init(_this.IMSItems, _this.IMSProducts, _this.IMSSettings, _this.integrationItems, _this.API, _this.TRMAssetZones, _this.siteConfig, _this.categoryCards);
+                    });
                 }
             }
         }

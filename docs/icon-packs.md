@@ -1,74 +1,27 @@
-# TRM Icon Packs
+# Category Icons (Supabase)
 
-This project supports runtime icon packs from `TRM_menuItems`.
+This project no longer uses `TRM_menuItems` icon packs. Category card icons come from Supabase.
 
-Icon packs are read and applied in `js/menuLayout.js` during app init.
+Icons are applied per-card in `js/menuLayout.js` (`MenuLayout.prototype.renderCategoryCards`), reading
+directly from each row's `icon_url` returned by `category_cards` (see `configService.fetchCategoryCards`).
 
-## What You Can Configure
+## Where Icons Come From
 
-Create these `TRM_menuItems` entries:
+- `icon_catalog` table: "available" icons scoped by `concept_key`, inherited by every store under
+  that concept. Populated via the config editor's icon picker (uploads go through the
+  `upload-asset` edge function with `purpose=icon-catalog`).
+- Custom per-store upload: a store can instead upload its own one-off icon
+  (`upload-asset` with `purpose=custom-icon`), stored under `icons/custom/{storeKey}/...` in the
+  `kiosk-assets` Storage bucket.
 
-- `catagory_icon_pak` (or `category_icon_pak`): asset folder ID for home/category card icons.
+Either way, the resolved public URL is written directly onto the card's `category_cards.icon_url`
+column (with `icon_source` recording whether it came from the catalog or a custom upload) - the
+kiosk itself just renders whatever `icon_url` it's given, no environment/host resolution needed.
 
-Value should be the numeric TRM asset folder ID only.
+## Editing
 
-Example:
+Use the in-app config editor (visible only inside the WAND Content Forecaster preview, see
+`js/configEditor.js`) to pick a catalog icon or upload a custom one per card.
 
-- `name: catagory_icon_pak`, `value: 129355`
-
-## URL Pattern
-
-The runtime URL is built as:
-
-`https://{client-host}/cms_mediafiles/DIGITAL_ASSETS_NX01/{assetId}/{fileName}`
-
-Example category icon URL:
-
-`https://client-qa.wanddigital.com/cms_mediafiles/DIGITAL_ASSETS_NX01/129355/zLayer_10.png`
-
-## Environment Host Mapping
-
-Host is resolved by environment:
-
-- QA -> `client-qa.wanddigital.com`
-- Production -> `client.wanddigital.com`
-
-Detection uses integration host first, then a hostname fallback.
-
-## Category Icon Pack
-
-Source setting: `catagory_icon_pak` / `category_icon_pak`
-
-Applied to each home card with `data-overlay-layer`:
-
-- Layer 10 -> `zLayer_10.png`
-- Layer 20 -> `zLayer_20.png`
-- Layer 30 -> `zLayer_30.png`
-- etc.
-
-Behavior:
-
-1. Reads asset ID from TRM menu item.
-2. Builds base URL for current environment.
-3. Replaces each card icon image src with `zLayer_{layer}.png`.
-4. If pack image fails, falls back to the original static icon from HTML.
-
-## Key Normalization
-
-TRM item names are normalized before matching:
-
-- lowercase
-- remove spaces, dashes, underscores, punctuation
-
-So these forms are equivalent:
-
-- `catagory_icon_pak`
-- `catagory icon pak`
-- `catagory-icon-pak`
-- `catagoryiconpak`
-
-## Notes
-
-- If an icon pack setting is missing or empty, existing local/default icon behavior remains.
-- Non-numeric characters are stripped from the asset ID before URL construction.
-- This app currently uses category icon packs only.
+See `supabase/migrations/0001_init_config_schema.sql` and `supabase/functions/upload-asset` for
+the backing schema/upload logic.

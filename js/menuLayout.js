@@ -16,30 +16,31 @@ var IMSintegration;
             this.homeIdleTimer = null;
             this.isHomeIdleOverlayActive = false;
             this.homeIdleAssets = [];
-            this._environmentConfig = null;
             this._homeIdleDismissEventsBound = false;
-            this._menuItemSettingKeyMap = {
-                categoryIconPack: ["catagory_icon_pak", "category_icon_pak", "catagoryiconpak", "categoryiconpak"]
-            };
         }
-        MenuLayout.prototype.init = function (IMSItems, IMSProducts, IMSSettings, integrationItems, API, TRMAssetZones, TRMMenuItems) {
+        MenuLayout.prototype.init = function (IMSItems, IMSProducts, IMSSettings, integrationItems, API, TRMAssetZones, siteConfig, categoryCards) {
             if (!API) {
                 return;
             }
             try {
-                this.applyThemeFromTRMMenuItems(TRMMenuItems);
+                this.applyThemeFromSiteConfig(siteConfig);
             } catch (e) {
-                console.error("Error in MenuLayout applyThemeFromTRMMenuItems: ", e);
+                console.error("Error in MenuLayout applyThemeFromSiteConfig: ", e);
             }
             try {
-                this.applyCategoryIconPackFromTRMMenuItems(TRMMenuItems);
+                this.applyBehaviorFromSiteConfig(siteConfig);
             } catch (e) {
-                console.error("Error in MenuLayout applyCategoryIconPackFromTRMMenuItems: ", e);
+                console.error("Error in MenuLayout applyBehaviorFromSiteConfig: ", e);
             }
             try {
-                this.updateTRMContent(TRMAssetZones);
+                this.applyBrandingFromSiteConfig(siteConfig);
             } catch (e) {
-                console.error("Error in MenuLayout updateTRMContent: ", e);
+                console.error("Error in MenuLayout applyBrandingFromSiteConfig: ", e);
+            }
+            try {
+                this.renderCategoryCards(categoryCards, TRMAssetZones);
+            } catch (e) {
+                console.error("Error in MenuLayout renderCategoryCards: ", e);
             }
             try {
                 this.injectPricing(IMSProducts);
@@ -79,18 +80,12 @@ var IMSintegration;
 
             this._coreInitialized = true;
         };
-        MenuLayout.prototype.updateTRMContent = function (TRMAssetZones) {
-            try {
-                this.buildTRMInteractiveLayout(TRMAssetZones);
-            } catch (e) {
-                console.error("Error building TRM interactive layout: ", e);
-            }
-        };
-        MenuLayout.prototype.applyThemeFromTRMMenuItems = function (TRMMenuItems) {
+        MenuLayout.prototype.applyThemeFromSiteConfig = function (siteConfig) {
             var themeVars = {
                 "--welcome-header-bg": true,
                 "--header-text-color": true,
                 "--sub-header-text-color": true,
+                "--home-background-color": true,
                 "--feature-card-bg": true,
                 "--feature-card-hover-bg": true,
                 "--feature-card-active-bg": true,
@@ -112,6 +107,8 @@ var IMSintegration;
                 "headertextcolor": "--header-text-color",
                 "subheadertext": "--sub-header-text-color",
                 "subheadertextcolor": "--sub-header-text-color",
+                "homebackgroundcolor": "--home-background-color",
+                "homebg": "--home-background-color",
                 "cardbackground": "--feature-card-bg",
                 "cardbg": "--feature-card-bg",
                 "cardhoverbackground": "--feature-card-hover-bg",
@@ -159,38 +156,13 @@ var IMSintegration;
             };
 
             var selected = {};
+            var theme = (siteConfig && siteConfig.theme) || {};
 
-            (Array.isArray(TRMMenuItems) ? TRMMenuItems : []).forEach(function (item) {
-                if (!item) {
-                    return;
-                }
-
-                var rawKey = item.name || item.key || item.id || "";
-                var rawValue = item.value;
+            Object.keys(theme).forEach(function (rawKey) {
                 var normalizedItemKey = normalizeKey(rawKey);
-
-                if (normalizedItemKey === "themecolors" || normalizedItemKey === "theme" || normalizedItemKey === "appcolors") {
-                    try {
-                        var parsed = JSON.parse(normalizeValue(rawValue));
-                        Object.keys(parsed || {}).forEach(function (jsonKey) {
-                            var mappedVar = keyMap[normalizeKey(jsonKey)] || (String(jsonKey).indexOf("--") === 0 ? String(jsonKey) : "");
-                            var mappedValue = normalizeValue(parsed[jsonKey]);
-                            if (!mappedVar || !mappedValue) {
-                                return;
-                            }
-                            if (mappedVar.indexOf("--") === 0 && themeVars[mappedVar] && isValidCssColor(mappedValue)) {
-                                selected[mappedVar] = mappedValue;
-                            }
-                        });
-                    } catch (err) {
-                        // Ignore malformed JSON and continue processing single entries.
-                    }
-                    return;
-                }
-
-                var cssVar = keyMap[normalizedItemKey] || "";
-                var value = normalizeValue(rawValue);
-                if (!cssVar || !value) {
+                var cssVar = keyMap[normalizedItemKey] || (String(rawKey).indexOf("--") === 0 ? String(rawKey) : "");
+                var value = normalizeValue(theme[rawKey]);
+                if (!cssVar || !themeVars[cssVar] || !value) {
                     return;
                 }
                 if (isValidCssColor(value)) {
@@ -203,137 +175,35 @@ var IMSintegration;
                 root.style.setProperty(cssVar, selected[cssVar]);
             });
         };
-        MenuLayout.prototype.normalizeTRMMenuItemKey = function (value) {
-            return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-        };
-        MenuLayout.prototype.normalizeTRMMenuItemValue = function (value) {
-            if (value === null || value === undefined) {
-                return "";
+        // Non-color config (inactivity timing/target, home-idle delay) - stored separately
+        // from theme since it isn't CSS-color-shaped. Falls back to the built-in defaults.
+        MenuLayout.prototype.applyBehaviorFromSiteConfig = function (siteConfig) {
+            this._behavior = (siteConfig && siteConfig.behavior) || {};
+            if (this._behavior.homeIdleDelayMs) {
+                this.homeIdleDelayMs = this._behavior.homeIdleDelayMs;
             }
-            return String(value).trim();
         };
-        MenuLayout.prototype.getTRMMenuItemSettingValue = function (TRMMenuItems, keyAliases) {
-            var _this = this;
-            var allowed = {};
-            (Array.isArray(keyAliases) ? keyAliases : []).forEach(function (key) {
-                allowed[_this.normalizeTRMMenuItemKey(key)] = true;
-            });
+        // Sets the home page background and title/logo images from Supabase; falls back to
+        // the static defaults already in index.html when the store has no override saved.
+        MenuLayout.prototype.applyBrandingFromSiteConfig = function (siteConfig) {
+            var backgroundUrl = siteConfig && siteConfig.background_image_url;
+            var titleUrl = siteConfig && siteConfig.title_image_url;
 
-            var items = Array.isArray(TRMMenuItems) ? TRMMenuItems : [];
-            for (var i = 0; i < items.length; i++) {
-                var item = items[i];
-                if (!item) {
-                    continue;
+            var $background = $(".background");
+            if (backgroundUrl) {
+                var $bgImg = $background.find("img");
+                if (!$bgImg.length) {
+                    $bgImg = $("<img>").attr("alt", "");
+                    $background.append($bgImg);
                 }
-                var rawKey = item.name || item.key || item.id || "";
-                var normalizedKey = this.normalizeTRMMenuItemKey(rawKey);
-                if (!allowed[normalizedKey]) {
-                    continue;
-                }
-                var value = this.normalizeTRMMenuItemValue(item.value);
-                if (value) {
-                    return value;
-                }
+                $bgImg.attr("src", backgroundUrl);
+            } else {
+                $background.empty();
             }
 
-            return "";
-        };
-        MenuLayout.prototype.getEnvironmentConfig = function () {
-            if (this._environmentConfig) {
-                return this._environmentConfig;
+            if (titleUrl) {
+                $(".welcome-header img").attr("src", titleUrl);
             }
-
-            if (typeof environment !== "undefined" && environment) {
-                var env = String(environment).toLowerCase();
-                this._environmentConfig = {
-                    environment: env,
-                    apiHost: env === "qa" ? "api-qa.wanddigital.com" : (env === "uat" ? "api-uat.wanddigital.com" : "api.wanddigital.com"),
-                    clientHost: env === "qa" ? "client-qa.wanddigital.com" : (env === "uat" ? "client-uat.wanddigital.com" : "client.wanddigital.com"),
-                    orderStatusHost: env === "qa" ? "orderstatus-qa.wanddigital.com" : (env === "uat" ? "orderstatus-uat.wanddigital.com" : "orderstatus-prod.wanddigital.com")
-                };
-                return this._environmentConfig;
-            }
-
-            if (typeof window.getWandEnvironmentConfig === "function") {
-                this._environmentConfig = window.getWandEnvironmentConfig();
-                return this._environmentConfig;
-            }
-
-            var locationHost = String((window.location && window.location.hostname) || "").toLowerCase();
-            var inClient = !!window.frameElement;
-            var isLocal = !locationHost
-                || locationHost === "localhost"
-                || locationHost === "127.0.0.1"
-                || locationHost.indexOf(".local") > -1;
-            var trmMatch = locationHost.match(/(?:^|[.-])trm(?:-([a-z0-9]+))?(?:[.-]|$)/i);
-            var envFromTrm = trmMatch ? String(trmMatch[1] || "prod").toLowerCase() : "";
-            var environment = "prod";
-
-            if (isLocal && !inClient) {
-                environment = "local";
-            } else if (envFromTrm === "qa" || /(^|[.-])qa([.-]|$)/.test(locationHost)) {
-                environment = "qa";
-            } else if (envFromTrm === "uat" || /(^|[.-])uat([.-]|$)/.test(locationHost)) {
-                environment = "uat";
-            }
-
-            this._environmentConfig = {
-                environment: environment,
-                apiHost: environment === "qa" ? "api-qa.wanddigital.com" : (environment === "uat" ? "api-uat.wanddigital.com" : "api.wanddigital.com"),
-                clientHost: environment === "qa" ? "client-qa.wanddigital.com" : (environment === "uat" ? "client-uat.wanddigital.com" : "client.wanddigital.com"),
-                orderStatusHost: environment === "qa" ? "orderstatus-qa.wanddigital.com" : (environment === "uat" ? "orderstatus-uat.wanddigital.com" : "orderstatus-prod.wanddigital.com")
-            };
-
-            return this._environmentConfig;
-        };
-        MenuLayout.prototype.getCmsClientHostByEnvironment = function () {
-            return this.getEnvironmentConfig().clientHost;
-        };
-        MenuLayout.prototype.buildCmsIconPackBaseUrl = function (assetId) {
-            var id = this.normalizeTRMMenuItemValue(assetId).replace(/[^0-9]/g, "");
-            if (!id) {
-                return "";
-            }
-            return "https://" + this.getCmsClientHostByEnvironment() + "/cms_mediafiles/DIGITAL_ASSETS_NX01/" + id + "/";
-        };
-        MenuLayout.prototype.applyCategoryIconPackFromTRMMenuItems = function (TRMMenuItems) {
-            var _this = this;
-            // Category pack: the TRM setting overrides the template default (categoryIconPackId).
-            var assetId = this.getTRMMenuItemSettingValue(TRMMenuItems, this._menuItemSettingKeyMap.categoryIconPack)
-                || this.normalizeTRMMenuItemValue((typeof categoryIconPackId !== "undefined" && categoryIconPackId) || "");
-
-            var iconBaseUrl = this.buildCmsIconPackBaseUrl(assetId);
-            if (!iconBaseUrl) {
-                // Category is strict: no default and no TRM setting is a misconfiguration.
-                console.error("MenuLayout: no category icon pack configured. Set categoryIconPackId in init.js or provide a catagory_icon_pak TRM setting.");
-                return;
-            }
-
-            $(".feature-card[data-overlay-layer]").each(function () {
-                var $card = $(this);
-                var layer = parseInt($card.attr("data-overlay-layer"), 10);
-                if (isNaN(layer)) {
-                    return;
-                }
-
-                var $img = $card.find(".card-icon img").first();
-                if (!$img.length) {
-                    return;
-                }
-
-                var iconSrc = iconBaseUrl + "zLayer_" + layer + ".png";
-                $img.attr("src", iconSrc);
-                $img.attr("data-icon-pack-src", iconSrc);
-                // Category is strict: surface load failures instead of silently reverting to a static icon.
-                $img.off("error.menu-icon-pack").on("error.menu-icon-pack", function () {
-                    console.error("MenuLayout: category icon failed to load:", $(this).attr("src"));
-                });
-            });
-
-            this._activeCategoryIconPackBaseUrl = iconBaseUrl;
-        };
-        MenuLayout.prototype.handleMissingTRMAssetZones = function () {
-            console.warn("No TRMAssetZones were passed to menuLayout. Dynamic overlays are disabled.");
         };
         MenuLayout.prototype.normalizeTRMAsset = function (asset) {
             var layer = parseInt(asset.layerZOrder, 10);
@@ -354,12 +224,6 @@ var IMSintegration;
                 regionName: asset.regionName || ""
             };
         };
-        MenuLayout.prototype.getGenericSlotLabel = function (slotIndex) {
-            return "Category " + (slotIndex + 1);
-        };
-        MenuLayout.prototype.getLayerLabel = function (layer) {
-            return "Layer " + layer;
-        };
         MenuLayout.prototype.getTRMInteractiveGroups = function (TRMAssetZones) {
             var _this = this;
             var groupedByLayer = {};
@@ -367,7 +231,7 @@ var IMSintegration;
             (Array.isArray(TRMAssetZones) ? TRMAssetZones : [])
                 .map(function (asset) { return _this.normalizeTRMAsset(asset); })
                 .filter(function (asset) {
-                    return asset.layer >= 10 && asset.layer <= 70 && asset.fullPath && (asset.fileType === "image" || asset.fileType === "video" || asset.fileType === "html");
+                    return asset.layer > 0 && asset.layer !== _this.homeIdleLayer && asset.fullPath && (asset.fileType === "image" || asset.fileType === "video" || asset.fileType === "html");
                 })
                 .forEach(function (asset) {
                     if (!groupedByLayer[asset.layer]) {
@@ -545,21 +409,6 @@ var IMSintegration;
                 this.startHomeIdleTimer();
             }
         };
-        MenuLayout.prototype.getOverlaySlotsFromMarkup = function () {
-            return $('.feature-card[data-overlay-layer]').get().map(function (card) {
-                var $card = $(card);
-                return {
-                    layer: parseInt($card.attr('data-overlay-layer'), 10),
-                    cardElement: card,
-                    pageId: $card.attr('data-target-page') || '',
-                    mediaSelector: $card.attr('data-media-selector') || ''
-                };
-            }).filter(function (slot) {
-                return !isNaN(slot.layer) && !!slot.cardElement && slot.pageId && slot.mediaSelector;
-            }).sort(function (a, b) {
-                return a.layer - b.layer;
-            });
-        };
         MenuLayout.prototype.createTRMMediaElement = function (asset, index) {
             var $media;
             if (asset.fileType === "video") {
@@ -674,71 +523,166 @@ var IMSintegration;
                 $item.removeClass("is-active").hide().css("opacity", 0);
             });
         };
-        MenuLayout.prototype.resetOverlaySlot = function (slot) {
-            var $card = $(slot.cardElement);
-            var $label = $card.find(".card-label");
-            var genericLabel = this.getLayerLabel(slot.layer);
-
-            $card.hide();
-            $card.removeAttr("data-target-page data-layer-z-order data-overlay-enabled");
-            if ($label.length) {
-                $label.html(genericLabel);
+        MenuLayout.prototype.ensureDynamicPagesRoot = function () {
+            var $root = $('#dynamic_pages_root');
+            if (!$root.length) {
+                $root = $('<div id="dynamic_pages_root"></div>');
+                $('#target.asset-wrapper').append($root);
             }
-            this.injectTRMAssetsIntoContainer(slot.mediaSelector, []);
+            return $root;
         };
-        MenuLayout.prototype.applyOverlayGroupToSlot = function (slot, group) {
-            var $card = $(slot.cardElement);
-            var $label = $card.find(".card-label");
-            var title = (group && group.title ? String(group.title) : "").trim();
-            var resolvedTitle = title || this.getLayerLabel(slot.layer);
-
-            if (!$card.length) {
+        MenuLayout.prototype.teardownDynamicPages = function () {
+            $('#dynamic_pages_root').empty();
+        };
+        MenuLayout.prototype.getDynamicPageId = function (index) {
+            return 'dynamic_card_' + index + '_page';
+        };
+        MenuLayout.prototype.buildDynamicPageShell = function (pageId, extraMediaClass) {
+            var $page = $('<div>').attr('id', pageId).addClass('page dynamic-card-page').hide();
+            var $homeBtn = $('<button>').addClass('floating-nav-btn floating-nav-home').attr('aria-label', 'Go home')
+                .append($('<img>').attr('src', './media/homebutton.png').attr('alt', 'Home'));
+            var $media = $('<div>').addClass('cms-media' + (extraMediaClass ? ' ' + extraMediaClass : ''));
+            $page.append($homeBtn).append($media);
+            return { $page: $page, $media: $media };
+        };
+        MenuLayout.prototype.ensureLayerPage = function (pageId) {
+            if ($('#' + pageId).length) {
                 return;
             }
+            var shell = this.buildDynamicPageShell(pageId);
+            this.ensureDynamicPagesRoot().append(shell.$page);
+        };
+        // Blocks javascript:/data: etc. - iframe destinations only ever come from http(s).
+        MenuLayout.prototype.isSafeIframeUrl = function (url) {
+            try {
+                var parsed = new URL(url, window.location.href);
+                return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+            } catch (e) {
+                return false;
+            }
+        };
+        MenuLayout.prototype.ensureIframePage = function (pageId, url) {
+            var $existing = $('#' + pageId);
+            if ($existing.length) {
+                $existing.find('iframe').attr('src', url);
+                return;
+            }
+            var shell = this.buildDynamicPageShell(pageId, 'cms-media--scrollable');
+            var $frame = $('<iframe>').attr('src', url).attr('frameborder', '0').attr('allowfullscreen', 'allowfullscreen');
+            shell.$media.append($frame);
+            this.ensureDynamicPagesRoot().append(shell.$page);
+        };
+        // Resolves a card's Supabase destination_type/value into a page id, provisioning a
+        // dynamic overlay/iframe page on demand. Returns null (and logs) if misconfigured.
+        MenuLayout.prototype.provisionCardDestination = function (card, index, interactiveGroupsByLayer) {
+            var destinationType = card.destination_type;
+            var destinationValue = card.destination_value;
 
-            if ($label.length) {
-                $label.html(resolvedTitle);
+            if (destinationType === 'static_page') {
+                if (!destinationValue || !$('#' + destinationValue).length) {
+                    console.error('MenuLayout: static_page destination not found for card', card.name, destinationValue);
+                    return null;
+                }
+                return destinationValue;
             }
 
-            $card.attr("data-target-page", slot.pageId);
-            $card.attr("data-layer-z-order", group.layer);
-            $card.attr("data-overlay-enabled", "true");
-            $card.show();
+            if (destinationType === 'iframe') {
+                if (!this.isSafeIframeUrl(destinationValue)) {
+                    console.error('MenuLayout: invalid iframe destination for card', card.name, destinationValue);
+                    return null;
+                }
+                var iframePageId = this.getDynamicPageId(index);
+                this.ensureIframePage(iframePageId, destinationValue);
+                return iframePageId;
+            }
 
-            this.injectTRMAssetsIntoContainer(slot.mediaSelector, group.assets);
+            if (destinationType === 'trm_layer') {
+                var layer = parseInt(destinationValue, 10);
+                if (isNaN(layer)) {
+                    console.error('MenuLayout: invalid trm_layer destination for card', card.name, destinationValue);
+                    return null;
+                }
+                var layerPageId = this.getDynamicPageId(index);
+                this.ensureLayerPage(layerPageId);
+                var group = interactiveGroupsByLayer[layer];
+                if (!group) {
+                    console.warn('MenuLayout: no TRM asset zone content found for layer', layer, '(card "' + card.name + '")');
+                }
+                this.injectTRMAssetsIntoContainer('#' + layerPageId + ' .cms-media', group ? group.assets : []);
+                return layerPageId;
+            }
+
+            console.error('MenuLayout: unknown destination_type for card', card.name, destinationType);
+            return null;
         };
-        MenuLayout.prototype.buildTRMInteractiveLayout = function (TRMAssetZones) {
+        // Rebuilds the home page cards-grid from Supabase category_cards (fully dynamic count),
+        // provisioning whatever pages each card's destination needs (static/trm_layer/iframe).
+        MenuLayout.prototype.renderCategoryCards = function (categoryCards, TRMAssetZones) {
             var _this = this;
             this.configureHomeIdleContent(TRMAssetZones);
 
-            if(!TRMAssetZones || !TRMAssetZones.length) {
-                console.warn("No TRM asset zones provided.");
+            var $grid = $('.cards-grid');
+            if (!$grid.length) {
                 return;
             }
-            var interactiveGroups = this.getTRMInteractiveGroups(TRMAssetZones);
-            var slots = this.getOverlaySlotsFromMarkup().slice(0, 6);
-            var groupsByLayer = {};
 
-            interactiveGroups.forEach(function (group) {
-                groupsByLayer[group.layer] = group;
+            $(document).off('click.dynamic-overlay', '.feature-card[data-overlay-enabled="true"]');
+            this.teardownDynamicPages();
+            $grid.empty();
+
+            var interactiveGroupsByLayer = {};
+            this.getTRMInteractiveGroups(TRMAssetZones).forEach(function (group) {
+                interactiveGroupsByLayer[group.layer] = group;
             });
 
-            if (!slots.length) {
-                console.warn("No overlay slot markup found. Add data-overlay-layer, data-target-page, and data-media-selector to feature cards.");
-                return;
-            }
+            var cards = (Array.isArray(categoryCards) ? categoryCards : [])
+                .filter(function (card) { return card && card.active !== false; })
+                .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
 
-            slots.forEach(function (slot) {
-                var group = groupsByLayer[slot.layer];
-                if (!group) {
-                    _this.resetOverlaySlot(slot);
+            cards.forEach(function (card, index) {
+                var pageId = _this.provisionCardDestination(card, index, interactiveGroupsByLayer);
+                if (!pageId) {
                     return;
                 }
-                _this.applyOverlayGroupToSlot(slot, group);
+
+                var $icon = $('<img>').attr('src', card.icon_url || '').attr('alt', card.name || '');
+                var $card = $('<div>')
+                    .addClass('feature-card')
+                    .attr('data-overlay-enabled', 'true')
+                    .attr('data-target-page', pageId)
+                    .append($('<div>').addClass('card-icon').append($icon))
+                    .append($('<div>').addClass('card-label').text(card.name || ''));
+
+                // Per-card color overrides (label bar, icon border, hover/active) - scoped custom
+                // properties on this card only; unset keys fall through to the :root default.
+                var colorVarMap = {
+                    cardBackground: "--feature-card-bg",
+                    cardHoverBackground: "--feature-card-hover-bg",
+                    cardActiveBackground: "--feature-card-active-bg",
+                    labelColor: "--card-label-bg",
+                    iconBorderColor: "--card-icon-outline-color"
+                };
+                var cardColors = card.colors || {};
+                Object.keys(colorVarMap).forEach(function (key) {
+                    if (cardColors[key]) {
+                        $card.get(0).style.setProperty(colorVarMap[key], cardColors[key]);
+                    }
+                });
+
+                $grid.append($card);
             });
 
-            if (!interactiveGroups.length) {
-                this.handleMissingTRMAssetZones();
+            $(document).on('click.dynamic-overlay', '.feature-card[data-overlay-enabled="true"]', function (e) {
+                e.stopPropagation();
+                var targetPage = $(this).attr('data-target-page');
+                if (!targetPage) {
+                    return;
+                }
+                _this.navigateToPage(targetPage);
+            });
+
+            if (!cards.length) {
+                console.warn('MenuLayout: no active category cards configured for this store.');
             }
         };
         MenuLayout.prototype.startMediaPlaylistsForPage = function (pageId) {
@@ -780,20 +724,8 @@ var IMSintegration;
             });
         };
         MenuLayout.prototype.handleLayout = function (IMSSettings) {
-            var _this = this;
-            // Set up navigation buttons
+            // Card click handling is (re)bound in renderCategoryCards each time cards change.
             this.setupNavigationButtons();
-
-            $(document).off('click.dynamic-overlay', '.feature-card[data-overlay-enabled="true"]');
-            $(document).on('click.dynamic-overlay', '.feature-card[data-overlay-enabled="true"]', function (e) {
-                e.stopPropagation();
-                var targetPage = $(this).attr('data-target-page');
-                if (!targetPage) {
-                    return;
-                }
-                _this.navigateToPage(targetPage);
-            });
-
             return true;
         };
         MenuLayout.prototype.handleProducts = function (IMSProducts) {
@@ -816,11 +748,12 @@ var IMSintegration;
 
         MenuLayout.prototype.initInactivityManager = function () {
             var _this = this;
+            var behavior = this._behavior || {};
 
             if (typeof InactivityManager !== 'undefined') {
                 InactivityManager.init({
-                    warningDelay: 30000,
-                    countdownDuration: 10000,
+                    warningDelay: behavior.inactivityWarningDelayMs || 30000,
+                    countdownDuration: behavior.inactivityCountdownMs || 10000,
                     nutritionExtension: 30000,
                     activityEvents: ['click', 'touchstart', 'touchmove', 'mousemove'],
                     shouldTrackActivity: function () {
@@ -828,6 +761,9 @@ var IMSintegration;
                     },
                     onTimeout: function () {
                         _this.returnHome();
+                        if ((_this._behavior || {}).inactivityTargetPage === 'idle') {
+                            _this.showHomeIdleOverlay();
+                        }
                     },
                     onReset: function () {
                         // Timer reset silently
@@ -846,6 +782,12 @@ var IMSintegration;
 
             // Listen for activity forwarded from embedded assets (e.g. brandManager iframe).
             this.bindFrameActivityBridge();
+        };
+
+        // Config-editor-only: toggle the inactivity modal purely for a visual color preview,
+        // bypassing the real timer/state machine so it can't navigate away or start counting down.
+        MenuLayout.prototype.previewInactivityModal = function (show) {
+            $('#inactivity-warning-modal').toggleClass('active', !!show);
         };
 
         // Receives activity/extend messages from child iframes so the single

@@ -10,10 +10,10 @@ const version = 65;
 const isUsingSettings = true;
 const fullPreview = true;
 //leave settingKey blank for co-branded assets
-var settingKey = "ZDE0OTNkMjItNGE5My00ZjQ5LWE4ZDMtMzI2NDBhMGZlYjYw";
-var settingId_PartnerAPI = ["432"];
-var settingsId_Brand = ["433"]; //Sap Code / Business Unit
-var settingId_PartnerSite = ["434"]; //Venue / Location
+var settingKey = "N2RiZDYxZTMtMjEyZS00MjE5LWFjNzktZGI3MTU4YzAwYTgy";
+var settingId_PartnerAPI = ["349"];
+var settingsId_Brand = ["350"]; //Sap Code / Business Unit
+var settingId_PartnerSite = ["351"]; //Venue / Location
 //experimental placeholdder for Centrix
 //create
 // jeOl2jyXzotZWQa7ROvrIpOM4M473WT5Y1g0wDP1tr7Oq0lXzXUq0yNMAO13FK6jjJ8
@@ -69,8 +69,7 @@ const devSiteKeys = ["6091", "4873", "4907", "5448", "4756", "6820"];
 //these are the template defaults; a matching TRM setting overrides them in production
 //nutritional: leave blank to keep webtrition icons when no pack/setting is present
 //brand: falls back to the brand's text value when blank or the brand is unmatched
-//category: shows load errors when blank and no TRM setting is present
-var categoryIconPackId = "330406";
+//category icons now come from Supabase (category_cards.icon_url / icon_catalog) - see supabase/
 var brandLogoIconPackId = "297748";
 var nutritionalIconPackId = "302524";
 //end development & preview values

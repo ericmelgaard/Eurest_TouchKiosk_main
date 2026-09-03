@@ -1,31 +1,34 @@
-# TRM Theme System
+# Theme & Branding System (Supabase)
 
-This project supports runtime theming from `TRM_menuItems`.
+This project supports runtime theming and branding from Supabase, scoped to the kiosk's own
+`store_key` (see `js/supabaseConfig.js`, `js/configService.js`).
 
-Recommended setup: separate `TRM_menuItems` rows (one row per theme key/value).
+Theme colors live in `site_config.theme` (a single JSONB object, one key per canonical theme
+name below). Background and title/logo images live in `site_config.background_image_url` /
+`site_config.title_image_url`.
 
-Theme values are applied in `menuLayout.js` through:
+Theme and branding are applied in `menuLayout.js` through:
 
-- `MenuLayout.prototype.applyThemeFromTRMMenuItems(TRMMenuItems)`
+- `MenuLayout.prototype.applyThemeFromSiteConfig(siteConfig)`
+- `MenuLayout.prototype.applyBrandingFromSiteConfig(siteConfig)`
 
 CSS default values live in `style.css` under `:root`.
 
 ## How It Works
 
-1. App loads `TRM_menuItems` (fields like `id`, `name`, `value`).
-2. Theme parser reads each row using this key priority:
-   - `name`
-   - `key`
-   - `id`
+1. App fetches `site_config` for its own `store_key` from Supabase (`configService.fetchSiteConfig`).
+2. Theme parser reads each key of `site_config.theme`.
 3. The key is normalized:
    - lowercased
    - spaces, dashes, underscores, and punctuation removed
-4. If key matches a supported theme name, and `value` is a valid CSS color, JS sets the matching CSS variable.
-5. If key is missing or value is invalid, the CSS default in `:root` stays active.
+4. If key matches a supported theme name, and its value is a valid CSS color, JS sets the matching CSS variable.
+5. If a key is missing or its value is invalid, the CSS default in `:root` stays active.
+6. `background_image_url` / `title_image_url` (if set) replace the home page background image and
+   the `.welcome-header` logo; if absent, the static defaults already in `index.html`/`style.css` remain.
 
 ## TRM Menu Items To Create (Canonical Names)
 
-Use these names in `TRM_menuItems.name`.
+Use these names as keys in `site_config.theme`.
 
 | TRM name | CSS variable | Applies to |
 |---|---|---|
@@ -56,7 +59,7 @@ These also work and map to the same target variables:
 
 ## Value Rules
 
-`value` must be a valid CSS color string, for example:
+Each value must be a valid CSS color string, for example:
 
 - `#242d37`
 - `#fff`
@@ -64,37 +67,18 @@ These also work and map to the same target variables:
 - `rgba(0, 0, 0, 0.85)`
 - `white`
 
-If invalid, that row is ignored.
+If invalid, that key is ignored.
 
-## Two Ways To Send Theme Data
+## Theme Storage
 
-Preferred: Option A (separate rows / separate IDs).
-
-### Option A: One menu item per color
-
-Example rows:
-
-- `name: headerBackground`, `value: #1f2a36`
-- `name: cardIconOutlineColor`, `value: #00a651`
-- `name: inactivityText`, `value: rgba(255,255,255,0.92)`
-
-### Option B: One JSON bundle row
-
-Use one of these names:
-
-- `themeColors`
-- `theme`
-- `appColors`
-
-Recommended name when using JSON: `themeColors`
-
-Put JSON in `value`:
+`site_config.theme` is a single JSONB object, one key per canonical name (or alias, or a direct
+CSS variable name like `--welcome-header-bg`):
 
 ```json
 {
   "headerBackground": "#1f2a36",
   "cardIconOutlineColor": "#00a651",
-  "inactivityBackground": "#253240"
+  "inactivityText": "rgba(255,255,255,0.92)"
 }
 ```
 
@@ -127,9 +111,13 @@ JSON keys can be canonical names above, aliases, or direct CSS variable names (f
 2. Add one or two keys at first and verify on-screen.
 3. Expand to full palette.
 4. Keep values as hex or rgba for consistency.
+5. Save through the in-app config editor (`js/configEditor.js`), which POSTs to the
+   `save-site-config` edge function - never write `site_config` directly from the client.
 
 ## Defaults And Ownership
 
 - CSS defaults are the source of truth in `style.css` `:root`.
-- JS only applies overrides from TRM data.
-- No TRM value = default CSS value remains in effect.
+- JS only applies overrides from `site_config.theme`.
+- No value for a given key = default CSS value remains in effect.
+- Writes are validated server-side in `supabase/functions/save-site-config` (CSS color shape,
+  http(s)-only image URLs) before being upserted with the service-role key.
