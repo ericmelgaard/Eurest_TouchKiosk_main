@@ -206,34 +206,6 @@ var configEditor = (function () {
         }
     }
 
-    var PANEL_WIDTH = 520;
-
-    function applyDevLayout(open) {
-        var html = document.documentElement;
-        var body = document.body;
-        if (open) {
-            var viewH = window.innerHeight;
-            var availW = window.innerWidth - PANEL_WIDTH;
-            var kioskW = 1080;
-            var kioskH = 1920;
-            var scale = Math.min(availW / kioskW, viewH / kioskH, 1);
-            var scaledW = kioskW * scale;
-            var offsetX = PANEL_WIDTH + (availW - scaledW) / 2;
-            var offsetY = Math.max(0, (viewH - kioskH * scale) / 2);
-            html.style.transform = "scale(" + scale + ")";
-            html.style.transformOrigin = "0 0";
-            html.style.position = "absolute";
-            html.style.left = offsetX + "px";
-            html.style.top = offsetY + "px";
-        } else {
-            html.style.transform = "";
-            html.style.transformOrigin = "";
-            html.style.position = "";
-            html.style.left = "";
-            html.style.top = "";
-        }
-    }
-
     function restorePreviewPanelWidth() {
         if (!state.previewPanel || !state.previewPanel.classList.contains("config-editor-authoring-expanded")) {
             return;
@@ -1296,10 +1268,12 @@ var configEditor = (function () {
 
         if (isLocalDevContext() && modalHost === hostDocument.body) {
             $root.css({
-                position: "fixed", top: "0", left: "0", height: "100vh", "max-height": "100vh",
-                width: "520px", "border-radius": "0", "border-right": "1px solid #d5dee2",
-                "border-left": "none", "border-top": "none", "border-bottom": "none",
-                "box-shadow": "4px 0 24px rgba(9,35,44,.12)"
+                position: "fixed", top: "0", right: "0", left: "auto",
+                height: "100vh", "max-height": "100vh",
+                width: "520px", "border-radius": "0",
+                "border-left": "1px solid #d5dee2", "border-right": "none",
+                "border-top": "none", "border-bottom": "none",
+                "box-shadow": "-4px 0 24px rgba(9,35,44,.12)"
             });
             $root.prop("hidden", false).css("display", "none");
             $(modalHost).append($root);
@@ -1380,7 +1354,6 @@ var configEditor = (function () {
         }
         if (state._devInline) {
             state.$root.css("display", open ? "" : "none");
-            applyDevLayout(open);
         } else {
             state.$root.prop("hidden", !open);
         }
