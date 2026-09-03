@@ -1267,20 +1267,15 @@ var configEditor = (function () {
         $root.prop("hidden", true);
 
         if (isLocalDevContext() && modalHost === hostDocument.body) {
-            var $wrapper = $(hostDocument.createElement("div")).attr("id", "config-editor-dev-wrapper").css({
-                display: "none", position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
-                "z-index": 2147483000, "pointer-events": "none"
-            });
             $root.css({
-                position: "absolute", top: "0", left: "0", height: "100%", "max-height": "100%",
-                "border-radius": "0", "border-right": "1px solid #d5dee2", "border-left": "none",
-                "border-top": "none", "border-bottom": "none", "box-shadow": "4px 0 24px rgba(9,35,44,.12)",
-                "pointer-events": "auto"
+                position: "fixed", top: "0", left: "0", height: "100vh", "max-height": "100vh",
+                width: "520px", "border-radius": "0", "border-right": "1px solid #d5dee2",
+                "border-left": "none", "border-top": "none", "border-bottom": "none",
+                "box-shadow": "4px 0 24px rgba(9,35,44,.12)"
             });
-            $root.prop("hidden", false);
-            $wrapper.append($root);
-            $(modalHost).append($wrapper);
-            state._devWrapper = $wrapper;
+            $root.prop("hidden", false).css("display", "none");
+            $(modalHost).append($root);
+            state._devInline = true;
         } else {
             $(modalHost).prepend($root);
         }
@@ -1355,8 +1350,9 @@ var configEditor = (function () {
         } else {
             restorePreviewPanelWidth();
         }
-        if (state._devWrapper) {
-            state._devWrapper.css("display", open ? "block" : "none");
+        if (state._devInline) {
+            state.$root.css("display", open ? "" : "none");
+            document.body.style.marginLeft = open ? "520px" : "";
         } else {
             state.$root.prop("hidden", !open);
         }
