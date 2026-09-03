@@ -119,7 +119,7 @@ var configEditor = (function () {
     // Synthetic CCGS for local testing (no trm.wandcorp.com host page to provide the real one).
     // Override the test store with ?configStoreKey=NNN.
     function buildLocalTestCCGS() {
-        var storeKeyParam = getQueryParam("configStoreKey") || "9999999";
+        var storeKeyParam = getQueryParam("configStoreKey") || (typeof Store_Key !== "undefined" && Store_Key) || "9999999";
         return {
             conceptKey: 0,
             companyKey: 0,
