@@ -90,18 +90,15 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const formData = new FormData();
-    formData.append("", new Blob([bytes], { type: contentType }), path.split("/").pop());
-
     const uploadRes = await fetch(
       `${supabaseUrl}/storage/v1/object/${KIOSK_ASSETS_BUCKET}/${path}`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Authorization": `Bearer ${serviceKey}`,
-          "x-upsert": "true",
+          "Content-Type": contentType,
         },
-        body: formData,
+        body: bytes,
       },
     );
 
