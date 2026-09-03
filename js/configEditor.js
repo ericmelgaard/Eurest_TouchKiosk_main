@@ -813,7 +813,7 @@ var configEditor = (function () {
     }
 
     function getTargetLabel(card) {
-        if (!card.destination_type || !card.destination_value) return "No target";
+        if (!card.destination_value) return "Not configured";
         if (card.destination_type === "iframe") return card.destination_value || "Web link";
         if (card.destination_type === "static_page") return card.destination_value;
         var layers = getDiscoveredLayerOptions();
@@ -865,7 +865,8 @@ var configEditor = (function () {
         $summary.append($iconThumb);
 
         var $info = $('<div class="cfg-card-info"></div>');
-        $info.append($('<div class="cfg-card-title"></div>').text(card.name || "Untitled"));
+        var slotLabel = (index + 1) + ". " + (card.name || "Untitled");
+        $info.append($('<div class="cfg-card-title"></div>').text(slotLabel));
         $info.append($('<div class="cfg-card-target"></div>').text(getTargetLabel(card)));
         $summary.append($info);
 
@@ -977,18 +978,7 @@ var configEditor = (function () {
                 state.expandedCards[index] = false;
                 renderCardsList($list.closest(".config-editor-cards-section"));
             });
-            var $removeBtn = $('<button type="button" class="cfg-btn-danger">Remove</button>');
-            $removeBtn.on("click", function () {
-                state.cards.splice(index, 1);
-                delete state.expandedCards[index];
-                var $section = $list.closest(".config-editor-cards-section");
-                var $root = $section.closest("#config-editor-root");
-                saveCardsNow($root).then(function () {
-                    renderCardsList($section);
-                    previewCardsLive();
-                });
-            });
-            $editActions.append($saveCardBtn, $cancelBtn, $removeBtn);
+            $editActions.append($saveCardBtn, $cancelBtn);
             $panel.append($editActions);
 
             $card.append($panel);
@@ -1068,17 +1058,30 @@ var configEditor = (function () {
         });
     }
 
-    function makeNewCard(name) {
+    var SLOT_COUNT = 6;
+    var SLOT_NAMES = ["Page Link 1", "Page Link 2", "Page Link 3", "Page Link 4", "Page Link 5", "Page Link 6"];
+
+    function makeNewCard(name, index) {
         return {
-            sort_order: state.cards.length,
+            sort_order: index != null ? index : state.cards.length,
             name: name || "New Category",
-            active: true,
+            active: false,
             icon_url: "",
             icon_source: "catalog",
             destination_type: "trm_layer",
             destination_value: "",
             colors: {}
         };
+    }
+
+    function ensureSlots() {
+        while (state.cards.length < SLOT_COUNT) {
+            var i = state.cards.length;
+            state.cards.push(makeNewCard(SLOT_NAMES[i] || "Page Link " + (i + 1), i));
+        }
+        if (state.cards.length > SLOT_COUNT) {
+            state.cards.length = SLOT_COUNT;
+        }
     }
 
     // Category Cards leads the Home tab (they're the primary thing a store manager touches);
@@ -1088,20 +1091,13 @@ var configEditor = (function () {
 
         var $listSection = $('<div class="config-editor-section config-editor-cards-section"></div>');
         $listSection.append($('<h3></h3>').text("Page Links"));
-        $listSection.append($('<p class="config-editor-hint"></p>').text("Drag to reorder. Each card links to a page on the home screen."));
+        $listSection.append($('<p class="config-editor-hint"></p>').text("6 card slots for the home screen. Toggle a slot on and configure it to show a card."));
 
         var $list = $('<div class="config-editor-cards-list"></div>');
         $listSection.append($list);
         renderCardsList($listSection);
 
-        var $addBtn = $('<button type="button" class="cfg-add-card-btn">+ Add page link</button>');
-        $addBtn.on("click", function () {
-            state.cards.push(makeNewCard());
-            var newIndex = state.cards.length - 1;
-            state.expandedCards[newIndex] = true;
-            renderCardsList($listSection);
-        });
-        $listSection.append($addBtn);
+
 
         $listSection.append(renderGlobalTemplate($listSection));
         $panel.append($listSection);
@@ -1298,10 +1294,9 @@ var configEditor = (function () {
             state.workingTheme = Object.assign({}, (state.siteConfig && state.siteConfig.theme) || {});
             state.workingBehavior = Object.assign({}, (state.siteConfig && state.siteConfig.behavior) || {});
             state.expandedCards = {};
-            // Give a new store a starting point instead of an empty list,
-            // and persist the defaults so the live app sees them too.
-            if (!state.cards.length) {
-                state.cards = [makeNewCard("Category 1"), makeNewCard("Category 2"), makeNewCard("Category 3")];
+            ensureSlots();
+            // Persist the slots if the store had nothing yet.
+            if (!results[1].length) {
                 return saveCardsNow({ find: function () { return $([]); } }).catch(function () {});
             }
         });

@@ -41,13 +41,9 @@ Deno.serve(async (req) => {
     if (!isNonEmptyString(card?.name)) {
       return jsonResponse({ error: "Each card requires a non-empty name" }, 400);
     }
-    if (!isDestinationType(card?.destinationType)) {
-      return jsonResponse({ error: `Card "${card.name}" has an invalid destinationType` }, 400);
-    }
-    if (!isNonEmptyString(card?.destinationValue)) {
-      return jsonResponse({ error: `Card "${card.name}" requires a destinationValue` }, 400);
-    }
-    if (card?.destinationType === "iframe" && !isPlausibleAssetUrl(card.destinationValue)) {
+    const destType = isDestinationType(card?.destinationType) ? card.destinationType : "trm_layer";
+    const destValue = isNonEmptyString(card?.destinationValue) ? card.destinationValue : "";
+    if (destType === "iframe" && destValue && !isPlausibleAssetUrl(destValue)) {
       return jsonResponse({ error: `Card "${card.name}" iframe destination must be an http(s) URL` }, 400);
     }
     if (card?.iconUrl != null && !isPlausibleAssetUrl(card.iconUrl)) {
@@ -78,8 +74,8 @@ Deno.serve(async (req) => {
       active: card?.active !== false,
       icon_url: card?.iconUrl ?? null,
       icon_source: iconSource,
-      destination_type: card.destinationType,
-      destination_value: card.destinationValue,
+      destination_type: destType,
+      destination_value: destValue,
       colors,
       updated_at: new Date().toISOString(),
     });

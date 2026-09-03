@@ -1,0 +1,17 @@
+[project]
+id = ""
+
+[functions.copy-template]
+verify_jwt = false
+
+[functions.delete-asset]
+verify_jwt = false
+
+[functions.save-category-cards]
+verify_jwt = false
+
+[functions.save-site-config]
+verify_jwt = false
+
+[functions.upload-asset]
+verify_jwt = false
