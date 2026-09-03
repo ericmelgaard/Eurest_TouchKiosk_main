@@ -87,19 +87,33 @@ Deno.serve(async (req) => {
       path = `branding/${storeKey}/${purpose}-${Date.now()}.${extension}`;
     }
 
-    const supabase = createAdminClient();
-    const { error: uploadError } = await supabase.storage
-      .from(KIOSK_ASSETS_BUCKET)
-      .upload(path, bytes, { contentType, upsert: true });
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (uploadError) {
-      console.error("upload-asset: storage upload failed", uploadError);
-      return jsonResponse({ error: "Storage upload failed: " + uploadError.message }, 500);
+    // Direct REST call avoids the JS client's multipart encoding issues in Deno
+    const uploadRes = await fetch(
+      `${supabaseUrl}/storage/v1/object/${KIOSK_ASSETS_BUCKET}/${path}`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${serviceKey}`,
+          "Content-Type": contentType,
+          "x-upsert": "true",
+        },
+        body: bytes,
+      },
+    );
+
+    if (!uploadRes.ok) {
+      const detail = await uploadRes.text().catch(() => "");
+      console.error("upload-asset: storage upload failed", uploadRes.status, detail);
+      return jsonResponse({ error: "Storage upload failed", detail }, 500);
     }
 
     const iconUrl = buildPublicUrl(path);
 
     if (purpose === "icon-catalog") {
+      const supabase = createAdminClient();
       const { data, error } = await supabase
         .from("icon_catalog")
         .insert({
