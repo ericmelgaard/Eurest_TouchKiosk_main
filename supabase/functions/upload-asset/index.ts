@@ -90,17 +90,18 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Direct REST call avoids the JS client's multipart encoding issues in Deno
+    const formData = new FormData();
+    formData.append("", new Blob([bytes], { type: contentType }), path.split("/").pop());
+
     const uploadRes = await fetch(
       `${supabaseUrl}/storage/v1/object/${KIOSK_ASSETS_BUCKET}/${path}`,
       {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${serviceKey}`,
-          "Content-Type": contentType,
           "x-upsert": "true",
         },
-        body: bytes,
+        body: formData,
       },
     );
 
