@@ -1265,7 +1265,26 @@ var configEditor = (function () {
         var modalHost = getModalHost();
         var $root = createPanelSkeleton(hostDocument, function () { togglePanel(false); });
         $root.prop("hidden", true);
-        $(modalHost).prepend($root);
+
+        if (isLocalDevContext() && modalHost === hostDocument.body) {
+            var $wrapper = $(hostDocument.createElement("div")).attr("id", "config-editor-dev-wrapper").css({
+                display: "none", position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
+                "z-index": 2147483000, "pointer-events": "none"
+            });
+            $root.css({
+                position: "absolute", top: "0", left: "0", height: "100%", "max-height": "100%",
+                "border-radius": "0", "border-right": "1px solid #d5dee2", "border-left": "none",
+                "border-top": "none", "border-bottom": "none", "box-shadow": "4px 0 24px rgba(9,35,44,.12)",
+                "pointer-events": "auto"
+            });
+            $root.prop("hidden", false);
+            $wrapper.append($root);
+            $(modalHost).append($wrapper);
+            state._devWrapper = $wrapper;
+        } else {
+            $(modalHost).prepend($root);
+        }
+
         state.$root = $root;
         return $root;
     }
@@ -1336,7 +1355,11 @@ var configEditor = (function () {
         } else {
             restorePreviewPanelWidth();
         }
-        state.$root.prop("hidden", !open);
+        if (state._devWrapper) {
+            state._devWrapper.css("display", open ? "block" : "none");
+        } else {
+            state.$root.prop("hidden", !open);
+        }
     }
 
     function init() {
