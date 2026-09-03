@@ -1355,8 +1355,10 @@ var configEditor = (function () {
             }
         }
         state.locations = readAccessibleLocations();
-        // A real CF host page always wins if present; separate-window mode is only for local testing.
-        state.useSeparateWindow = isLocalDevContext() && !window.isCF;
+        // Always render the panel inline in the current page. The separate-window path
+        // opened a blank popup that lacked the app's jQuery/DOM context; the inline path
+        // falls back to document.body when no CF preview panel structure is found.
+        state.useSeparateWindow = false;
 
         var $toggleBtn = $('<button type="button" id="config-editor-toggle">Edit Config</button>').css({
             position: "fixed", top: "20px", left: "20px", "z-index": 20000, padding: "12px 20px",
