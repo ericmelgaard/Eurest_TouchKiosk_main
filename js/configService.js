@@ -121,25 +121,49 @@ var configService = (function () {
         return callFunction("delete-asset", payload);
     }
 
+    var ALLOWED_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg" };
+
     function uploadAsset(formData) {
-        return fetch(functionUrl("upload-asset"), {
+        var file = formData.get("file");
+        var purpose = formData.get("purpose") || "custom-icon";
+        var storeKey = formData.get("storeKey") || "0";
+        var conceptKey = formData.get("conceptKey");
+
+        if (!file || !(file instanceof File)) {
+            return Promise.reject(new Error("No file selected"));
+        }
+        var ext = ALLOWED_TYPES[file.type];
+        if (!ext) {
+            return Promise.reject(new Error("Unsupported file type: " + file.type));
+        }
+
+        var folder;
+        if (purpose === "icon-catalog") {
+            folder = "icons/catalog/" + (conceptKey || "0");
+        } else if (purpose === "custom-icon") {
+            folder = "icons/custom/" + storeKey;
+        } else {
+            folder = "branding/" + storeKey;
+        }
+        var uniqueName = purpose + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+        var objectPath = folder + "/" + uniqueName;
+
+        return fetch(storageUrl("object/kiosk-assets/" + objectPath), {
             method: "POST",
             headers: {
                 "apikey": SUPABASE_ANON_KEY,
-                "Authorization": "Bearer " + SUPABASE_ANON_KEY
+                "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+                "Content-Type": file.type,
+                "x-upsert": "true"
             },
-            body: formData
+            body: file
         }).then(function (res) {
-            return res.text().then(function (text) {
-                var data;
-                try { data = JSON.parse(text); } catch (_e) { data = {}; }
-                if (!res.ok) {
-                    var msg = (data && data.error) || "upload-asset failed with status " + res.status;
-                    if (data && data.debug) { msg += " | " + JSON.stringify(data.debug); }
-                    throw new Error(msg);
-                }
-                return data;
-            });
+            if (!res.ok) {
+                return res.text().then(function (t) {
+                    throw new Error("Storage upload failed (" + res.status + "): " + t);
+                });
+            }
+            return { url: storageUrl("object/public/kiosk-assets/" + objectPath) };
         });
     }
 
