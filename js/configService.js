@@ -121,74 +121,26 @@ var configService = (function () {
         return callFunction("delete-asset", payload);
     }
 
-    var ALLOWED_EXTENSIONS = {
-        "image/png": "png",
-        "image/jpeg": "jpg",
-        "image/webp": "webp",
-        "image/svg+xml": "svg"
-    };
-
-    function buildStoragePath(purpose, storeKey, extension) {
-        var id = crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
-        if (purpose === "icon-catalog") {
-            return "icons/catalog/" + storeKey + "/" + id + "." + extension;
-        }
-        if (purpose === "custom-icon") {
-            return "icons/custom/" + storeKey + "/" + id + "." + extension;
-        }
-        return "branding/" + storeKey + "/" + purpose + "-" + Date.now() + "." + extension;
-    }
-
     function uploadAsset(formData) {
         var file = formData.get("file");
-        var purpose = formData.get("purpose") || "custom-icon";
-        var storeKey = formData.get("storeKey") || "0";
-        var conceptKey = formData.get("conceptKey");
-
         if (!file || !(file instanceof File)) {
             return Promise.reject(new Error("No file selected"));
         }
 
-        var extension = ALLOWED_EXTENSIONS[file.type];
-        if (!extension) {
-            return Promise.reject(new Error("Unsupported file type: " + file.type));
-        }
-
-        var path = buildStoragePath(purpose, storeKey, extension);
-        var uploadUrl = storageUrl("object/kiosk-assets/" + path);
-
-        var fd = new FormData();
-        fd.append("", file, file.name);
-
-        return fetch(uploadUrl, {
+        return fetch(functionUrl("upload-asset"), {
             method: "POST",
             headers: {
                 "apikey": SUPABASE_ANON_KEY,
-                "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-                "x-upsert": "true"
+                "Authorization": "Bearer " + SUPABASE_ANON_KEY
             },
-            body: fd
+            body: formData
         }).then(function (res) {
-            if (!res.ok) {
-                return res.text().then(function (txt) {
-                    throw new Error("Storage upload failed (" + res.status + "): " + txt);
-                });
-            }
-            var url = buildPublicUrl(path);
-
-            if (purpose === "icon-catalog" && conceptKey != null) {
-                return callFunction("upload-asset", {
-                    purpose: "icon-catalog",
-                    conceptKey: conceptKey,
-                    iconUrl: url,
-                    label: formData.get("label") || ""
-                }).then(function (data) {
-                    data.url = url;
-                    return data;
-                });
-            }
-
-            return { url: url };
+            return res.json().catch(function () { return {}; }).then(function (data) {
+                if (!res.ok) {
+                    throw new Error((data && data.error) || ("upload-asset failed with status " + res.status));
+                }
+                return data;
+            });
         });
     }
 
