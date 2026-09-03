@@ -5,7 +5,7 @@ import {
 } from "../_shared/supabaseAdmin.ts";
 import { isNonEmptyString, normalizeStoreKey } from "../_shared/validation.ts";
 
-const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB limit
 const ALLOWED_CONTENT_TYPES: Record<string, string> = {
   "image/png": "png",
   "image/jpeg": "jpg",
