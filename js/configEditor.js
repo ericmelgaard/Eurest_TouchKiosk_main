@@ -286,10 +286,24 @@ var configEditor = (function () {
             "#config-editor-root .config-editor-history-item{display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;width:76px!important}",
             "#config-editor-root .config-editor-history-item img{width:64px!important;height:64px!important;object-fit:cover!important;border:1px solid #e1e8ea!important;border-radius:6px!important;background:#fff!important}",
             "#config-editor-root .config-editor-history-item button{min-height:auto!important;font-size:10px!important;padding:3px 5px!important;width:100%!important}",
-            "#config-editor-root .config-editor-card{border:1px solid #e1e8ea!important;border-radius:8px!important;padding:10px 12px!important;margin-bottom:10px!important;background:#f5f8f9!important}",
-            "#config-editor-root .config-editor-card:hover{border-color:#3586bd!important}",
-            "#config-editor-root .config-editor-card-row-top{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important}",
-            // Boolean pill switch (Active toggle, etc.) - checkbox is visually hidden, track/thumb drawn via siblings.
+            "#config-editor-root .config-editor-card{border:1px solid #e1e8ea!important;border-radius:10px!important;padding:0!important;margin-bottom:6px!important;background:#fff!important;overflow:hidden!important;transition:box-shadow .15s ease, border-color .15s ease!important}",
+            "#config-editor-root .config-editor-card:hover{border-color:#c0cdd3!important;box-shadow:0 2px 8px rgba(0,0,0,.06)!important}",
+            "#config-editor-root .config-editor-card.is-editing{border-color:#3586bd!important;box-shadow:0 2px 12px rgba(53,134,189,.15)!important}",
+            "#config-editor-root .config-editor-card.is-inactive{opacity:.55!important}",
+            "#config-editor-root .cfg-card-summary{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 12px!important;cursor:grab!important;min-height:52px!important}",
+            "#config-editor-root .cfg-card-icon-thumb{width:36px!important;height:36px!important;min-width:36px!important;border-radius:50%!important;background:#f0f3f5!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;border:2px solid #e1e8ea!important}",
+            "#config-editor-root .cfg-card-icon-thumb img{width:24px!important;height:24px!important;object-fit:contain!important}",
+            "#config-editor-root .cfg-card-icon-thumb.empty{background:#e8edf0!important}",
+            "#config-editor-root .cfg-card-info{flex:1!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:1px!important}",
+            "#config-editor-root .cfg-card-title{font-size:14px!important;font-weight:600!important;color:#1a2328!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}",
+            "#config-editor-root .cfg-card-target{font-size:11px!important;color:#8a9aa0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}",
+            "#config-editor-root .cfg-card-actions{display:flex!important;align-items:center!important;gap:6px!important;flex-shrink:0!important}",
+            "#config-editor-root .cfg-card-edit-btn{background:none!important;border:1px solid #dde4e7!important;border-radius:6px!important;padding:5px 10px!important;font-size:12px!important;font-weight:600!important;color:#3586bd!important;cursor:pointer!important;transition:all .12s ease!important;min-height:auto!important}",
+            "#config-editor-root .cfg-card-edit-btn:hover{background:#f0f7fb!important;border-color:#3586bd!important}",
+            "#config-editor-root .cfg-card-reorder{display:flex!important;flex-direction:column!important;gap:1px!important;flex-shrink:0!important}",
+            "#config-editor-root .cfg-card-reorder button{background:none!important;border:none!important;padding:0 2px!important;font-size:11px!important;line-height:1!important;color:#8a9aa0!important;cursor:pointer!important;min-height:auto!important}",
+            "#config-editor-root .cfg-card-reorder button:hover{color:#3586bd!important}",
+            // Boolean pill switch
             "#config-editor-root .cfg-switch{display:inline-flex!important;align-items:center!important;gap:8px!important;cursor:pointer!important;-webkit-user-select:none!important;user-select:none!important}",
             "#config-editor-root .cfg-switch input{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;min-height:1px!important;padding:0!important}",
             "#config-editor-root .cfg-switch-track{position:relative!important;display:inline-block!important;width:36px!important;height:20px!important;min-width:36px!important;border-radius:10px!important;background:#c5d0d4!important;transition:background-color .15s ease!important}",
@@ -297,26 +311,34 @@ var configEditor = (function () {
             "#config-editor-root .cfg-switch input:checked ~ .cfg-switch-track{background:#3586bd!important}",
             "#config-editor-root .cfg-switch input:checked ~ .cfg-switch-track .cfg-switch-thumb{transform:translateX(16px)!important}",
             "#config-editor-root .cfg-switch-label{font-size:12px!important;font-weight:600!important;color:#54666d!important;white-space:nowrap!important}",
-            // Primary card fields - name is the most basic thing to edit, so it gets a prominent input.
-            "#config-editor-root .cfg-card-name-input{width:100%!important;font-size:15px!important;font-weight:700!important;margin:10px 0!important}",
-            "#config-editor-root .cfg-page-row{display:flex!important;flex-direction:column!important;gap:6px!important;margin-bottom:4px!important}",
+            // Edit panel (expanded)
+            "#config-editor-root .cfg-card-edit-panel{padding:12px 14px 14px!important;border-top:1px solid #eef2f4!important;background:#fafcfd!important;display:flex!important;flex-direction:column!important;gap:12px!important}",
+            "#config-editor-root .cfg-card-edit-panel label{font-size:12px!important;font-weight:600!important;color:#54666d!important;display:flex!important;flex-direction:column!important;gap:4px!important}",
+            "#config-editor-root .cfg-card-edit-panel input[type=text]{font-size:14px!important;padding:7px 10px!important;border:1px solid #dde4e7!important;border-radius:6px!important;width:100%!important;box-sizing:border-box!important}",
+            "#config-editor-root .cfg-card-edit-panel input[type=text]:focus{border-color:#3586bd!important;outline:none!important;box-shadow:0 0 0 2px rgba(53,134,189,.15)!important}",
+            "#config-editor-root .cfg-edit-field-row{display:flex!important;flex-direction:column!important;gap:4px!important}",
+            "#config-editor-root .cfg-edit-actions{display:flex!important;align-items:center!important;gap:8px!important;padding-top:4px!important}",
+            "#config-editor-root .cfg-btn-save{background:#3586bd!important;color:#fff!important;border:none!important;border-radius:6px!important;padding:7px 18px!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important;min-height:auto!important;transition:background .12s ease!important}",
+            "#config-editor-root .cfg-btn-save:hover{background:#2a6fa0!important}",
+            "#config-editor-root .cfg-btn-cancel{background:none!important;color:#54666d!important;border:1px solid #dde4e7!important;border-radius:6px!important;padding:7px 14px!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important;min-height:auto!important}",
+            "#config-editor-root .cfg-btn-cancel:hover{background:#f0f3f5!important}",
+            "#config-editor-root .cfg-btn-danger{background:none!important;color:#c0392b!important;border:none!important;padding:7px 10px!important;font-size:12px!important;font-weight:600!important;cursor:pointer!important;min-height:auto!important;margin-left:auto!important}",
+            "#config-editor-root .cfg-btn-danger:hover{background:#fdf0ef!important;border-radius:6px!important}",
+            "#config-editor-root .cfg-page-row{display:flex!important;flex-direction:column!important;gap:4px!important}",
             "#config-editor-root .cfg-page-row-controls{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}",
-            "#config-editor-root .cfg-advanced-heading{font-size:11px!important;font-weight:700!important;color:#8a9aa0!important;text-transform:uppercase!important;letter-spacing:.05em!important;margin:0!important}",
-            "#config-editor-root .cfg-card-body{margin-top:10px!important;padding-top:10px!important;border-top:1px solid #e1e8ea!important;display:flex!important;flex-direction:column!important;gap:10px!important}",
-            "#config-editor-root .cfg-card-colors{display:flex!important;flex-wrap:wrap!important;gap:14px!important}",
             "#config-editor-root .config-editor-dest-control-wrap select,#config-editor-root .config-editor-dest-control-wrap input{font-size:12px!important}",
+            "#config-editor-root .cfg-card-colors{display:flex!important;flex-wrap:wrap!important;gap:14px!important}",
             "#config-editor-root .config-editor-card-row-bottom{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}",
             "#config-editor-root .config-editor-icon-picker{display:none!important;flex-wrap:wrap!important;gap:6px!important;width:100%!important;padding:8px!important;margin-top:6px!important;background:#fff!important;border:1px solid #e1e8ea!important;border-radius:8px!important}",
             "#config-editor-root .config-editor-icon-picker.is-open{display:flex!important}",
             "#config-editor-root .config-editor-icon-thumb{width:36px!important;height:36px!important;object-fit:contain!important;cursor:pointer!important;border:1px solid #e1e8ea!important;border-radius:6px!important}",
-            // Live visual template - mirrors the real .feature-card/.card-icon/.card-label markup
-            // (scaled down) so clicking/hovering/pressing it previews exactly what the kiosk shows.
-            "#config-editor-root .cfg-card-template{position:relative!important;display:flex!important;align-items:center!important;padding:6px!important;border-radius:10px!important;overflow:hidden!important;cursor:pointer!important;background-color:var(--feature-card-bg,#3a4750)!important;transition:background-color .15s ease!important;margin:2px 0 10px 0!important;min-height:64px!important;border:1px solid rgba(0,0,0,.08)!important}",
-            "#config-editor-root .cfg-card-template:hover{background-color:var(--feature-card-hover-bg,#8B9AA4)!important}",
-            "#config-editor-root .cfg-card-template:active{background-color:var(--feature-card-active-bg,#6B7A84)!important}",
-            "#config-editor-root .cfg-card-template-icon{width:48px!important;height:48px!important;min-width:48px!important;border-radius:50%!important;background:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:8px -8px 8px 10px!important;z-index:1!important;cursor:pointer!important}",
-            "#config-editor-root .cfg-card-template-icon img{width:32px!important;height:32px!important;object-fit:contain!important;border-radius:100px!important;outline:solid 5px var(--card-icon-outline-color,#242d37)!important;outline-offset:-5px!important}",
-            "#config-editor-root .cfg-card-template-label{flex:1!important;border-radius:8px!important;background-color:var(--card-label-bg,#7a746e)!important;color:#fff!important;font-weight:700!important;font-size:12px!important;text-transform:uppercase!important;letter-spacing:.3px!important;text-align:center!important;padding:14px 14px 14px 26px!important;cursor:pointer!important}",
+            // Add-card button styled like a card row
+            "#config-editor-root .cfg-add-card-btn{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;border:2px dashed #d0dae0!important;border-radius:10px!important;background:none!important;padding:14px!important;font-size:14px!important;font-weight:600!important;color:#6b8390!important;cursor:pointer!important;transition:all .15s ease!important;min-height:52px!important}",
+            "#config-editor-root .cfg-add-card-btn:hover{border-color:#3586bd!important;color:#3586bd!important;background:#f5fafd!important}",
+            // Global template section
+            "#config-editor-root .cfg-global-template{border:1px solid #e1e8ea!important;border-radius:10px!important;padding:14px!important;background:#fafcfd!important;margin-top:6px!important}",
+            "#config-editor-root .cfg-global-template h4{font-size:12px!important;font-weight:700!important;color:#54666d!important;text-transform:uppercase!important;letter-spacing:.03em!important;margin:0 0 10px 0!important}",
+            "#config-editor-root .cfg-global-template-actions{display:flex!important;gap:8px!important;margin-top:10px!important;flex-wrap:wrap!important}",
             "#config-editor-root .cfg-idle-list{margin:0 0 10px 0!important;padding-left:18px!important;font-size:13px!important;color:#333!important}",
             "#config-editor-root .cfg-idle-list li{margin-bottom:4px!important}",
             "#config-editor-toggle{position:fixed!important;top:20px!important;left:20px!important;z-index:20000!important;padding:12px 20px!important;font-size:16px!important;font-weight:600!important;background:#242d37!important;color:#fff!important;border:none!important;border-radius:8px!important;cursor:pointer!important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif!important}",
@@ -790,100 +812,108 @@ var configEditor = (function () {
         state.expandedCards[j] = tmpExpanded;
     }
 
-    // Primary surface: name + active switch + page (the essentials every card needs).
-    // Icon, colors, and the destructive "remove" action are secondary, behind the expand chevron.
-    function renderCardRow(card, index, $list) {
-        var $card = $('<div class="config-editor-card"></div>');
-        var expanded = !!state.expandedCards[index];
-        card.colors = card.colors || {};
-        var $templateLabel = null; // only exists once Advanced (with the live preview) is expanded
+    function getTargetLabel(card) {
+        if (!card.destination_type || !card.destination_value) return "No target";
+        if (card.destination_type === "iframe") return card.destination_value || "Web link";
+        if (card.destination_type === "static_page") return card.destination_value;
+        var layers = getDiscoveredLayerOptions();
+        for (var i = 0; i < layers.length; i++) {
+            if (layers[i].value === String(card.destination_value)) return layers[i].label;
+        }
+        return "Page " + card.destination_value;
+    }
 
-        var $top = $('<div class="config-editor-card-row-top"></div>');
-        var $upBtn = $('<button type="button" class="config-editor-btn-icon" title="Move up">&uarr;</button>').on("click", function () {
+    function renderCardRow(card, index, $list) {
+        var editing = !!state.expandedCards[index];
+        card.colors = card.colors || {};
+
+        var $card = $('<div class="config-editor-card"></div>');
+        if (editing) $card.addClass("is-editing");
+        if (card.active === false) $card.addClass("is-inactive");
+
+        // --- Compact summary row ---
+        var $summary = $('<div class="cfg-card-summary"></div>');
+
+        var $reorder = $('<div class="cfg-card-reorder"></div>');
+        var $upBtn = $('<button type="button" title="Move up">&#9650;</button>').on("click", function (e) {
+            e.stopPropagation();
             if (index > 0) {
                 swapCards(index, index - 1);
                 renderCardsList($list.closest(".config-editor-cards-section"));
                 previewCardsLive();
             }
         });
-        var $downBtn = $('<button type="button" class="config-editor-btn-icon" title="Move down">&darr;</button>').on("click", function () {
+        var $downBtn = $('<button type="button" title="Move down">&#9660;</button>').on("click", function (e) {
+            e.stopPropagation();
             if (index < state.cards.length - 1) {
                 swapCards(index, index + 1);
                 renderCardsList($list.closest(".config-editor-cards-section"));
                 previewCardsLive();
             }
         });
-        var $activeSwitch = renderToggleSwitch("Active", function () { return card.active !== false; }, function (v) { card.active = v; previewCardsLive(); });
-        $top.append($upBtn, $downBtn, $activeSwitch);
-        $top.append($('<span></span>').css({ flex: "1" }));
+        if (index === 0) $upBtn.css("visibility", "hidden");
+        if (index === state.cards.length - 1) $downBtn.css("visibility", "hidden");
+        $reorder.append($upBtn, $downBtn);
+        $summary.append($reorder);
 
-        var $expandBtn = $('<button type="button" class="config-editor-btn-icon" title="Advanced options">&#9660;</button>');
-        if (expanded) {
-            $expandBtn.html("&#9650;");
+        var $iconThumb = $('<div class="cfg-card-icon-thumb"></div>');
+        if (card.icon_url) {
+            $iconThumb.append($('<img alt="" />').attr("src", card.icon_url));
+        } else {
+            $iconThumb.addClass("empty").text("--");
         }
-        $expandBtn.on("click", function () {
-            state.expandedCards[index] = !expanded;
+        $summary.append($iconThumb);
+
+        var $info = $('<div class="cfg-card-info"></div>');
+        $info.append($('<div class="cfg-card-title"></div>').text(card.name || "Untitled"));
+        $info.append($('<div class="cfg-card-target"></div>').text(getTargetLabel(card)));
+        $summary.append($info);
+
+        var $actions = $('<div class="cfg-card-actions"></div>');
+        var $activeSwitch = renderToggleSwitch("", function () { return card.active !== false; }, function (v) {
+            card.active = v;
+            $card.toggleClass("is-inactive", !v);
+            previewCardsLive();
+        });
+        $actions.append($activeSwitch);
+
+        var $editBtn = $('<button type="button" class="cfg-card-edit-btn"></button>').text(editing ? "Close" : "Edit");
+        $editBtn.on("click", function (e) {
+            e.stopPropagation();
+            state.expandedCards[index] = !editing;
             renderCardsList($list.closest(".config-editor-cards-section"));
         });
-        $top.append($expandBtn);
-        $card.append($top);
+        $actions.append($editBtn);
+        $summary.append($actions);
+        $card.append($summary);
 
-        var $nameInput = $('<input type="text" class="cfg-card-name-input" placeholder="Card name" />').val(card.name || "");
-        $nameInput.on("input", function () {
-            card.name = $(this).val();
-            if ($templateLabel) {
-                $templateLabel.text(card.name || "Untitled");
-            }
-        });
-        $nameInput.on("change", previewCardsLive);
-        $card.append($nameInput);
+        // --- Edit panel (expanded) ---
+        if (editing) {
+            var $panel = $('<div class="cfg-card-edit-panel"></div>');
 
-        var $pageRow = $('<div class="cfg-page-row"></div>');
-        $pageRow.append($('<span class="config-editor-color-label"></span>').text("Page"));
-        var $pageControls = $('<div class="cfg-page-row-controls"></div>');
-        $pageControls.append(renderPageControl(card));
-        $pageRow.append($pageControls);
-        $card.append($pageRow);
+            var $nameField = $('<label></label>').text("Name");
+            var $nameInput = $('<input type="text" placeholder="Card name" />').val(card.name || "");
+            $nameField.append($nameInput);
+            $panel.append($nameField);
 
-        if (expanded) {
-            var $body = $('<div class="cfg-card-body"></div>');
-            $body.append($('<p class="cfg-advanced-heading"></p>').text("Advanced"));
+            var $pageField = $('<div class="cfg-edit-field-row"></div>');
+            $pageField.append($('<label></label>').css("margin-bottom", "0").text("Target page"));
+            $pageField.append(renderPageControl(card));
+            $panel.append($pageField);
 
-            // Live visual template - mirrors the real .feature-card markup so clicking/hovering/
-            // pressing it previews exactly what the kiosk shows for this card's colors.
-            var $template = $('<div class="cfg-card-template"></div>');
-            var $templateIcon = $('<div class="cfg-card-template-icon"></div>');
-            var $templateIconImg = $('<img alt="" />').attr("src", card.icon_url || "");
-            $templateIcon.append($templateIconImg);
-            $templateLabel = $('<div class="cfg-card-template-label"></div>').text(card.name || "Untitled");
-            $template.append($templateIcon, $templateLabel);
-            $body.append($template);
-            $body.append($('<p class="config-editor-hint"></p>').text("Tap the preview to change its colors - hover or press it to check the hover/press colors."));
-
-            var CARD_COLOR_VAR_MAP = {
-                cardBackground: "--feature-card-bg",
-                cardHoverBackground: "--feature-card-hover-bg",
-                cardActiveBackground: "--feature-card-active-bg",
-                labelColor: "--card-label-bg",
-                iconBorderColor: "--card-icon-outline-color"
-            };
-            function applyTemplateColors() {
-                Object.keys(CARD_COLOR_VAR_MAP).forEach(function (key) {
-                    if (card.colors[key]) {
-                        $template.get(0).style.setProperty(CARD_COLOR_VAR_MAP[key], card.colors[key]);
-                    } else {
-                        $template.get(0).style.removeProperty(CARD_COLOR_VAR_MAP[key]);
-                    }
-                });
-            }
-            applyTemplateColors();
-
+            // Icon section
+            var $iconField = $('<div class="cfg-edit-field-row"></div>');
+            $iconField.append($('<label></label>').css("margin-bottom", "0").text("Icon"));
             var $iconRow = $('<div class="config-editor-card-row-bottom"></div>');
-            var $chooseIconBtn = $('<button type="button">Choose icon</button>');
+            var $currentIcon = $('<img alt="" />').attr("src", card.icon_url || "").css({ width: "36px", height: "36px", objectFit: "contain", borderRadius: "6px", border: "1px solid #e1e8ea", background: "#f5f8f9" });
+            if (!card.icon_url) $currentIcon.css("display", "none");
+            $iconRow.append($currentIcon);
+
+            var $chooseIconBtn = $('<button type="button" class="cfg-card-edit-btn">Choose icon</button>');
             var $picker = renderIconPicker(function (icon) {
                 card.icon_url = icon.icon_url;
                 card.icon_source = "catalog";
-                $templateIconImg.attr("src", icon.icon_url);
+                $currentIcon.attr("src", icon.icon_url).css("display", "");
                 previewCardsLive();
             });
             $chooseIconBtn.on("click", function () { $picker.toggleClass("is-open"); });
@@ -892,14 +922,12 @@ var configEditor = (function () {
             var $uploadIcon = $('<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" title="Upload custom icon" />');
             $uploadIcon.on("change", function () {
                 var file = this.files && this.files[0];
-                if (!file) {
-                    return;
-                }
+                if (!file) return;
                 var form = buildFormData({ purpose: "custom-icon", storeKey: String(state.ccgs.storeKey), file: file });
                 configService.uploadAsset(form).then(function (result) {
                     card.icon_url = result.url;
                     card.icon_source = "custom";
-                    $templateIconImg.attr("src", result.url);
+                    $currentIcon.attr("src", result.url).css("display", "");
                     previewCardsLive();
                 }).catch(function (err) {
                     console.error("configEditor: custom icon upload failed", err);
@@ -907,47 +935,63 @@ var configEditor = (function () {
                 });
             });
             $iconRow.append($uploadIcon);
-            $body.append($iconRow, $picker);
+            $iconField.append($iconRow, $picker);
+            $panel.append($iconField);
 
-            var $colorsRow = $('<div class="cfg-card-colors"></div>');
-            var colorFieldEls = {};
-            CARD_COLOR_FIELDS.forEach(function (field) {
-                var $field = renderColorField(field.label, function () { return card.colors[field.key]; }, function (v) { card.colors[field.key] = v; }, {
-                    onChange: function () { applyTemplateColors(); previewCardsLive(); }
-                });
-                colorFieldEls[field.key] = $field;
-                $colorsRow.append($field);
+            // Per-card color overrides (collapsed by default)
+            var $colorsToggle = $('<button type="button" class="cfg-card-edit-btn" style="align-self:flex-start!important"></button>').text("Card colors");
+            var $colorsSection = $('<div class="cfg-card-colors" style="display:none!important"></div>');
+            var hasColors = Object.keys(card.colors).some(function (k) { return !!card.colors[k]; });
+            if (hasColors) $colorsSection.css("display", "flex");
+            $colorsToggle.on("click", function () {
+                var visible = $colorsSection.css("display") !== "none";
+                $colorsSection.css("display", visible ? "none" : "flex");
             });
-            $body.append($colorsRow);
-
-            // Colors always fall back to the site's standard CSS-defined theme once cleared.
-            var $revertBtn = $('<button type="button">Revert to standard colors</button>');
-            $revertBtn.on("click", function () {
+            CARD_COLOR_FIELDS.forEach(function (field) {
+                $colorsSection.append(renderColorField(field.label, function () { return card.colors[field.key]; }, function (v) { card.colors[field.key] = v; }, { onChange: previewCardsLive }));
+            });
+            var $revertColorsBtn = $('<button type="button" class="cfg-btn-cancel" style="font-size:11px!important;padding:4px 10px!important">Revert colors</button>');
+            $revertColorsBtn.on("click", function () {
                 card.colors = {};
                 renderCardsList($list.closest(".config-editor-cards-section"));
                 previewCardsLive();
             });
-            $body.append($revertBtn);
+            $colorsSection.append($revertColorsBtn);
+            $panel.append($colorsToggle, $colorsSection);
 
-            function openColorPopover(key) {
-                var $btn = colorFieldEls[key] && colorFieldEls[key].find(".cfg-swatch-btn");
-                if ($btn && $btn.length) {
-                    $btn.trigger("click");
-                }
-            }
-            $template.on("click", function (e) { e.stopPropagation(); openColorPopover("cardBackground"); });
-            $templateLabel.on("click", function (e) { e.stopPropagation(); openColorPopover("labelColor"); });
-            $templateIcon.on("click", function (e) { e.stopPropagation(); openColorPopover("iconBorderColor"); });
-
-            var $removeBtn = $('<button type="button" class="config-editor-remove">Remove card</button>').on("click", function () {
+            // Action row: Save, Cancel, Remove
+            var $editActions = $('<div class="cfg-edit-actions"></div>');
+            var $saveCardBtn = $('<button type="button" class="cfg-btn-save">Save</button>');
+            $saveCardBtn.on("click", function () {
+                card.name = $nameInput.val();
+                previewCardsLive();
+                var $section = $list.closest(".config-editor-cards-section");
+                var $root = $section.closest("#config-editor-root");
+                saveCardsNow($root).then(function () {
+                    state.expandedCards[index] = false;
+                    renderCardsList($section);
+                });
+            });
+            var $cancelBtn = $('<button type="button" class="cfg-btn-cancel">Cancel</button>');
+            $cancelBtn.on("click", function () {
+                state.expandedCards[index] = false;
+                renderCardsList($list.closest(".config-editor-cards-section"));
+            });
+            var $removeBtn = $('<button type="button" class="cfg-btn-danger">Remove</button>');
+            $removeBtn.on("click", function () {
                 state.cards.splice(index, 1);
                 delete state.expandedCards[index];
-                renderCardsList($list.closest(".config-editor-cards-section"));
-                previewCardsLive();
+                var $section = $list.closest(".config-editor-cards-section");
+                var $root = $section.closest("#config-editor-root");
+                saveCardsNow($root).then(function () {
+                    renderCardsList($section);
+                    previewCardsLive();
+                });
             });
-            $body.append($removeBtn);
+            $editActions.append($saveCardBtn, $cancelBtn, $removeBtn);
+            $panel.append($editActions);
 
-            $card.append($body);
+            $card.append($panel);
         }
 
         return $card;
@@ -959,6 +1003,42 @@ var configEditor = (function () {
         state.cards.forEach(function (card, index) {
             $list.append(renderCardRow(card, index, $list));
         });
+    }
+
+    function renderGlobalTemplate($section) {
+        var $wrap = $('<div class="cfg-global-template"></div>');
+        $wrap.append($('<h4></h4>').text("Default card template"));
+        $wrap.append($('<p class="config-editor-hint"></p>').text("Colors applied to all cards that don't have their own overrides."));
+
+        var $colors = $('<div class="cfg-card-colors"></div>');
+        CARD_COLOR_FIELDS.forEach(function (field) {
+            var themeKey = field.key;
+            $colors.append(renderColorField(field.label,
+                function () { return state.workingTheme[themeKey]; },
+                function (v) { state.workingTheme[themeKey] = v; },
+                { onChange: previewThemeLive }
+            ));
+        });
+        $wrap.append($colors);
+
+        var $actions = $('<div class="cfg-global-template-actions"></div>');
+        var $applyBtn = $('<button type="button" class="cfg-btn-save">Save template</button>');
+        $applyBtn.on("click", function () {
+            var $root = $section.closest("#config-editor-root");
+            saveSiteConfigNow($root, "Saving template...");
+        });
+        var $revertAllBtn = $('<button type="button" class="cfg-btn-cancel">Revert all card colors</button>');
+        $revertAllBtn.on("click", function () {
+            state.cards.forEach(function (c) { c.colors = {}; });
+            var $root = $section.closest("#config-editor-root");
+            saveCardsNow($root).then(function () {
+                renderCardsList($section);
+                previewCardsLive();
+            });
+        });
+        $actions.append($applyBtn, $revertAllBtn);
+        $wrap.append($actions);
+        return $wrap;
     }
 
     function saveCardsNow($root) {
@@ -1007,28 +1087,23 @@ var configEditor = (function () {
         var $panel = $('<div></div>');
 
         var $listSection = $('<div class="config-editor-section config-editor-cards-section"></div>');
-        $listSection.append($('<h3></h3>').text("Category Cards"));
-        $listSection.append($('<p class="config-editor-hint"></p>').text("These are the buttons shown on the home screen."));
+        $listSection.append($('<h3></h3>').text("Page Links"));
+        $listSection.append($('<p class="config-editor-hint"></p>').text("Drag to reorder. Each card links to a page on the home screen."));
 
         var $list = $('<div class="config-editor-cards-list"></div>');
         $listSection.append($list);
         renderCardsList($listSection);
 
-        var $addBtn = $('<button type="button">+ Add Card</button>');
+        var $addBtn = $('<button type="button" class="cfg-add-card-btn">+ Add page link</button>');
         $addBtn.on("click", function () {
             state.cards.push(makeNewCard());
-            state.expandedCards[state.cards.length - 1] = true;
+            var newIndex = state.cards.length - 1;
+            state.expandedCards[newIndex] = true;
             renderCardsList($listSection);
         });
         $listSection.append($addBtn);
 
-        var $saveBtn = $('<button type="button" class="config-editor-btn-primary">Save Home</button>');
-        $saveBtn.on("click", function () {
-            saveSiteConfigNow($root, "Saving...").then(function () {
-                return saveCardsNow($root);
-            }).catch(function () { /* status already shown by saveSiteConfigNow */ });
-        });
-        $listSection.append($saveBtn);
+        $listSection.append(renderGlobalTemplate($listSection));
         $panel.append($listSection);
 
         var $lookSection = $('<div class="config-editor-section"></div>');
@@ -1040,6 +1115,11 @@ var configEditor = (function () {
         $lookSection.append($colorRow);
         $lookSection.append($('<p class="config-editor-hint"></p>').text("A background image (if set below) always shows on top of the home background color."));
         $lookSection.append(renderBrandingUpload("Background image", "background", "background-"));
+        var $saveLookBtn = $('<button type="button" class="cfg-btn-save" style="margin-top:10px!important">Save look</button>');
+        $saveLookBtn.on("click", function () {
+            saveSiteConfigNow($root, "Saving...");
+        });
+        $lookSection.append($saveLookBtn);
         $panel.append($lookSection);
 
         return $panel;
