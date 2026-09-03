@@ -121,7 +121,17 @@ var configService = (function () {
         return callFunction("delete-asset", payload);
     }
 
-    var ALLOWED_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/svg+xml": "svg" };
+    function fileToBase64(file) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var dataUrl = reader.result;
+                resolve(dataUrl.split(",")[1]);
+            };
+            reader.onerror = function () { reject(new Error("Failed to read file")); };
+            reader.readAsDataURL(file);
+        });
+    }
 
     function uploadAsset(formData) {
         var file = formData.get("file");
@@ -132,38 +142,16 @@ var configService = (function () {
         if (!file || !(file instanceof File)) {
             return Promise.reject(new Error("No file selected"));
         }
-        var ext = ALLOWED_TYPES[file.type];
-        if (!ext) {
-            return Promise.reject(new Error("Unsupported file type: " + file.type));
-        }
 
-        var folder;
-        if (purpose === "icon-catalog") {
-            folder = "icons/catalog/" + (conceptKey || "0");
-        } else if (purpose === "custom-icon") {
-            folder = "icons/custom/" + storeKey;
-        } else {
-            folder = "branding/" + storeKey;
-        }
-        var uniqueName = purpose + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
-        var objectPath = folder + "/" + uniqueName;
-
-        return fetch(storageUrl("object/kiosk-assets/" + objectPath), {
-            method: "POST",
-            headers: {
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-                "Content-Type": file.type,
-                "x-upsert": "true"
-            },
-            body: file
-        }).then(function (res) {
-            if (!res.ok) {
-                return res.text().then(function (t) {
-                    throw new Error("Storage upload failed (" + res.status + "): " + t);
-                });
-            }
-            return { url: storageUrl("object/public/kiosk-assets/" + objectPath) };
+        return fileToBase64(file).then(function (b64) {
+            var payload = {
+                purpose: purpose,
+                storeKey: storeKey,
+                contentType: file.type,
+                fileBase64: b64
+            };
+            if (conceptKey != null) { payload.conceptKey = conceptKey; }
+            return callFunction("upload-asset", payload);
         });
     }
 
