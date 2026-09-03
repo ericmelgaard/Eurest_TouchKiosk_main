@@ -27,12 +27,12 @@
 
 
 html {
-    background: white;
     overflow: hidden;
     background-color: white;
     background-image: url("/background_1080x1920.png");
     background-size: 1080px 1920px;
     background-repeat: no-repeat;
+    background-position: top left;
     display: flex;
     height: 1920px;
     width: 1080px;
