@@ -206,6 +206,34 @@ var configEditor = (function () {
         }
     }
 
+    var PANEL_WIDTH = 520;
+
+    function applyDevLayout(open) {
+        var html = document.documentElement;
+        var body = document.body;
+        if (open) {
+            var viewH = window.innerHeight;
+            var availW = window.innerWidth - PANEL_WIDTH;
+            var kioskW = 1080;
+            var kioskH = 1920;
+            var scale = Math.min(availW / kioskW, viewH / kioskH, 1);
+            var scaledW = kioskW * scale;
+            var offsetX = PANEL_WIDTH + (availW - scaledW) / 2;
+            var offsetY = Math.max(0, (viewH - kioskH * scale) / 2);
+            html.style.transform = "scale(" + scale + ")";
+            html.style.transformOrigin = "0 0";
+            html.style.position = "absolute";
+            html.style.left = offsetX + "px";
+            html.style.top = offsetY + "px";
+        } else {
+            html.style.transform = "";
+            html.style.transformOrigin = "";
+            html.style.position = "";
+            html.style.left = "";
+            html.style.top = "";
+        }
+    }
+
     function restorePreviewPanelWidth() {
         if (!state.previewPanel || !state.previewPanel.classList.contains("config-editor-authoring-expanded")) {
             return;
@@ -1352,7 +1380,7 @@ var configEditor = (function () {
         }
         if (state._devInline) {
             state.$root.css("display", open ? "" : "none");
-            document.body.style.marginLeft = open ? "520px" : "";
+            applyDevLayout(open);
         } else {
             state.$root.prop("hidden", !open);
         }
