@@ -87,31 +87,20 @@ Deno.serve(async (req) => {
       path = `branding/${storeKey}/${purpose}-${Date.now()}.${extension}`;
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createAdminClient();
+    const blob = new Blob([bytes], { type: contentType });
+    const { error: uploadError } = await supabase.storage
+      .from(KIOSK_ASSETS_BUCKET)
+      .upload(path, blob, { contentType, upsert: true });
 
-    const uploadRes = await fetch(
-      `${supabaseUrl}/storage/v1/object/${KIOSK_ASSETS_BUCKET}/${path}`,
-      {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${serviceKey}`,
-          "Content-Type": contentType,
-        },
-        body: bytes,
-      },
-    );
-
-    if (!uploadRes.ok) {
-      const detail = await uploadRes.text().catch(() => "");
-      console.error("upload-asset: storage upload failed", uploadRes.status, detail);
-      return jsonResponse({ error: "Storage upload failed", detail }, 500);
+    if (uploadError) {
+      console.error("upload-asset: storage upload failed", JSON.stringify(uploadError));
+      return jsonResponse({ error: "Storage upload failed: " + uploadError.message }, 500);
     }
 
     const iconUrl = buildPublicUrl(path);
 
     if (purpose === "icon-catalog") {
-      const supabase = createAdminClient();
       const { data, error } = await supabase
         .from("icon_catalog")
         .insert({
