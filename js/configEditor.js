@@ -595,6 +595,10 @@ var configEditor = (function () {
         var currentUrl = purpose === "background"
             ? (state.siteConfig && state.siteConfig.background_image_url)
             : (state.siteConfig && state.siteConfig.title_image_url);
+        if (!currentUrl && purpose === "title") {
+            var $liveImg = $(".welcome-header img");
+            if ($liveImg.length) { currentUrl = $liveImg.attr("src"); }
+        }
         var $preview = $('<img class="config-editor-branding-preview" alt="" />').attr("src", currentUrl || "");
         $row.append($preview);
 
