@@ -61,6 +61,8 @@ const zoneWidth = "";
 var Partner_API = "webtrition";
 var Brand = "31709";
 var Establishment = "21332";
+var Company_Key = "";
+var Concept_Key = "";
 const apiKey = "";
 //yyyy-mm-dd ex.2026-02-23
 const dateToRequest = "";

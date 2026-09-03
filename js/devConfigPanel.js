@@ -14,6 +14,8 @@ const FIELDS = [
     { key: 'partner_api', label: 'Partner API', type: 'select', options: ['webtrition', 'ims', 'trm', 'qu'] },
     { key: 'brand', label: 'Brand (SAP Code)', type: 'text', placeholder: '31709' },
     { key: 'establishment', label: 'Establishment (Venue)', type: 'text', placeholder: '21332' },
+    { key: 'company_key', label: 'Company Key', type: 'text', placeholder: '' },
+    { key: 'concept_key', label: 'Concept Key', type: 'text', placeholder: '' },
     { key: 'store_id', label: 'Store ID', type: 'text', placeholder: '' },
     { key: 'display_id', label: 'Display ID', type: 'text', placeholder: '' },
     { key: 'display_name', label: 'Display Name', type: 'text', placeholder: '' },
@@ -265,6 +267,8 @@ function getCurrentDefaults() {
         partner_api: typeof Partner_API !== 'undefined' ? Partner_API : '',
         brand: typeof Brand !== 'undefined' ? Brand : '',
         establishment: typeof Establishment !== 'undefined' ? Establishment : '',
+        company_key: typeof Company_Key !== 'undefined' ? Company_Key : '',
+        concept_key: typeof Concept_Key !== 'undefined' ? Concept_Key : '',
         store_id: typeof Store_ID !== 'undefined' ? Store_ID : '',
         display_id: typeof Display_ID !== 'undefined' ? Display_ID : '',
         display_name: typeof Display_Name !== 'undefined' ? Display_Name : '',
@@ -500,6 +504,8 @@ function applyConfig() {
         if (vals.partner_api) { Partner_API = vals.partner_api; }
         if (vals.brand) { Brand = vals.brand; }
         if (vals.establishment) { Establishment = vals.establishment; }
+        if (vals.company_key !== undefined) { Company_Key = vals.company_key; }
+        if (vals.concept_key !== undefined) { Concept_Key = vals.concept_key; }
         if (vals.store_id !== undefined) { Store_ID = vals.store_id; }
         if (vals.display_id !== undefined) { Display_ID = vals.display_id; }
         if (vals.display_name !== undefined) { Display_Name = vals.display_name; }
@@ -561,6 +567,8 @@ async function savePreset() {
         partner_api: currentValues.partner_api || '',
         brand: currentValues.brand || '',
         establishment: currentValues.establishment || '',
+        company_key: currentValues.company_key || '',
+        concept_key: currentValues.concept_key || '',
         store_id: currentValues.store_id || '',
         display_id: currentValues.display_id || '',
         display_name: currentValues.display_name || '',
