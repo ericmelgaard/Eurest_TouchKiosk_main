@@ -595,9 +595,14 @@ var configEditor = (function () {
         var currentUrl = purpose === "background"
             ? (state.siteConfig && state.siteConfig.background_image_url)
             : (state.siteConfig && state.siteConfig.title_image_url);
-        if (!currentUrl && purpose === "title") {
-            var $liveImg = $(".welcome-header img");
-            if ($liveImg.length) { currentUrl = $liveImg.attr("src"); }
+        if (!currentUrl) {
+            if (purpose === "title") {
+                var $liveImg = $(".welcome-header img");
+                if ($liveImg.length) { currentUrl = $liveImg.attr("src"); }
+            } else {
+                var $liveBg = $(".background img");
+                if ($liveBg.length) { currentUrl = $liveBg.attr("src"); }
+            }
         }
         var $preview = $('<img class="config-editor-branding-preview" alt="" />').attr("src", currentUrl || "");
         $row.append($preview);
