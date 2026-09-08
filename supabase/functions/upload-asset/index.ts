@@ -20,7 +20,7 @@ function isPurpose(v: unknown): v is Purpose {
   return typeof v === "string" && (PURPOSES as readonly string[]).includes(v);
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 

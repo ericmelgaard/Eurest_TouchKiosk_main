@@ -13,7 +13,7 @@ import { isPlainObject } from "../_shared/validation.ts";
 // - If no ccgsContext is provided (local server / admin mode), all templates
 //   at every scope are returned.
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 

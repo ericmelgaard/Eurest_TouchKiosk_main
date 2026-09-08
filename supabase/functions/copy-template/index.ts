@@ -13,7 +13,7 @@ import { isPlainObject, normalizeStoreKey } from "../_shared/validation.ts";
 // Access rules for template import:
 // - CCGS mode: caller may only import templates within their scope.
 // - No CCGS context (admin mode): any template may be imported.
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 

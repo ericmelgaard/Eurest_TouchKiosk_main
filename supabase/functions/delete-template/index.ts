@@ -8,7 +8,7 @@ import { isPlainObject } from "../_shared/validation.ts";
 // - CCGS mode: caller may only delete templates within their scope.
 // - No CCGS context (admin mode): any template may be deleted.
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 

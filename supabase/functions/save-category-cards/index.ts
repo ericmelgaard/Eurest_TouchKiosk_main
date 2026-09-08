@@ -42,7 +42,8 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: "Each card requires a non-empty name" }, 400);
     }
     const destType = isDestinationType(card?.destinationType) ? card.destinationType : "trm_layer";
-    const destValue = isNonEmptyString(card?.destinationValue) ? card.destinationValue : "";
+    // destinationValue is optional — a card can be toggled active with no destination yet.
+    const destValue = typeof card?.destinationValue === "string" ? card.destinationValue : "";
     if (destType === "iframe" && destValue && !isPlausibleAssetUrl(destValue)) {
       return jsonResponse({ error: `Card "${card.name}" iframe destination must be an http(s) URL` }, 400);
     }

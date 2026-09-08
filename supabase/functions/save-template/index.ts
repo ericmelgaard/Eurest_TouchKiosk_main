@@ -21,7 +21,7 @@ import {
 // - If ccgsContext is absent (local server / admin mode), any scope is allowed,
 //   including WAND-level (both keys null).
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
@@ -141,9 +141,7 @@ Deno.serve(async (req) => {
     const destType = isDestinationType(card?.destinationType)
       ? card.destinationType
       : "trm_layer";
-    const destValue = isNonEmptyString(card?.destinationValue)
-      ? card.destinationValue
-      : "";
+    const destValue = typeof card?.destinationValue === "string" ? card.destinationValue : "";
     if (destType === "iframe" && destValue && !isPlausibleAssetUrl(destValue)) {
       return jsonResponse({ error: `Card "${card.name}" iframe destination must be an http(s) URL` }, 400);
     }

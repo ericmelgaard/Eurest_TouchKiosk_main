@@ -14,7 +14,7 @@ function isPurpose(value: unknown): value is Purpose {
 }
 
 // Deletes an uploaded asset and clears any site_config/icon_catalog row still pointing at it.
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
