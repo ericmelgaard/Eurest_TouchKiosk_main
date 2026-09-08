@@ -894,7 +894,7 @@ var configEditor = (function () {
         var targetLabel = getTargetLabel(card);
         var $target = $('<div class="cfg-card-target"></div>').text(targetLabel);
         if (!card.destination_value && card.active) {
-            $target.css("color", "#d35400").text("Needs a destination page to appear in app");
+            $target.css("color", "#d35400").text("No destination set — card will appear but won\'t navigate when tapped");
         }
         $info.append($target);
         $summary.append($info);
@@ -904,6 +904,9 @@ var configEditor = (function () {
             card.active = v;
             $card.toggleClass("is-inactive", !v);
             previewCardsLive();
+            var $section = $list.closest(".config-editor-cards-section");
+            var $root = $section.closest("#config-editor-root");
+            saveCardsNow($root, { skipRender: true, statusMsg: v ? "Page link turned on." : "Page link turned off." });
         });
         $actions.append($activeSwitch);
 
@@ -1060,7 +1063,8 @@ var configEditor = (function () {
         return $wrap;
     }
 
-    function saveCardsNow($root) {
+    function saveCardsNow($root, options) {
+        options = options || {};
         var payload = {
             storeKey: String(state.ccgs.storeKey),
             cards: state.cards.map(function (card, index) {
@@ -1078,9 +1082,11 @@ var configEditor = (function () {
         };
         return configService.saveCategoryCards(payload).then(function (result) {
             state.cards = result.categoryCards || [];
-            renderCardsList($root.find(".config-editor-cards-section"));
+            if (!options.skipRender) {
+                renderCardsList($root.find(".config-editor-cards-section"));
+            }
             previewCardsLive();
-            showStatus($root, "Categories saved.", false);
+            showStatus($root, options.statusMsg || "Categories saved.", false);
         }).catch(function (err) {
             console.error("configEditor: saveCategoryCards failed", err);
             showStatus($root, "Failed to save cards: " + err.message, true);

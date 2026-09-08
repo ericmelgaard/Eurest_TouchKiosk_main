@@ -641,16 +641,17 @@ var IMSintegration;
 
             cards.forEach(function (card, index) {
                 var pageId = _this.provisionCardDestination(card, index, interactiveGroupsByLayer);
-                if (!pageId) {
-                    return;
-                }
 
                 var $icon = $('<img>').attr('src', card.icon_url || '').attr('alt', card.name || '');
                 var $card = $('<div>')
                     .addClass('feature-card')
-                    .attr('data-overlay-enabled', 'true')
-                    .attr('data-target-page', pageId)
-                    .append($('<div>').addClass('card-icon').append($icon))
+                    .attr('data-overlay-enabled', 'true');
+
+                if (pageId) {
+                    $card.attr('data-target-page', pageId);
+                }
+
+                $card.append($('<div>').addClass('card-icon').append($icon))
                     .append($('<div>').addClass('card-label').text(card.name || ''));
 
                 // Per-card color overrides (label bar, icon border, hover/active) - scoped custom
