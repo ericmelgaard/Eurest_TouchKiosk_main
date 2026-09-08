@@ -56,6 +56,7 @@ Deno.serve(async (req: Request) => {
   let sourceTheme: Record<string, unknown> | null = null;
   let sourceBackgroundImageUrl: string | null = null;
   let sourceTitleImageUrl: string | null = null;
+  let sourceFooterLogoUrl: string | null = null;
   let sourceBehavior: Record<string, unknown> | null = null;
   let sourceCards: Record<string, unknown>[] = [];
 
@@ -63,7 +64,7 @@ Deno.serve(async (req: Request) => {
     // --- Import from template ---
     const { data: template, error: tplError } = await supabase
       .from("config_templates")
-      .select("company_key, concept_key, theme, background_image_url, title_image_url, behavior")
+      .select("company_key, concept_key, theme, background_image_url, title_image_url, footer_logo_url, behavior")
       .eq("id", templateId)
       .maybeSingle();
 
@@ -100,6 +101,7 @@ Deno.serve(async (req: Request) => {
     sourceTheme = template.theme;
     sourceBackgroundImageUrl = template.background_image_url;
     sourceTitleImageUrl = template.title_image_url;
+    sourceFooterLogoUrl = template.footer_logo_url;
     sourceBehavior = template.behavior;
 
     const { data: tplCards, error: tplCardsError } = await supabase
@@ -116,7 +118,7 @@ Deno.serve(async (req: Request) => {
     // --- Copy from another store (original behavior) ---
     const { data: sourceConfig, error: sourceConfigError } = await supabase
       .from("site_config")
-      .select("theme, background_image_url, title_image_url, behavior")
+      .select("theme, background_image_url, title_image_url, footer_logo_url, behavior")
       .eq("store_key", sourceStoreKey)
       .maybeSingle();
     if (sourceConfigError) {
@@ -130,6 +132,7 @@ Deno.serve(async (req: Request) => {
     sourceTheme = sourceConfig.theme;
     sourceBackgroundImageUrl = sourceConfig.background_image_url;
     sourceTitleImageUrl = sourceConfig.title_image_url;
+    sourceFooterLogoUrl = sourceConfig.footer_logo_url;
     sourceBehavior = sourceConfig.behavior;
 
     const { data: srcCards, error: srcCardsError } = await supabase
@@ -153,6 +156,7 @@ Deno.serve(async (req: Request) => {
         theme: sourceTheme,
         background_image_url: sourceBackgroundImageUrl,
         title_image_url: sourceTitleImageUrl,
+        footer_logo_url: sourceFooterLogoUrl,
         behavior: sourceBehavior,
         updated_at: new Date().toISOString(),
         updated_by: typeof payload.updatedBy === "string" ? payload.updatedBy : null,

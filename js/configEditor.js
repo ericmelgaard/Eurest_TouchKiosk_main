@@ -569,6 +569,7 @@ var configEditor = (function () {
             theme: state.workingTheme,
             backgroundImageUrl: state.siteConfig ? state.siteConfig.background_image_url : null,
             titleImageUrl: state.siteConfig ? state.siteConfig.title_image_url : null,
+            footerLogoUrl: state.siteConfig ? state.siteConfig.footer_logo_url : null,
             behavior: state.workingBehavior,
             updatedBy: state.ccgs.storeName || String(state.ccgs.storeKey)
         };
@@ -620,9 +621,14 @@ var configEditor = (function () {
                         return;
                     }
                     configService.deleteAsset({ path: path, purpose: purpose, storeKey: storeKey }).then(function () {
-                        var currentUrl = purpose === "background"
-                            ? (state.siteConfig && state.siteConfig.background_image_url)
-                            : (state.siteConfig && state.siteConfig.title_image_url);
+                        var currentUrl;
+                        if (purpose === "background") {
+                            currentUrl = state.siteConfig && state.siteConfig.background_image_url;
+                        } else if (purpose === "footer") {
+                            currentUrl = state.siteConfig && state.siteConfig.footer_logo_url;
+                        } else {
+                            currentUrl = state.siteConfig && state.siteConfig.title_image_url;
+                        }
                         if (currentUrl === url) {
                             onUse(null);
                         }
@@ -642,13 +648,21 @@ var configEditor = (function () {
         $wrap.append($('<h4></h4>').text(label));
 
         var $row = $('<div class="config-editor-branding-row"></div>');
-        var currentUrl = purpose === "background"
-            ? (state.siteConfig && state.siteConfig.background_image_url)
-            : (state.siteConfig && state.siteConfig.title_image_url);
+        var currentUrl;
+        if (purpose === "background") {
+            currentUrl = state.siteConfig && state.siteConfig.background_image_url;
+        } else if (purpose === "footer") {
+            currentUrl = state.siteConfig && state.siteConfig.footer_logo_url;
+        } else {
+            currentUrl = state.siteConfig && state.siteConfig.title_image_url;
+        }
         if (!currentUrl) {
             if (purpose === "title") {
                 var $liveImg = $(".welcome-header img");
                 if ($liveImg.length) { currentUrl = $liveImg.attr("src"); }
+            } else if (purpose === "footer") {
+                var $liveFooter = $(".eurest-logo img");
+                if ($liveFooter.length) { currentUrl = $liveFooter.attr("src"); }
             } else {
                 var $liveBg = $(".background img");
                 if ($liveBg.length) { currentUrl = $liveBg.attr("src"); }
@@ -661,6 +675,8 @@ var configEditor = (function () {
             state.siteConfig = state.siteConfig || {};
             if (purpose === "background") {
                 state.siteConfig.background_image_url = url;
+            } else if (purpose === "footer") {
+                state.siteConfig.footer_logo_url = url;
             } else {
                 state.siteConfig.title_image_url = url;
             }
@@ -1159,6 +1175,7 @@ var configEditor = (function () {
         $lookSection.append($colorRow);
         $lookSection.append($('<p class="config-editor-hint"></p>').text("A background image (if set below) always shows on top of the home background color."));
         $lookSection.append(renderBrandingUpload("Background image", "background", "background-"));
+        $lookSection.append(renderBrandingUpload("Footer logo", "footer", "footer-"));
         var $saveLookBtn = $('<button type="button" class="cfg-btn-save" style="margin-top:10px!important">Save look</button>');
         $saveLookBtn.on("click", function () {
             saveSiteConfigNow($root, "Saving...");
@@ -1321,6 +1338,7 @@ var configEditor = (function () {
                 theme: state.workingTheme,
                 backgroundImageUrl: state.siteConfig ? state.siteConfig.background_image_url : null,
                 titleImageUrl: state.siteConfig ? state.siteConfig.title_image_url : null,
+                footerLogoUrl: state.siteConfig ? state.siteConfig.footer_logo_url : null,
                 behavior: state.workingBehavior,
                 cards: state.cards.map(function (card, index) {
                     return {

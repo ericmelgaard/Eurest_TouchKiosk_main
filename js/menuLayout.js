@@ -204,6 +204,11 @@ var IMSintegration;
             if (titleUrl) {
                 $(".welcome-header img").attr("src", titleUrl);
             }
+
+            var footerLogoUrl = siteConfig && siteConfig.footer_logo_url;
+            if (footerLogoUrl) {
+                $(".eurest-logo img").attr("src", footerLogoUrl);
+            }
         };
         MenuLayout.prototype.normalizeTRMAsset = function (asset) {
             var layer = parseInt(asset.layerZOrder, 10);

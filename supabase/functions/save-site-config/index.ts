@@ -42,6 +42,9 @@ Deno.serve(async (req: Request) => {
   if (payload.titleImageUrl != null && !isPlausibleAssetUrl(payload.titleImageUrl)) {
     return jsonResponse({ error: "titleImageUrl must be an http(s) URL" }, 400);
   }
+  if (payload.footerLogoUrl != null && !isPlausibleAssetUrl(payload.footerLogoUrl)) {
+    return jsonResponse({ error: "footerLogoUrl must be an http(s) URL" }, 400);
+  }
 
   const behaviorInput = isPlainObject(payload.behavior) ? payload.behavior : {};
   const behavior: Record<string, unknown> = {};
@@ -80,6 +83,7 @@ Deno.serve(async (req: Request) => {
     theme,
     background_image_url: payload.backgroundImageUrl ?? null,
     title_image_url: payload.titleImageUrl ?? null,
+    footer_logo_url: payload.footerLogoUrl ?? null,
     behavior,
     updated_at: new Date().toISOString(),
     updated_by: typeof payload.updatedBy === "string" ? payload.updatedBy : null,

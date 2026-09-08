@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
   let query = supabase
     .from("config_templates")
     .select(
-      "id, name, description, company_key, concept_key, theme, background_image_url, title_image_url, created_at, updated_at"
+      "id, name, description, company_key, concept_key, theme, background_image_url, title_image_url, footer_logo_url, created_at, updated_at"
     )
     .order("updated_at", { ascending: false });
 
