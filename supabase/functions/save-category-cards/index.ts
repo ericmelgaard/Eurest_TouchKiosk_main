@@ -1,4 +1,4 @@
-// save-category-cards v2026.09.08.r2
+// save-category-cards v2026.09.08.r3
 import { corsHeaders, handleOptions, jsonResponse } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabaseAdmin.ts";
 import {
