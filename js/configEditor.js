@@ -23,6 +23,10 @@ var configEditor = (function () {
         previewPanelOriginalWidth: null
     };
 
+    // Serializes category-card saves so rapid edits don't race each other
+    // (the edge function does delete-all-then-insert, which corrupts under concurrency).
+    var saveQueue = Promise.resolve();
+
     var TABS = [
         { id: "home", label: "Home" },
         { id: "timeout", label: "Timeout" },
@@ -1080,17 +1084,26 @@ var configEditor = (function () {
                 };
             })
         };
-        return configService.saveCategoryCards(payload).then(function (result) {
-            state.cards = result.categoryCards || [];
-            if (!options.skipRender) {
-                renderCardsList($root.find(".config-editor-cards-section"));
-            }
-            previewCardsLive();
-            showStatus($root, options.statusMsg || "Categories saved.", false);
-        }).catch(function (err) {
-            console.error("configEditor: saveCategoryCards failed", err);
-            showStatus($root, "Failed to save cards: " + err.message, true);
-        });
+
+        // Serialize: wait for any in-flight save to finish before sending the next one.
+        // The edge function does delete-all-then-insert, so concurrent saves race each
+        // other on the server. We also avoid overwriting state.cards from the response
+        // because the user may have made further edits while this save was queued.
+        var run = function () {
+            return configService.saveCategoryCards(payload).then(function () {
+                if (!options.skipRender) {
+                    renderCardsList($root.find(".config-editor-cards-section"));
+                }
+                previewCardsLive();
+                showStatus($root, options.statusMsg || "Categories saved.", false);
+            }).catch(function (err) {
+                console.error("configEditor: saveCategoryCards failed", err);
+                showStatus($root, "Failed to save cards: " + err.message, true);
+            });
+        };
+
+        saveQueue = saveQueue.then(run, run);
+        return saveQueue;
     }
 
     var SLOT_COUNT = 6;
