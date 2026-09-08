@@ -11,7 +11,7 @@ import {
   normalizeStoreKey,
 } from "../_shared/validation.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
 
