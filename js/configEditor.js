@@ -345,8 +345,7 @@ var configEditor = (function () {
             "#config-editor-root .cfg-global-template-actions{display:flex!important;gap:8px!important;margin-top:10px!important;flex-wrap:wrap!important}",
             "#config-editor-root .cfg-idle-list{margin:0 0 10px 0!important;padding-left:18px!important;font-size:13px!important;color:#333!important}",
             "#config-editor-root .cfg-idle-list li{margin-bottom:4px!important}",
-            "#config-editor-toggle{position:fixed!important;top:20px!important;left:20px!important;z-index:20000!important;padding:12px 20px!important;font-size:16px!important;font-weight:600!important;background:#242d37!important;color:#fff!important;border:none!important;border-radius:8px!important;cursor:pointer!important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif!important}",
-            "#config-editor-toggle:hover{background:#1a212a!important}",
+
             // Template management tab
             "#config-editor-root .cfg-template-save-row{display:flex!important;flex-direction:column!important;gap:8px!important;margin-bottom:12px!important}",
             "#config-editor-root .cfg-template-scope-row{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}",
@@ -1761,20 +1760,6 @@ var configEditor = (function () {
         // falls back to document.body when no CF preview panel structure is found.
         state.useSeparateWindow = false;
 
-        var $toggleBtn = $('<button type="button" id="config-editor-toggle">Edit Config</button>').css({
-            position: "fixed", top: "20px", left: "20px", "z-index": 20000, padding: "12px 20px",
-            "font-size": "20px", background: "#242d37", color: "#fff", border: "none",
-            "border-radius": "8px", cursor: "pointer", "font-family": "Arial, Helvetica, sans-serif"
-        });
-        $toggleBtn.on("click", function () {
-            if (state.useSeparateWindow) {
-                openInSeparateWindow();
-            } else {
-                togglePanel(!state.panelOpen);
-            }
-        });
-        $("body").append($toggleBtn);
-
         loadState().then(function () {
             if (state.useSeparateWindow) {
                 return;
@@ -1786,10 +1771,24 @@ var configEditor = (function () {
         });
     }
 
+    function toggle() {
+        if (state.useSeparateWindow) {
+            openInSeparateWindow();
+        } else {
+            togglePanel(!state.panelOpen);
+        }
+    }
+
+    function isAvailable() {
+        return state.panelOpen !== undefined;
+    }
+
     $(init);
 
     return {
-        _state: state
+        _state: state,
+        toggle: toggle,
+        isAvailable: isAvailable
     };
 })();
 
