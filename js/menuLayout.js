@@ -598,7 +598,8 @@ var IMSintegration;
 
             if (destinationType === 'trm_layer') {
                 var layer = parseInt(destinationValue, 10);
-                if (!destinationValue || destinationValue === "0" || isNaN(layer)) {
+                if (isNaN(layer)) {
+                    console.error('MenuLayout: invalid trm_layer destination for card', card.name, destinationValue);
                     return null;
                 }
                 var layerPageId = this.getDynamicPageId(index);

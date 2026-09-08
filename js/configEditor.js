@@ -1068,13 +1068,6 @@ var configEditor = (function () {
         var payload = {
             storeKey: String(state.ccgs.storeKey),
             cards: state.cards.map(function (card, index) {
-                var destValue = card.destination_value || "";
-                // The deployed save function requires a non-empty destinationValue.
-                // Send "0" as a placeholder for unconfigured cards; the runtime treats
-                // layer 0 as invalid and simply shows no card.
-                if (!destValue) {
-                    destValue = "0";
-                }
                 return {
                     sortOrder: index,
                     name: card.name,
@@ -1082,20 +1075,13 @@ var configEditor = (function () {
                     iconUrl: card.icon_url || null,
                     iconSource: card.icon_source || "catalog",
                     destinationType: card.destination_type || "trm_layer",
-                    destinationValue: destValue,
+                    destinationValue: card.destination_value || "",
                     colors: card.colors || {}
                 };
             })
         };
         return configService.saveCategoryCards(payload).then(function (result) {
-            var cards = result.categoryCards || [];
-            // Normalize the "0" placeholder back to empty so the editor shows "Not configured".
-            cards.forEach(function (card) {
-                if (card.destination_value === "0") {
-                    card.destination_value = "";
-                }
-            });
-            state.cards = cards;
+            state.cards = result.categoryCards || [];
             if (!options.skipRender) {
                 renderCardsList($root.find(".config-editor-cards-section"));
             }
@@ -1324,8 +1310,6 @@ var configEditor = (function () {
                 titleImageUrl: state.siteConfig ? state.siteConfig.title_image_url : null,
                 behavior: state.workingBehavior,
                 cards: state.cards.map(function (card, index) {
-                    var destValue = card.destination_value || "";
-                    if (!destValue) { destValue = "0"; }
                     return {
                         sortOrder: index,
                         name: card.name,
@@ -1333,7 +1317,7 @@ var configEditor = (function () {
                         iconUrl: card.icon_url || null,
                         iconSource: card.icon_source || "catalog",
                         destinationType: card.destination_type || "trm_layer",
-                        destinationValue: destValue,
+                        destinationValue: card.destination_value || "",
                         colors: card.colors || {}
                     };
                 }),
@@ -1560,12 +1544,6 @@ var configEditor = (function () {
         ]).then(function (results) {
             state.siteConfig = results[0];
             state.cards = results[1];
-            // Normalize any "0" placeholder back to empty so the editor shows "Not configured".
-            (state.cards || []).forEach(function (card) {
-                if (card.destination_value === "0") {
-                    card.destination_value = "";
-                }
-            });
             state.iconCatalog = results[2];
             state.workingTheme = Object.assign({}, (state.siteConfig && state.siteConfig.theme) || {});
             state.workingBehavior = Object.assign({}, (state.siteConfig && state.siteConfig.behavior) || {});
