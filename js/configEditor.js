@@ -686,6 +686,14 @@ var configEditor = (function () {
             }
         }
 
+        function setActiveAndSave(url) {
+            setActive(url);
+            var $root = $wrap.closest("#config-editor-root");
+            if ($root.length) {
+                saveSiteConfigNow($root, "Image saved.");
+            }
+        }
+
         var $fileInput = $('<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />');
         $fileInput.on("change", function () {
             var file = this.files && this.files[0];
@@ -694,8 +702,8 @@ var configEditor = (function () {
             }
             var form = buildFormData({ purpose: purpose, storeKey: String(state.ccgs.storeKey), file: file });
             configService.uploadAsset(form).then(function (result) {
-                setActive(result.url);
-                renderAssetHistory($wrap, purpose, filterPrefix, setActive);
+                setActiveAndSave(result.url);
+                renderAssetHistory($wrap, purpose, filterPrefix, setActiveAndSave);
             }).catch(function (err) {
                 console.error("configEditor: uploadAsset failed", err);
                 alert("Upload failed: " + err.message);
@@ -704,13 +712,13 @@ var configEditor = (function () {
         $row.append($fileInput);
 
         var $removeBtn = $('<button type="button" class="config-editor-remove">Remove current</button>');
-        $removeBtn.on("click", function () { setActive(null); });
+        $removeBtn.on("click", function () { setActiveAndSave(null); });
         $row.append($removeBtn);
 
         $wrap.append($row);
         $wrap.append($('<div class="config-editor-hint"></div>').text("Previous uploads:"));
         $wrap.append('<div class="config-editor-history-grid"></div>');
-        renderAssetHistory($wrap, purpose, filterPrefix, setActive);
+        renderAssetHistory($wrap, purpose, filterPrefix, setActiveAndSave);
 
         return $wrap;
     }
@@ -1176,9 +1184,9 @@ var configEditor = (function () {
         $lookSection.append($('<p class="config-editor-hint"></p>').text("A background image (if set below) always shows on top of the home background color."));
         $lookSection.append(renderBrandingUpload("Background image", "background", "background-"));
         $lookSection.append(renderBrandingUpload("Footer logo", "footer", "footer-"));
-        var $saveLookBtn = $('<button type="button" class="cfg-btn-save" style="margin-top:10px!important">Save look</button>');
+        var $saveLookBtn = $('<button type="button" class="cfg-btn-save" style="margin-top:10px!important">Save colors</button>');
         $saveLookBtn.on("click", function () {
-            saveSiteConfigNow($root, "Saving...");
+            saveSiteConfigNow($root, "Colors saved.");
         });
         $lookSection.append($saveLookBtn);
         $panel.append($lookSection);
