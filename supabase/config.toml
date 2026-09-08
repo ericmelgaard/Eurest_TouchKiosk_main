@@ -13,6 +13,15 @@ verify_jwt = false
 [functions.save-site-config]
 verify_jwt = false
 
+[functions.delete-template]
+verify_jwt = false
+
+[functions.list-templates]
+verify_jwt = false
+
+[functions.save-template]
+verify_jwt = false
+
 [functions.upload-asset]
 verify_jwt = false
 

@@ -117,6 +117,22 @@ var configService = (function () {
         return callFunction("copy-template", payload);
     }
 
+    function saveTemplate(payload) {
+        return callFunction("save-template", payload);
+    }
+
+    function listTemplates(payload) {
+        return callFunction("list-templates", payload);
+    }
+
+    function importTemplate(payload) {
+        return callFunction("copy-template", payload);
+    }
+
+    function deleteTemplate(payload) {
+        return callFunction("delete-template", payload);
+    }
+
     function deleteAsset(payload) {
         return callFunction("delete-asset", payload);
     }
@@ -151,6 +167,10 @@ var configService = (function () {
         saveSiteConfig: saveSiteConfig,
         saveCategoryCards: saveCategoryCards,
         copyTemplate: copyTemplate,
+        saveTemplate: saveTemplate,
+        listTemplates: listTemplates,
+        importTemplate: importTemplate,
+        deleteTemplate: deleteTemplate,
         uploadAsset: uploadAsset,
         listAssets: listAssets,
         deleteAsset: deleteAsset,

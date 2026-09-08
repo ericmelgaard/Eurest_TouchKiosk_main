@@ -27,7 +27,7 @@ var configEditor = (function () {
         { id: "home", label: "Home" },
         { id: "timeout", label: "Timeout" },
         { id: "idle", label: "Idle" },
-        { id: "share", label: "Share" }
+        { id: "templates", label: "Templates" }
     ];
 
     // Per-card overrides, editable in each card's expanded accordion body.
@@ -342,7 +342,31 @@ var configEditor = (function () {
             "#config-editor-root .cfg-idle-list{margin:0 0 10px 0!important;padding-left:18px!important;font-size:13px!important;color:#333!important}",
             "#config-editor-root .cfg-idle-list li{margin-bottom:4px!important}",
             "#config-editor-toggle{position:fixed!important;top:20px!important;left:20px!important;z-index:20000!important;padding:12px 20px!important;font-size:16px!important;font-weight:600!important;background:#242d37!important;color:#fff!important;border:none!important;border-radius:8px!important;cursor:pointer!important;font-family:'Segoe UI',system-ui,-apple-system,sans-serif!important}",
-            "#config-editor-toggle:hover{background:#1a212a!important}"
+            "#config-editor-toggle:hover{background:#1a212a!important}",
+            // Template management tab
+            "#config-editor-root .cfg-template-save-row{display:flex!important;flex-direction:column!important;gap:8px!important;margin-bottom:12px!important}",
+            "#config-editor-root .cfg-template-scope-row{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}",
+            "#config-editor-root .cfg-template-scope-row select{flex:1!important;min-width:120px!important}",
+            "#config-editor-root .cfg-template-name-input{width:100%!important}",
+            "#config-editor-root .cfg-template-desc-input{width:100%!important;font-size:12px!important}",
+            "#config-editor-root .cfg-template-list{display:flex!important;flex-direction:column!important;gap:8px!important}",
+            "#config-editor-root .cfg-template-item{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 12px!important;border:1px solid #e1e8ea!important;border-radius:8px!important;background:#fff!important;transition:border-color .15s ease,box-shadow .15s ease!important}",
+            "#config-editor-root .cfg-template-item:hover{border-color:#c0cdd3!important;box-shadow:0 2px 8px rgba(0,0,0,.06)!important}",
+            "#config-editor-root .cfg-template-preview{width:40px!important;height:40px!important;min-width:40px!important;border-radius:6px!important;border:1px solid #e1e8ea!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important}",
+            "#config-editor-root .cfg-template-preview img{width:100%!important;height:100%!important;object-fit:cover!important}",
+            "#config-editor-root .cfg-template-info{flex:1!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:2px!important}",
+            "#config-editor-root .cfg-template-name{font-size:14px!important;font-weight:600!important;color:#1a2328!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}",
+            "#config-editor-root .cfg-template-meta{font-size:11px!important;color:#8a9aa0!important;display:flex!important;align-items:center!important;gap:6px!important}",
+            "#config-editor-root .cfg-template-badge{display:inline-block!important;padding:1px 7px!important;border-radius:10px!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.03em!important}",
+            "#config-editor-root .cfg-template-badge.wand{background:#e8edf0!important;color:#54666d!important}",
+            "#config-editor-root .cfg-template-badge.company{background:#d6e3ec!important;color:#2c5a72!important}",
+            "#config-editor-root .cfg-template-badge.concept{background:#d0e8d8!important;color:#2a6e3f!important}",
+            "#config-editor-root .cfg-template-actions{display:flex!important;align-items:center!important;gap:6px!important;flex-shrink:0!important}",
+            "#config-editor-root .cfg-template-actions button{min-height:30px!important;padding:0 10px!important;font-size:12px!important}",
+            "#config-editor-root .cfg-template-delete-btn{background:none!important;color:#c0392b!important;border:1px solid #dde4e7!important}",
+            "#config-editor-root .cfg-template-delete-btn:hover{background:#fdf0ef!important;border-color:#c0392b!important}",
+            "#config-editor-root .cfg-template-loading{padding:20px!important;text-align:center!important;color:#8a9aa0!important;font-size:13px!important}",
+            "#config-editor-root .cfg-template-empty{padding:16px!important;text-align:center!important;color:#8a9aa0!important;font-size:13px!important}"
         ].join("");
         if (isNew) {
             (host.head || host.body).appendChild(styles);
@@ -1183,51 +1207,264 @@ var configEditor = (function () {
         return $panel;
     }
 
-    function renderCopyTab($root) {
-        var $panel = $('<div></div>');
-        var $section = $('<div class="config-editor-section"></div>');
-        $section.append($('<h3></h3>').text("Copy From Another Location"));
+    function buildCcgsContext() {
+        if (isLocalDevContext() && !window.isCF) {
+            return null;
+        }
+        if (!state.ccgs) {
+            return null;
+        }
+        return {
+            companyKey: state.ccgs.companyKey,
+            conceptKey: state.ccgs.conceptKey,
+            storeKey: state.ccgs.storeKey
+        };
+    }
 
+    function templateScopeLabel(tpl) {
+        if (tpl.company_key == null && tpl.concept_key == null) return { label: "WAND", cls: "wand" };
+        if (tpl.concept_key == null) return { label: "Company", cls: "company" };
+        return { label: "Concept", cls: "concept" };
+    }
+
+    function renderTemplatePreview(tpl) {
+        var $preview = $('<div class="cfg-template-preview"></div>');
+        var bg = tpl.background_image_url;
+        if (bg) {
+            $preview.append($('<img alt="" />').attr("src", bg));
+        } else {
+            var theme = tpl.theme || {};
+            var color = theme.homeBackgroundColor || theme.headerBackground || "#e8edf0";
+            $preview.css("background", color);
+        }
+        return $preview;
+    }
+
+    function renderTemplatesTab($root) {
+        var $panel = $('<div></div>');
+
+        // --- Save section ---
+        var $saveSection = $('<div class="config-editor-section"></div>');
+        $saveSection.append($('<h3></h3>').text("Save Current Config as Template"));
+        $saveSection.append($('<p class="config-editor-hint"></p>').text("Save this location's theme, branding, and page links as a reusable template."));
+
+        var $saveRow = $('<div class="cfg-template-save-row"></div>');
+
+        // Scope dropdown
+        var $scopeRow = $('<div class="cfg-template-scope-row"></div>');
+        $scopeRow.append($('<span class="cfg-numeric-label"></span>').text("Scope"));
+        var $scopeSelect = $('<select></select>');
+        var isAdminMode = isLocalDevContext() && !window.isCF;
+        if (isAdminMode) {
+            $scopeSelect.append($('<option></option>').attr("value", "wand").text("WAND (all locations)"));
+            $scopeSelect.append($('<option></option>').attr("value", "company").text("Company"));
+            $scopeSelect.append($('<option></option>').attr("value", "concept").text("Concept"));
+        } else {
+            if (state.ccgs && state.ccgs.conceptKey != null) {
+                $scopeSelect.append($('<option></option>').attr("value", "concept").text("Concept (" + (state.ccgs.conceptName || state.ccgs.conceptKey) + ")"));
+            }
+            if (state.ccgs && state.ccgs.companyKey != null) {
+                $scopeSelect.append($('<option></option>').attr("value", "company").text("Company (" + (state.ccgs.companyName || state.ccgs.companyKey) + ")"));
+            }
+        }
+        $scopeRow.append($scopeSelect);
+        $saveRow.append($scopeRow);
+
+        // Template name
+        var $nameInput = $('<input type="text" class="cfg-template-name-input" />').attr("placeholder", "Template name (e.g. Fall Menu Theme)");
+        $saveRow.append($nameInput);
+
+        // Optional description
+        var $descInput = $('<input type="text" class="cfg-template-desc-input" />').attr("placeholder", "Short description (optional)");
+        $saveRow.append($descInput);
+
+        // Save button
+        var $saveBtn = $('<button type="button" class="config-editor-btn-primary">Save as Template</button>');
+        $saveBtn.on("click", function () {
+            var tplName = $nameInput.val().trim();
+            if (!tplName) {
+                showStatus($root, "Enter a template name first.", true);
+                return;
+            }
+            var scope = $scopeSelect.val();
+            var companyKey = null, conceptKey = null;
+            if (scope === "company") {
+                companyKey = state.ccgs ? state.ccgs.companyKey : null;
+            } else if (scope === "concept") {
+                companyKey = state.ccgs ? state.ccgs.companyKey : null;
+                conceptKey = state.ccgs ? state.ccgs.conceptKey : null;
+            }
+            var payload = {
+                name: tplName,
+                description: $descInput.val().trim() || null,
+                companyKey: companyKey,
+                conceptKey: conceptKey,
+                theme: state.workingTheme,
+                backgroundImageUrl: state.siteConfig ? state.siteConfig.background_image_url : null,
+                titleImageUrl: state.siteConfig ? state.siteConfig.title_image_url : null,
+                behavior: state.workingBehavior,
+                cards: state.cards.map(function (card, index) {
+                    return {
+                        sortOrder: index,
+                        name: card.name,
+                        active: card.active !== false,
+                        iconUrl: card.icon_url || null,
+                        iconSource: card.icon_source || "catalog",
+                        destinationType: card.destination_type,
+                        destinationValue: card.destination_value,
+                        colors: card.colors || {}
+                    };
+                }),
+                updatedBy: state.ccgs ? (state.ccgs.storeName || String(state.ccgs.storeKey)) : "admin",
+                ccgsContext: buildCcgsContext()
+            };
+            $saveBtn.prop("disabled", true);
+            configService.saveTemplate(payload).then(function () {
+                showStatus($root, "Template \"" + tplName + "\" saved.", false);
+                $nameInput.val("");
+                $descInput.val("");
+                renderTemplateList($importSection, $root);
+            }).catch(function (err) {
+                console.error("configEditor: saveTemplate failed", err);
+                showStatus($root, "Failed to save template: " + err.message, true);
+            }).then(function () {
+                $saveBtn.prop("disabled", false);
+            });
+        });
+        $saveRow.append($saveBtn);
+        $saveSection.append($saveRow);
+        $panel.append($saveSection);
+
+        // --- Import section ---
+        var $importSection = $('<div class="config-editor-section"></div>');
+        $importSection.append($('<h3></h3>').text("Import Template"));
+        $importSection.append($('<p class="config-editor-hint"></p>').text("Apply a saved template to this location. This overwrites the current theme, branding, and page links."));
+        var $tplList = $('<div class="cfg-template-list"></div>');
+        $importSection.append($tplList);
+        $panel.append($importSection);
+
+        // --- Copy from another location (kept as secondary option) ---
+        var $copySection = $('<div class="config-editor-section"></div>');
+        $copySection.append($('<h3></h3>').text("Copy From Another Location"));
         var otherLocations = state.locations.filter(function (loc) {
             return String(loc.storeKey) !== String(state.ccgs.storeKey);
         });
-
-        if (!otherLocations.length) {
-            $section.append($('<p></p>').text("No other accessible locations found in ccgsItems."));
-            $panel.append($section);
-            return $panel;
+        if (otherLocations.length) {
+            var $locSelect = $('<select></select>');
+            otherLocations.forEach(function (loc) {
+                var label = (loc.storeName || ("Store " + loc.storeKey));
+                $locSelect.append($('<option></option>').attr("value", loc.storeKey).text(label));
+            });
+            $copySection.append($locSelect);
+            var $copyBtn = $('<button type="button" class="config-editor-btn-primary">Copy To This Location</button>');
+            $copyBtn.on("click", function () {
+                var sourceStoreKey = $locSelect.val();
+                if (!confirm("This will overwrite theme, branding, and page links for the CURRENT location (" + (state.ccgs.storeName || state.ccgs.storeKey) + ") with the selected location's config. Continue?")) {
+                    return;
+                }
+                configService.copyTemplate({
+                    sourceStoreKey: String(sourceStoreKey),
+                    targetStoreKey: String(state.ccgs.storeKey),
+                    updatedBy: state.ccgs.storeName || String(state.ccgs.storeKey),
+                    ccgsContext: buildCcgsContext()
+                }).then(function () {
+                    showStatus($root, "Copied. Reloading config...", false);
+                    return loadState();
+                }).then(function () {
+                    rebuildPanel($root);
+                }).catch(function (err) {
+                    console.error("configEditor: copyTemplate failed", err);
+                    showStatus($root, "Failed to copy: " + err.message, true);
+                });
+            });
+            $copySection.append($copyBtn);
+        } else {
+            $copySection.append($('<p class="config-editor-hint"></p>').text("No other accessible locations found."));
         }
+        $panel.append($copySection);
 
-        var $select = $('<select></select>');
-        otherLocations.forEach(function (loc) {
-            var label = (loc.storeName || ("Store " + loc.storeKey));
-            $select.append($('<option></option>').attr("value", loc.storeKey).text(label));
-        });
-        $section.append($select);
+        // Load template list
+        renderTemplateList($importSection, $root);
 
-        var $applyBtn = $('<button type="button" class="config-editor-btn-primary">Apply Template To This Location</button>');
-        $applyBtn.on("click", function () {
-            var sourceStoreKey = $select.val();
-            if (!confirm("This will overwrite theme, branding, and category cards for the CURRENT location (" + state.ccgs.storeName + ") with the selected location's config. Continue?")) {
+        return $panel;
+    }
+
+    function renderTemplateList($section, $root) {
+        var $list = $section.find(".cfg-template-list");
+        $list.empty().append($('<div class="cfg-template-loading"></div>').text("Loading templates..."));
+
+        configService.listTemplates({ ccgsContext: buildCcgsContext() }).then(function (result) {
+            var templates = (result && result.templates) || [];
+            $list.empty();
+            if (!templates.length) {
+                $list.append($('<div class="cfg-template-empty"></div>').text("No templates available for your scope yet."));
                 return;
             }
-            configService.copyTemplate({
-                sourceStoreKey: String(sourceStoreKey),
-                targetStoreKey: String(state.ccgs.storeKey),
-                updatedBy: state.ccgs.storeName || String(state.ccgs.storeKey)
-            }).then(function () {
-                showStatus($root, "Template applied. Reloading config...", false);
-                return loadState();
-            }).then(function () {
-                rebuildPanel($root);
-            }).catch(function (err) {
-                console.error("configEditor: copyTemplate failed", err);
-                showStatus($root, "Failed to apply template: " + err.message, true);
+            templates.forEach(function (tpl) {
+                var scope = templateScopeLabel(tpl);
+                var $item = $('<div class="cfg-template-item"></div>');
+                $item.append(renderTemplatePreview(tpl));
+                var $info = $('<div class="cfg-template-info"></div>');
+                $info.append($('<div class="cfg-template-name"></div>').text(tpl.name));
+                var $meta = $('<div class="cfg-template-meta"></div>');
+                $meta.append($('<span class="cfg-template-badge ' + scope.cls + '"></span>').text(scope.label));
+                if (tpl.description) {
+                    $meta.append($('<span></span>').text(tpl.description));
+                }
+                $info.append($meta);
+                $item.append($info);
+                var $actions = $('<div class="cfg-template-actions"></div>');
+                var $importBtn = $('<button type="button" class="config-editor-btn-primary">Import</button>');
+                $importBtn.on("click", function () {
+                    if (!confirm("Importing \"" + tpl.name + "\" will overwrite this location's theme, branding, and page links. Continue?")) {
+                        return;
+                    }
+                    $importBtn.prop("disabled", true);
+                    configService.importTemplate({
+                        templateId: tpl.id,
+                        targetStoreKey: String(state.ccgs.storeKey),
+                        updatedBy: state.ccgs.storeName || String(state.ccgs.storeKey),
+                        ccgsContext: buildCcgsContext()
+                    }).then(function () {
+                        showStatus($root, "Template imported. Reloading config...", false);
+                        return loadState();
+                    }).then(function () {
+                        rebuildPanel($root);
+                    }).catch(function (err) {
+                        console.error("configEditor: importTemplate failed", err);
+                        showStatus($root, "Failed to import: " + err.message, true);
+                    }).then(function () {
+                        $importBtn.prop("disabled", false);
+                    });
+                });
+                $actions.append($importBtn);
+                var $delBtn = $('<button type="button" class="cfg-template-delete-btn">Delete</button>');
+                $delBtn.on("click", function () {
+                    if (!confirm("Delete template \"" + tpl.name + "\"? This can't be undone.")) {
+                        return;
+                    }
+                    $delBtn.prop("disabled", true);
+                    configService.deleteTemplate({
+                        templateId: tpl.id,
+                        ccgsContext: buildCcgsContext()
+                    }).then(function () {
+                        showStatus($root, "Template deleted.", false);
+                        renderTemplateList($section, $root);
+                    }).catch(function (err) {
+                        console.error("configEditor: deleteTemplate failed", err);
+                        showStatus($root, "Failed to delete: " + err.message, true);
+                    }).then(function () {
+                        $delBtn.prop("disabled", false);
+                    });
+                });
+                $actions.append($delBtn);
+                $item.append($actions);
+                $list.append($item);
             });
+        }).catch(function (err) {
+            console.error("configEditor: listTemplates failed", err);
+            $list.empty().append($('<div class="cfg-template-empty"></div>').text("Failed to load templates: " + err.message));
         });
-        $section.append($applyBtn);
-        $panel.append($section);
-        return $panel;
     }
 
     function renderTabs($root) {
@@ -1257,6 +1494,12 @@ var configEditor = (function () {
                 if (tab.id === "home") {
                     refreshHomeCardOptions();
                 }
+                if (tab.id === "templates") {
+                    var $tplSection = $root.find(".cfg-template-list").closest(".config-editor-section");
+                    if ($tplSection.length) {
+                        renderTemplateList($tplSection, $root);
+                    }
+                }
             });
             $tabs.append($btn);
         });
@@ -1272,7 +1515,7 @@ var configEditor = (function () {
             home: renderHomeTab($root),
             timeout: renderTimeoutTab($root),
             idle: renderIdleTab($root),
-            share: renderCopyTab($root)
+            templates: renderTemplatesTab($root)
         };
 
         Object.keys(panels).forEach(function (tabId) {
