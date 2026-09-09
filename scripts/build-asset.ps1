@@ -8,8 +8,21 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-if (Test-Path $OutDir) { Remove-Item $OutDir -Recurse -Force }
-New-Item -ItemType Directory -Path $OutDir | Out-Null
+# OneDrive syncs this workspace and can transiently lock a just-written release/ folder, so retry.
+function Remove-ItemWithRetry($path) {
+    for ($i = 0; $i -lt 5; $i++) {
+        try {
+            Remove-Item $path -Recurse -Force -ErrorAction Stop
+            return
+        } catch {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+    Write-Warning "Could not fully remove $path (likely OneDrive sync lock) - continuing anyway."
+}
+
+if (Test-Path $OutDir) { Remove-ItemWithRetry $OutDir }
+New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 
 $includePaths = @(
     "index.html",
@@ -19,8 +32,7 @@ $includePaths = @(
     "fonts",
     "dependencies",
     "js",
-    "media",
-    "public"
+    "media"
 )
 
 foreach ($p in $includePaths) {
@@ -32,8 +44,16 @@ foreach ($p in $includePaths) {
 }
 
 $zipPath = "$OutDir.zip"
-if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-Compress-Archive -Path "$OutDir\*" -DestinationPath $zipPath
+if (Test-Path $zipPath) { Remove-ItemWithRetry $zipPath }
+for ($i = 0; $i -lt 5; $i++) {
+    try {
+        Compress-Archive -Path "$OutDir\*" -DestinationPath $zipPath -ErrorAction Stop
+        break
+    } catch {
+        if ($i -eq 4) { throw }
+        Start-Sleep -Milliseconds 500
+    }
+}
 
 $sizeMB = [math]::Round((Get-ChildItem $zipPath).Length / 1MB, 2)
 Write-Host "Packaged asset -> $zipPath ($sizeMB MB)"

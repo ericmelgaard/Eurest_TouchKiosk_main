@@ -52,12 +52,12 @@ Deno.serve(async (req: Request) => {
     if (companyKey !== null && conceptKey !== null) {
       // User at concept level: see WAND + their company + their concept.
       query = query.or(
-        `company_key.is.null,company_key.eq.${companyKey}.and.concept_key.is.null,company_key.eq.${companyKey}.and.concept_key.eq.${conceptKey}`
+        `company_key.is.null,and(company_key.eq.${companyKey},concept_key.is.null),and(company_key.eq.${companyKey},concept_key.eq.${conceptKey})`
       );
     } else if (companyKey !== null) {
       // User at company level: see WAND + their company (concept-level excluded).
       query = query.or(
-        `company_key.is.null,company_key.eq.${companyKey}.and.concept_key.is.null`
+        `company_key.is.null,and(company_key.eq.${companyKey},concept_key.is.null)`
       );
     } else {
       // No company context: WAND-level only.

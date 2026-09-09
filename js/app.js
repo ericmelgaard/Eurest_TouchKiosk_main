@@ -738,6 +738,9 @@ var IMSintegration;
                                     integration.openDatabase().then(() => {
                                         _this.db = integration.db;
                                     })
+                                } else {
+                                    // was previously swallowed silently, hiding failures before menuLayout.init (and site-config branding) ran
+                                    console.error("app: init pipeline failed before menuLayout.init", error);
                                 }
                             });
                     } catch (err) {
@@ -812,6 +815,9 @@ var IMSintegration;
                         $(".loading").hide();
                         _this.IMSItems = _this.mergeIMS(_this.IMSProducts, _this.IMSItems);
                         menuLayout.init(_this.IMSItems, _this.IMSProducts, _this.IMSSettings, _this.integrationItems, _this.API, _this.TRMAssetZones, _this.siteConfig, _this.categoryCards);
+                    }).catch(error => {
+                        // this chain previously had no catch at all, so a thrown error here silently prevented menuLayout.init from ever running
+                        console.error("app: init pipeline failed before menuLayout.init", error);
                     });
                 }
             }

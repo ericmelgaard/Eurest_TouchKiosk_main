@@ -23,7 +23,9 @@ function setupOptionsMenu() {
     const dropdownMenu = document.createElement('div');
     dropdownMenu.className = 'options-dropdown';
     dropdownMenu.style.position = 'relative';
-    if (!client) {
+    // client just means "inside an iframe" - CF preview also runs in an iframe, so it
+    // needs the full menu (Edit Config, Rotate, Expand) despite client being true there.
+    if (!client || isCF) {
         dropdownMenu.innerHTML = `
     <div class="dropdown-item" data-action="refresh">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

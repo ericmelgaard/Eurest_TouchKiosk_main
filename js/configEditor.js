@@ -773,19 +773,6 @@ var configEditor = (function () {
         return [];
     }
 
-    // Real static <div class="page" id="..."> ids present in this document right now.
-    function getStaticPageOptions() {
-        var options = [];
-        $(".page[id]").each(function () {
-            var id = this.id;
-            if (id.indexOf("dynamic_card_") === 0) {
-                return;
-            }
-            options.push(id);
-        });
-        return options;
-    }
-
     // Single "Page" control - one flat list of everything a card can point to, named by
     // region rather than asking the user to pick a destination "type" first. Whichever image,
     // video, iframe, or playlist is assigned to a region in TRM asset zones is shown automatically,
@@ -805,12 +792,6 @@ var configEditor = (function () {
                     matched = true;
                 }
                 $select.append($('<option></option>').attr("value", "trm_layer||" + opt.value).text(opt.label));
-            });
-            getStaticPageOptions().forEach(function (id) {
-                if (card.destination_type === "static_page" && card.destination_value === id) {
-                    matched = true;
-                }
-                $select.append($('<option></option>').attr("value", "static_page||" + id).text(id));
             });
             $select.append($('<option></option>').attr("value", "iframe||").text("Custom web link..."));
 
