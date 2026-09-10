@@ -2,7 +2,7 @@
 //Publisher: Wand Digital
 //CCGS-gated config editor for app_shell_CDL. Only renders inside the authenticated
 //WAND Content Forecaster preview (mirrors the isCF gating already used elsewhere in this app).
-//Edits are scoped to MostRecentCCGS.storeKey and always saved through Edge Functions
+//Edits are scoped to this frame's own resolved store key and always saved through Edge Functions
 //(never a direct table write) - see supabase/functions/.
 var configEditor = (function () {
     var state = {
@@ -105,6 +105,33 @@ var configEditor = (function () {
             .filter(function (item) { return item && item.storeKey !== null; });
     }
 
+    // This tab/iframe's own store key (mirrors js/integration.js's own resolution order) -
+    // stable for the life of this frame, unlike MostRecentCCGS which any other tab can overwrite.
+    function getCurrentIframeStoreKey() {
+        try {
+            if (window.AssetConfiguration && AssetConfiguration.SKey) {
+                return String(AssetConfiguration.SKey);
+            }
+        } catch (err) { /* fall through to the DOM span below */ }
+        var text = $("#storeKey").text().trim();
+        return text || null;
+    }
+
+    // Looks up the full CCGS record (company/concept/etc.) for this frame's own store key,
+    // instead of trusting MostRecentCCGS - a single shared localStorage value another tab
+    // navigating elsewhere can overwrite out from under this one.
+    function findCcgsForStoreKey(storeKey, locations) {
+        if (!storeKey) {
+            return null;
+        }
+        for (var i = 0; i < locations.length; i++) {
+            if (String(locations[i].storeKey) === String(storeKey)) {
+                return locations[i];
+            }
+        }
+        return null;
+    }
+
     function isLocalDevContext() {
         var host = (window.location.hostname || "").toLowerCase();
         var isLocalHost = host === "" || host === "localhost" || host === "127.0.0.1" || host.indexOf(".local") > -1;
@@ -193,7 +220,8 @@ var configEditor = (function () {
                     }
                     if (state.previewPanelOriginalWidth !== null && !previewPanel.classList.contains("config-editor-authoring-expanded")) {
                         var panelWidth = parseFloat(hostDocument.defaultView.getComputedStyle(previewPanel).width) || 432;
-                        previewPanel.style.width = (panelWidth + 520) + "px";
+                        // 520 matches #config-editor-root's own width; +30 extra so it isn't flush against it.
+                        previewPanel.style.width = (panelWidth + 550) + "px";
                         previewPanel.classList.add("config-editor-authoring-expanded");
                     }
                     return previewContainer;
@@ -235,7 +263,7 @@ var configEditor = (function () {
         // fallback in case this whole <style> tag gets blocked by the host page's CSP.
         styles.textContent = [
             ".config-editor-authoring-host{display:flex!important;justify-content:space-around!important;align-items:flex-start!important;gap:16px!important;overflow:visible!important}",
-            "#config-editor-root{z-index:2147483000!important;width:520px!important;flex:0 0 520px!important;max-height:100%!important;overflow-y:auto!important;background:#fff!important;border:1px solid #d5dee2!important;border-radius:10px!important;box-shadow:0 18px 48px rgba(9,35,44,.18)!important;font:14px/1.4 'Segoe UI',system-ui,-apple-system,sans-serif!important;color:#17313b!important;box-sizing:border-box!important}",
+            "#config-editor-root{z-index:10!important;width:520px!important;flex:0 0 520px!important;max-height:100vh!important;overflow-y:auto!important;background:#fff!important;border:1px solid #d5dee2!important;border-radius:10px!important;box-shadow:0 18px 48px rgba(9,35,44,.18)!important;font:14px/1.4 'Segoe UI',system-ui,-apple-system,sans-serif!important;color:#17313b!important;box-sizing:border-box!important}",
             "#config-editor-root *{box-sizing:border-box!important;font-family:inherit!important}",
             "#config-editor-root[hidden]{display:none!important}",
             "#config-editor-root .config-editor-header{position:sticky!important;top:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:12px 16px!important;background:#242d37!important;color:#fff!important;font-size:16px!important;font-weight:600!important;z-index:2!important}",
@@ -278,6 +306,7 @@ var configEditor = (function () {
             "#config-editor-root .cfg-swatch-inner{position:absolute!important;inset:0!important}",
             "#config-editor-root .cfg-color-popover{display:none!important;position:absolute!important;top:calc(100% + 4px)!important;left:0!important;z-index:10!important;flex-direction:column!important;gap:6px!important;padding:10px!important;background:#fff!important;border:1px solid #d5dee2!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(9,35,44,.18)!important;min-width:170px!important}",
             "#config-editor-root .cfg-color-popover.is-open{display:flex!important}",
+            "#config-editor-root .cfg-color-popover.cfg-popover-left{left:auto!important;right:0!important}",
             "#config-editor-root .cfg-color-popover input[type='color']{width:100%!important}",
             "#config-editor-root .cfg-numeric-row{display:flex!important;align-items:center!important;gap:8px!important;margin-bottom:10px!important;flex-wrap:wrap!important}",
             "#config-editor-root .cfg-numeric-row select{flex:1!important;min-width:140px!important}",
@@ -292,7 +321,8 @@ var configEditor = (function () {
             "#config-editor-root .config-editor-history-item button{min-height:auto!important;font-size:10px!important;padding:3px 5px!important;width:100%!important}",
             "#config-editor-root .config-editor-card{border:1px solid #e1e8ea!important;border-radius:10px!important;padding:0!important;margin-bottom:6px!important;background:#fff!important;overflow:hidden!important;transition:box-shadow .15s ease, border-color .15s ease!important}",
             "#config-editor-root .config-editor-card:hover{border-color:#c0cdd3!important;box-shadow:0 2px 8px rgba(0,0,0,.06)!important}",
-            "#config-editor-root .config-editor-card.is-editing{border-color:#3586bd!important;box-shadow:0 2px 12px rgba(53,134,189,.15)!important}",
+            // Editing state must allow overflow so the color popover isn't clipped by the card's rounded-corner mask; the edit panel supplies its own bottom radius instead.
+            "#config-editor-root .config-editor-card.is-editing{border-color:#3586bd!important;box-shadow:0 2px 12px rgba(53,134,189,.15)!important;overflow:visible!important}",
             "#config-editor-root .config-editor-card.is-inactive{opacity:.55!important}",
             "#config-editor-root .cfg-card-summary{display:flex!important;align-items:center!important;gap:10px!important;padding:10px 12px!important;cursor:grab!important;min-height:52px!important}",
             "#config-editor-root .cfg-card-icon-thumb{width:36px!important;height:36px!important;min-width:36px!important;border-radius:50%!important;background:#f0f3f5!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;border:2px solid #e1e8ea!important}",
@@ -316,7 +346,7 @@ var configEditor = (function () {
             "#config-editor-root .cfg-switch input:checked ~ .cfg-switch-track .cfg-switch-thumb{transform:translateX(16px)!important}",
             "#config-editor-root .cfg-switch-label{font-size:12px!important;font-weight:600!important;color:#54666d!important;white-space:nowrap!important}",
             // Edit panel (expanded)
-            "#config-editor-root .cfg-card-edit-panel{padding:12px 14px 14px!important;border-top:1px solid #eef2f4!important;background:#fafcfd!important;display:flex!important;flex-direction:column!important;gap:12px!important}",
+            "#config-editor-root .cfg-card-edit-panel{padding:12px 14px 14px!important;border-top:1px solid #eef2f4!important;background:#fafcfd!important;display:flex!important;flex-direction:column!important;gap:12px!important;border-bottom-left-radius:9px!important;border-bottom-right-radius:9px!important}",
             "#config-editor-root .cfg-card-edit-panel label{font-size:12px!important;font-weight:600!important;color:#54666d!important;display:flex!important;flex-direction:column!important;gap:4px!important}",
             "#config-editor-root .cfg-card-edit-panel input[type=text]{font-size:14px!important;padding:7px 10px!important;border:1px solid #dde4e7!important;border-radius:6px!important;width:100%!important;box-sizing:border-box!important}",
             "#config-editor-root .cfg-card-edit-panel input[type=text]:focus{border-color:#3586bd!important;outline:none!important;box-shadow:0 0 0 2px rgba(53,134,189,.15)!important}",
@@ -436,6 +466,14 @@ var configEditor = (function () {
     // Compact color control: small swatch button (checkerboard shows through when transparent)
     // that opens a tiny popover with a native picker, a paste-able text field, and a
     // dedicated "Transparent" option (native <input type="color"> can't represent that).
+    // Debounces auto-save for rapid-fire inputs (e.g. dragging a color picker fires many
+    // "input" events) so we save once shortly after the user stops, not on every event.
+    var autoSaveTimers = {};
+    function scheduleAutoSave(key, fn, delayMs) {
+        clearTimeout(autoSaveTimers[key]);
+        autoSaveTimers[key] = setTimeout(fn, delayMs || 600);
+    }
+
     function renderColorField(label, getValue, setValue, opts) {
         opts = opts || {};
         var $field = $('<div class="cfg-color-field"></div>');
@@ -451,9 +489,13 @@ var configEditor = (function () {
 
         function refresh() {
             var v = getValue() || "";
-            $swatchInner.css("background-color", isTransparentValue(v) ? "transparent" : v);
+            // With no override, fall back to showing the inherited color (swatch + placeholder) instead of blank/transparent.
+            var fallback = opts.getFallback ? (opts.getFallback() || "") : "";
+            var effective = v || fallback;
+            $swatchInner.css("background-color", isTransparentValue(effective) ? "transparent" : effective);
             $textInput.val(v);
-            $colorInput.val(toHexColor(v));
+            $textInput.attr("placeholder", v ? "#hex, rgba(), transparent" : (fallback ? toHexColor(fallback) : "#hex, rgba(), transparent"));
+            $colorInput.val(toHexColor(effective));
         }
         refresh();
 
@@ -475,8 +517,19 @@ var configEditor = (function () {
         $swatchBtn.on("click", function (e) {
             e.stopPropagation();
             var wasOpen = $popover.hasClass("is-open");
-            $field.closest("#config-editor-root").find(".cfg-color-popover").removeClass("is-open");
-            $popover.toggleClass("is-open", !wasOpen);
+            var $root = $field.closest("#config-editor-root");
+            $root.find(".cfg-color-popover").removeClass("is-open cfg-popover-left");
+            if (wasOpen) {
+                return;
+            }
+            $popover.addClass("is-open");
+            // Flip to the left edge instead of the right when opening rightward would push it past the panel.
+            var popoverRect = $popover[0].getBoundingClientRect();
+            var rootRect = $root.length ? $root[0].getBoundingClientRect() : null;
+            var rightBound = rootRect ? Math.min(window.innerWidth, rootRect.right) : window.innerWidth;
+            if (popoverRect.right > rightBound) {
+                $popover.addClass("cfg-popover-left");
+            }
         });
 
         $field.append($swatchBtn, $label, $popover);
@@ -664,7 +717,15 @@ var configEditor = (function () {
                 if ($liveFooter.length) { currentUrl = $liveFooter.attr("src"); }
             } else {
                 var $liveBg = $(".background img");
-                if ($liveBg.length) { currentUrl = $liveBg.attr("src"); }
+                if ($liveBg.length) {
+                    currentUrl = $liveBg.attr("src");
+                } else {
+                    // No override saved yet, so .background has no <img> - the visible
+                    // default comes from the html{} CSS background-image rule instead.
+                    var cssBg = getComputedStyle(document.documentElement).backgroundImage;
+                    var match = /url\(["']?(.*?)["']?\)/.exec(cssBg || "");
+                    if (match) { currentUrl = match[1]; }
+                }
             }
         }
         var $preview = $('<img class="config-editor-branding-preview" alt="" />').attr("src", currentUrl || "");
@@ -956,6 +1017,7 @@ var configEditor = (function () {
                 card.icon_source = "catalog";
                 $currentIcon.attr("src", icon.icon_url).css("display", "");
                 previewCardsLive();
+                saveCardsNow($list.closest("#config-editor-root"), { skipRender: true });
             });
             $chooseIconBtn.on("click", function () { $picker.toggleClass("is-open"); });
             $iconRow.append($chooseIconBtn);
@@ -970,6 +1032,7 @@ var configEditor = (function () {
                     card.icon_source = "custom";
                     $currentIcon.attr("src", result.url).css("display", "");
                     previewCardsLive();
+                    saveCardsNow($list.closest("#config-editor-root"), { skipRender: true });
                 }).catch(function (err) {
                     console.error("configEditor: custom icon upload failed", err);
                     alert("Icon upload failed: " + err.message);
@@ -989,7 +1052,10 @@ var configEditor = (function () {
                 $colorsSection.css("display", visible ? "none" : "flex");
             });
             CARD_COLOR_FIELDS.forEach(function (field) {
-                $colorsSection.append(renderColorField(field.label, function () { return card.colors[field.key]; }, function (v) { card.colors[field.key] = v; }, { onChange: previewCardsLive }));
+                $colorsSection.append(renderColorField(field.label, function () { return card.colors[field.key]; }, function (v) {
+                    card.colors[field.key] = v;
+                    scheduleAutoSave("cards", function () { saveCardsNow($list.closest("#config-editor-root"), { skipRender: true }); });
+                }, { onChange: previewCardsLive, getFallback: function () { return state.workingTheme[field.key]; } }));
             });
             var $revertColorsBtn = $('<button type="button" class="cfg-btn-cancel" style="font-size:11px!important;padding:4px 10px!important">Revert colors</button>');
             $revertColorsBtn.on("click", function () {
@@ -1045,7 +1111,10 @@ var configEditor = (function () {
             var themeKey = field.key;
             $colors.append(renderColorField(field.label,
                 function () { return state.workingTheme[themeKey]; },
-                function (v) { state.workingTheme[themeKey] = v; },
+                function (v) {
+                    state.workingTheme[themeKey] = v;
+                    scheduleAutoSave("siteConfig", function () { saveSiteConfigNow($section.closest("#config-editor-root"), "Template saved."); });
+                },
                 { onChange: previewThemeLive }
             ));
         });
@@ -1158,17 +1227,18 @@ var configEditor = (function () {
         $lookSection.append($('<h3></h3>').text("Home Screen Look"));
         $lookSection.append(renderBrandingUpload("Title / logo image", "title", "title-"));
         var $colorRow = $('<div class="cfg-inline-row"></div>');
-        $colorRow.append(renderColorField("Header background", function () { return state.workingTheme.headerBackground; }, function (v) { state.workingTheme.headerBackground = v; }, { onChange: previewThemeLive }));
-        $colorRow.append(renderColorField("Home background", function () { return state.workingTheme.homeBackgroundColor; }, function (v) { state.workingTheme.homeBackgroundColor = v; }, { onChange: previewThemeLive }));
+        $colorRow.append(renderColorField("Header background", function () { return state.workingTheme.headerBackground; }, function (v) {
+            state.workingTheme.headerBackground = v;
+            scheduleAutoSave("siteConfig", function () { saveSiteConfigNow($root, "Colors saved."); });
+        }, { onChange: previewThemeLive }));
+        $colorRow.append(renderColorField("Home background", function () { return state.workingTheme.homeBackgroundColor; }, function (v) {
+            state.workingTheme.homeBackgroundColor = v;
+            scheduleAutoSave("siteConfig", function () { saveSiteConfigNow($root, "Colors saved."); });
+        }, { onChange: previewThemeLive }));
         $lookSection.append($colorRow);
         $lookSection.append($('<p class="config-editor-hint"></p>').text("A background image (if set below) always shows on top of the home background color."));
         $lookSection.append(renderBrandingUpload("Background image", "background", "background-"));
         $lookSection.append(renderBrandingUpload("Footer logo", "footer", "footer-"));
-        var $saveLookBtn = $('<button type="button" class="cfg-btn-save" style="margin-top:10px!important">Save colors</button>');
-        $saveLookBtn.on("click", function () {
-            saveSiteConfigNow($root, "Colors saved.");
-        });
-        $lookSection.append($saveLookBtn);
         $panel.append($lookSection);
 
         return $panel;
@@ -1181,7 +1251,10 @@ var configEditor = (function () {
         $section.append($('<p class="config-editor-hint"></p>').text("The modal is shown live on the canvas while this tab is open."));
         var $colorsRow = $('<div class="cfg-inline-row"></div>');
         TIMEOUT_COLOR_FIELDS.forEach(function (field) {
-            $colorsRow.append(renderColorField(field.label, function () { return state.workingTheme[field.key]; }, function (v) { state.workingTheme[field.key] = v; }, { onChange: previewThemeLive }));
+            $colorsRow.append(renderColorField(field.label, function () { return state.workingTheme[field.key]; }, function (v) {
+                state.workingTheme[field.key] = v;
+                scheduleAutoSave("siteConfig", function () { saveSiteConfigNow($root, "Colors saved."); });
+            }, { onChange: previewThemeLive }));
         });
         $section.append($colorsRow);
         $panel.append($section);
@@ -1594,7 +1667,7 @@ var configEditor = (function () {
         ensureModalStyles(hostDocument);
 
         var $root = $(hostDocument.createElement("div")).attr("id", "config-editor-root").css({
-            "z-index": 2147483000, width: "520px", flex: "0 0 520px", "max-height": "100%",
+            "z-index": 10, width: "520px", flex: "0 0 520px", "max-height": "100vh",
             "overflow-y": "auto", background: "#fff", border: "1px solid #d5dee2", "border-radius": "10px",
             "box-shadow": "0 18px 48px rgba(9,35,44,.18)", "font-family": "'Segoe UI', system-ui, -apple-system, sans-serif",
             "font-size": "14px", color: "#17313b", "box-sizing": "border-box"
@@ -1725,17 +1798,21 @@ var configEditor = (function () {
             return;
         }
 
-        state.ccgs = normalizeCCGS(readLocalStorageJSON("MostRecentCCGS"));
+        state.locations = readAccessibleLocations();
+        // Resolve by this frame's own store key first - immune to another tab overwriting
+        // MostRecentCCGS in the meantime. Fall back to MostRecentCCGS if that lookup misses -
+        // ccgsItems isn't reliably guaranteed to include the currently-active location.
+        var iframeStoreKey = getCurrentIframeStoreKey();
+        state.ccgs = findCcgsForStoreKey(iframeStoreKey, state.locations) || normalizeCCGS(readLocalStorageJSON("MostRecentCCGS"));
         if (!state.ccgs || state.ccgs.storeKey === null) {
             if (isLocalDevContext()) {
                 state.ccgs = buildLocalTestCCGS();
-                console.info("configEditor: no MostRecentCCGS found; using local test CCGS (storeKey=" + state.ccgs.storeKey + "). Override with ?configStoreKey=NNN.");
+                console.info("configEditor: could not resolve this frame's store (" + iframeStoreKey + "); using local test CCGS (storeKey=" + state.ccgs.storeKey + "). Override with ?configStoreKey=NNN.");
             } else {
-                console.warn("configEditor: no MostRecentCCGS with a storeKey found; edit mode disabled.");
+                console.warn("configEditor: could not resolve this frame's store (" + iframeStoreKey + "); edit mode disabled.");
                 return;
             }
         }
-        state.locations = readAccessibleLocations();
         // Always render the panel inline in the current page. The separate-window path
         // opened a blank popup that lacked the app's jQuery/DOM context; the inline path
         // falls back to document.body when no CF preview panel structure is found.

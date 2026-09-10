@@ -30,7 +30,7 @@
 html {
     overflow: hidden;
     background-color: white;
-    background-image: url("./media/background_1080x1920.png");
+    background-image: url("https://ckknygarkwlfexwsawbb.supabase.co/storage/v1/object/public/kiosk-assets/touchApp_resources/background_1080x1920.png");
     background-size: 1080px 1920px;
     background-repeat: no-repeat;
     background-position: top left;

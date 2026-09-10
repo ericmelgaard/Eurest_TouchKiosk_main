@@ -1,11 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
+// No bundler here, so @supabase/supabase-js (bare specifier) and import.meta.env can't
+// resolve - reuse the globals from supabaseConfig.js and hit PostgREST directly instead.
+const supabaseAvailable = typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+function restHeaders() {
+    return {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+    };
+}
 
-let supabase = null;
-if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+function restUrl(path) {
+    return SUPABASE_URL + '/rest/v1/' + path;
 }
 
 const FIELDS = [

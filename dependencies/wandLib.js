@@ -23,58 +23,54 @@ function setupOptionsMenu() {
     const dropdownMenu = document.createElement('div');
     dropdownMenu.className = 'options-dropdown';
     dropdownMenu.style.position = 'relative';
-    // client just means "inside an iframe" - CF preview also runs in an iframe, so it
-    // needs the full menu (Edit Config, Rotate, Expand) despite client being true there.
-    if (!client || isCF) {
-        dropdownMenu.innerHTML = `
+    // Refresh/Reset always show. Rotate/Expand stay exclusive to the non-client (browser
+    // preview) case, same as before. Edit Config is added for that case AND for CF - CF also
+    // runs inside an iframe (client === true there) but still needs the config editor entry.
+    var refreshItem = `
     <div class="dropdown-item" data-action="refresh">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
       <span>Refresh</span>
-    </div>
+    </div>`;
+    var resetItem = `
     <div class="dropdown-item" data-action="reset">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
       <span>Reset</span>
-    </div>
+    </div>`;
+    var rotateItem = `
     <div class="dropdown-item" data-action="rotate">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
       </svg>
       <span>Rotate</span>
-    </div>
+    </div>`;
+    var expandItem = `
     <div class="dropdown-item" data-action="expand">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
       </svg>
       <span>Expand</span>
-    </div>
+    </div>`;
+    var editConfigItem = `
     <div class="dropdown-item" data-action="editConfig">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
       <span>Edit Config</span>
-    </div>
-  `;
-    } else {
-        dropdownMenu.innerHTML = `
-    <div class="dropdown-item" data-action="refresh">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-      <span>Refresh</span>
-    </div>
-    <div class="dropdown-item" data-action="reset">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-      <span>Reset</span>
-    </div>
-  `;
+    </div>`;
+
+    var menuItems = refreshItem + resetItem;
+    if (!client) {
+        menuItems += rotateItem + expandItem;
     }
+    if (!client || isCF) {
+        menuItems += editConfigItem;
+    }
+    dropdownMenu.innerHTML = menuItems;
 
 
     // Create container for the options menu

@@ -79,7 +79,9 @@ var IMSintegration;
                     _this.showConnect(true, "black", "devmode", "Development Mode", "error_outline");
                 }
                 //future action with dummy data
-                if (isPreview) { }
+                if (isPreview) {
+                    $(".loading").remove()
+                 }
 
                 //confirm whitelisting in place
                 if (isLeader) {

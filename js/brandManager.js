@@ -892,10 +892,10 @@ var IMSintegration;
                         <span class="edge-nav-label">Menus</span>
                     </button>
                     <button class="floating-nav-btn floating-nav-home" aria-label="Go home">
-                        <img src="./media/homebutton.png" alt="Home">
+                        <img src="https://ckknygarkwlfexwsawbb.supabase.co/storage/v1/object/public/kiosk-assets/touchApp_resources/homebutton.png" alt="Home">
                     </button>
                     <div class="background">
-                        <img id="${brandKey}_background" src="./media/background_1080x1920.png" height="1920" width="1080"/>
+                        <img id="${brandKey}_background" src="https://ckknygarkwlfexwsawbb.supabase.co/storage/v1/object/public/kiosk-assets/touchApp_resources/background_1080x1920.png" height="1920" width="1080"/>
                     </div>
                     <div class="section-wrapper">
                         <div class="brand-header-logo">

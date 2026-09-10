@@ -545,7 +545,7 @@ var IMSintegration;
         MenuLayout.prototype.buildDynamicPageShell = function (pageId, extraMediaClass) {
             var $page = $('<div>').attr('id', pageId).addClass('page dynamic-card-page').hide();
             var $homeBtn = $('<button>').addClass('floating-nav-btn floating-nav-home').attr('aria-label', 'Go home')
-                .append($('<img>').attr('src', './media/homebutton.png').attr('alt', 'Home'));
+                .append($('<img>').attr('src', 'https://ckknygarkwlfexwsawbb.supabase.co/storage/v1/object/public/kiosk-assets/touchApp_resources/homebutton.png').attr('alt', 'Home'));
             var $media = $('<div>').addClass('cms-media' + (extraMediaClass ? ' ' + extraMediaClass : ''));
             $page.append($homeBtn).append($media);
             return { $page: $page, $media: $media };
@@ -604,7 +604,7 @@ var IMSintegration;
             if (destinationType === 'trm_layer') {
                 var layer = parseInt(destinationValue, 10);
                 if (isNaN(layer)) {
-                    console.error('MenuLayout: invalid trm_layer destination for card', card.name, destinationValue);
+                    console.warn('MenuLayout: invalid trm_layer destination for card', card.name, destinationValue);
                     return null;
                 }
                 var layerPageId = this.getDynamicPageId(index);
