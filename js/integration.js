@@ -1,5 +1,5 @@
 //Publisher: Wand Digital
-//Date: 06.22.2026
+//Date: 09.02.2026
 //Version: 65.0
 var IMSintegration;
 (wandDigital => {
@@ -7,7 +7,6 @@ var IMSintegration;
         class Integration {
             constructor(isLeader, isUsingIndexedDB) {
                 this.TABLE_NAME = "";
-                this.apiKey = "";
                 this.lastSync;
                 this.minUpdate = 600000; //10 min
                 this.maxUpdate = 1800000; //30 min
@@ -47,16 +46,15 @@ var IMSintegration;
                 this.settingsRetries = 2; // hard limit
                 this.imsRetries = 3; // hard limit
 
-                var environmentConfig = typeof window.getWandEnvironmentConfig === "function"
-                    ? window.getWandEnvironmentConfig()
-                    : {
-                        apiHost: "api.wanddigital.com",
-                        orderStatusHost: "orderstatus-prod.wanddigital.com"
-                    };
+                //			//***QA Environment***
+                //			this.orderStatus = "orderstatus-qa.wanddigital.com";
+                //			this.IMSwand = "https://api-qa.wanddigital.com";
+                //          this.wand = "api-qa.wanddigital.com";
 
-                this.orderStatus = environmentConfig.orderStatusHost;
-                this.IMSwand = "https://" + environmentConfig.apiHost;
-                this.wand = environmentConfig.apiHost;
+                //***Production Environment***
+                this.orderStatus = "orderstatus-prod.wanddigital.com";
+                this.IMSwand = "https://api.wanddigital.com";
+                this.wand = "api.wanddigital.com";
 
 
                 this.init(isLeader, isUsingIndexedDB);
@@ -79,9 +77,7 @@ var IMSintegration;
                     _this.showConnect(true, "black", "devmode", "Development Mode", "error_outline");
                 }
                 //future action with dummy data
-                if (isPreview) {
-                    $(".loading").remove()
-                 }
+                if (isPreview) { }
 
                 //confirm whitelisting in place
                 if (isLeader) {
@@ -107,7 +103,6 @@ var IMSintegration;
                     function queryKeys() {
                         if (!development && !isPreview) {
                             _this.store = AssetConfiguration.SKey || $("#storeKey").text().trim().toLowerCase();
-                            _this.apiKey = $("#apiKey").text().trim().toLowerCase() || settingKey;
                             //remove after windows dies
                             if (platform === "windows" && _this.store.length && _this.apiKey.length) {
                                 //dev mode
@@ -115,7 +110,6 @@ var IMSintegration;
                                     AssetConfiguration.Daypart = Daypart_Name || AssetConfiguration.Daypart || $(window.frameElement.parentElement).parent().attr("trm-daypart");
                                     _this.store = Store_Key || AssetConfiguration.SKey;
                                     _this.showConnect(true, "black", "devmode", "Development Mode", "error_outline");
-                                    _this.apiKey = apiKey || settingKey || $("#apiKey").text().trim().toLowerCase();
                                     development = true;
                                 } else {
                                     const trmEle = $(window.frameElement.parentElement).parent();
@@ -126,9 +120,8 @@ var IMSintegration;
                             }
                         } else {
                             _this.store = Store_Key || AssetConfiguration.SKey || $("#storeKey").text().trim().toLowerCase();
-                            _this.apiKey = apiKey || settingKey || $("#apiKey").text().trim().toLowerCase();
                         }
-                        if ((_this.apiKey.length === 0 && isUsingSettings) || !_this.store) {
+                        if (!_this.store) {
                             if (!_this.store) {
                                 if (!attempts) {
                                     console.warn("Looking for store key...");
@@ -136,14 +129,6 @@ var IMSintegration;
                                 }
                             } else {
                                 _this.showConnect(false, "darkgrey", "initStore");
-                            }
-                            if (_this.apiKey.length === 0 && isUsingSettings) {
-                                if (!attempts) {
-                                    console.warn("Looking for API key...");
-                                    _this.showConnect(true, "grey", "initAPI", "API key is missing", "error");
-                                }
-                            } else {
-                                _this.showConnect(false, "grey", "initAPI");
                             }
                             attempts++;
                             setTimeout(queryKeys, 250);
@@ -336,17 +321,18 @@ var IMSintegration;
                     try {
                         const configsObj = {};
                         settings.forEach(each => {
+                            const settingName = (each.setting || "").toLowerCase();
                             if (typeof settingId_PartnerAPI === "string") {
                                 // If it's a string, use it directly as the API value
                                 configsObj.API = settingId_PartnerAPI.trim().toLowerCase();
-                            } else if (Array.isArray(settingId_PartnerAPI) && settingId_PartnerAPI.indexOf(each.settingID) > -1) {
-                                // If it's an array (object), match to setting value
+                            } else if (settingName.indexOf("api") > -1 || settingName.indexOf("integration") > -1) {
+                                // Match by setting name instead of settingID
                                 configsObj.API = each.value.trim().toLowerCase();
                             }
-                            if (settingId_PartnerSite.indexOf(each.settingID) > -1) {
+                            if (settingName.indexOf("store") > -1 || settingName.indexOf("location") > -1 || settingName.indexOf("site") > -1) {
                                 configsObj.siteId = each.value.trim().toLowerCase();
                             }
-                            if (settingsId_Brand.indexOf(each.settingID) > -1) {
+                            if (settingName.indexOf("brand") > -1 || settingName.indexOf("sap") > -1) {
                                 configsObj.brand = each.value.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
                             }
                         });
@@ -550,7 +536,7 @@ var IMSintegration;
                     }
 
                     function fetchSettings(retries) {
-                        const url = `https://trm-client01.wandcorp.com/trmws.digitalproxyws/json/reply/StoreSettingsRequest?apiKey=${_this.apiKey}&deviceNumber=&storeKey=${_this.store}`;
+                        const url = `https://alb.wandcorp.com/services/digitalclient/digital/v1/storesettings?storeKey=${_this.store}`;
 
                         $.get(url)
                             .done(data => {
@@ -611,16 +597,9 @@ var IMSintegration;
 
                 const getPage = offset => {
                     return new Promise((resolve, reject) => {
-                        const payload = {
-                            sapCode: baseBody.sapCode,
-                            venue: baseBody.venue,
-                            menuDate: baseBody.menuDate,
-                            days: baseBody.days,
-                            includeNutrients: baseBody.includeNutrients,
-                            channel: baseBody.channel,
-                            offset: offset,
-                            limit: pageSize
-                        };
+                        var payload = Object.assign({}, baseBody);
+                        payload.offset = offset;
+                        payload.limit = pageSize;
 
                         Object.keys(payload).forEach(key => {
                             if (payload[key] === undefined || payload[key] === null || payload[key] === "") {
@@ -821,7 +800,6 @@ var IMSintegration;
                         storeKey: AssetConfiguration.SKey,
                         displayId: AssetConfiguration.DISid
                     }).then(data => {
-                        _this.showConnect(false, "darkorange", "TRM");
                         const normalizedData = normalizeTrmPayload(data);
                         if (clientDB && _.isEqual(clientDB, normalizedData)) {
                             // do nothing
@@ -831,20 +809,13 @@ var IMSintegration;
                             _this.addItems(normalizedData.menuItems, "update", "TRM_menuItems", "id");
                         }
                     }).catch(error => {
-                        var detail = "Failed to sync TRM data";
-                        if (error && error.message) {
-                            detail = detail + ": " + error.message;
-                        }
-                        _this.showConnect(true, "darkorange", "TRM", detail, "error");
-                        console.error("Failed to read TRM data (IndexedDB/CF):", error);
+                        console.error("Failed to read TRM data from IndexedDB:", error);
                     });
                     setTimeout(() => {
                         _this.getTrmData();
                     }, _this.trmUpdateInterval);
                 } else {
-                    if (!client) {
-                        console.warn("TRM client is not available.");
-                    }
+                    console.warn("TRM client is not available.");
                 }
             }
 
@@ -932,7 +903,7 @@ var IMSintegration;
 
                 return new Promise((resolve, reject) => {
                     try {
-                        const settings = data.settings;
+                        const settings = data;
                         var setting;
                         var setting;
                         let value;
@@ -1054,15 +1025,20 @@ var IMSintegration;
                             sapCode: _this.brand,
                             venue: _this.establishment,
                             menuDate: currentTime(),
-                            days: 3,
+                            days: 7,
                             includeNutrients: true,
-                            channel: "stable"
+                            channel: "stable",
+                            allergenMenu: "all"
                         }
                     };
                 }
 
                 if (_this.API === "bonappetit") {
                     url = "https://" + _this.wand + "/integrations/" + _this.API + "?campus=" + _this.brand + "&cafe=" + _this.establishment + "&menuDate=" + currentTime();
+                }
+
+                if (_this.API === "biggby") {
+                    url = "https://biggby-api.wanddigital.com/integration?id=" + _this.establishment;
                 }
 
                 if (url === "") {
@@ -1226,6 +1202,13 @@ var IMSintegration;
                     let centricData = data.data ? _this.formatcentric(data.data) : {};
                     products = centricData.products ? centricData.products : {};
                     modifiers = centricData.modifiers ? centricData.modifiers : {};
+                }
+
+                if (_this.API === "biggby") {
+                    action = "update";
+                    let biggbyData = data ? _this.formatBiggby(data) : {};
+                    products = biggbyData.products ? biggbyData.products : {};
+                    modifiers = biggbyData.modifiers ? biggbyData.modifiers : {};
                 }
 
                 if (products && products.length > 0) {
@@ -2091,58 +2074,7 @@ var IMSintegration;
                     each.category = each.mealStation;
                     each.mappingId = each.id.toString();
                 })
-
-                function handleComboItems(items) {
-                    let comboItems = {};
-                    let nonComboItems = [];
-                    items.forEach(each => {
-                        let stop = false;
-                        if (each.comboOrder > 0) {
-                            if (!comboItems[each.id]) {
-                                comboItems[each.id] = {
-                                    id: "0",
-                                    stringId: "0",
-                                    mappingId: each.id.toString(),
-                                    mrn: 0,
-                                    combo: true,
-                                    calories: "0",
-                                    description: "",
-                                    date: each.date,
-                                    comboItemNames: "",
-                                    comboName: each.comboName,
-                                    icons: each.icons,
-                                    mealPeriod: each.mealPeriod,
-                                    category: each.mealStation,
-                                    mealStation: each.mealStation,
-                                    price: each.price,
-                                    items: []
-                                };
-                            }
-                            comboItems[each.id].items.forEach(item => {
-                                if (item.comboOrder === each.comboOrder) { stop = true }
-                            });
-                            if (stop) { return; }
-                            comboItems[each.id].id = each.comboOrder === 1 ? each.id : comboItems[each.id].id
-                            comboItems[each.id].stringId = comboItems[each.id].id.toString()
-                            comboItems[each.id].mrn = parseFloat(each.mrn) + parseFloat(comboItems[each.id].mrn)
-                            comboItems[each.id].comboItemNames = comboItems[each.id].comboItemNames ? comboItems[each.id].comboItemNames + ", " + each.name : each.name;
-                            comboItems[each.id].calories = parseFloat(each.calories) + parseFloat(comboItems[each.id].calories);
-                            comboItems[each.id].items.push(each);
-                        } else {
-                            nonComboItems.push(each);
-                        }
-                    });
-
-                    // Add newly created combo items to nonComboItems
-                    for (let combo of Object.values(comboItems)) {
-                        nonComboItems.push(combo);
-                    }
-
-                    return nonComboItems;
-                }
-
-                webtrition = handleComboItems(webtrition);
-
+                
                 //return formatted items
                 return webtrition;
             }
@@ -2306,12 +2238,215 @@ var IMSintegration;
                 });
                 return { products: products, modifiers: modifiers };
             }
+
+            formatBiggby(data) {
+                const products = [];
+                const modifiers = [];
+
+                const menus = Array.isArray(data && data.menus) ? data.menus : [];
+                const items = Array.isArray(data && data.items) ? data.items : [];
+                const modifierDefs = Array.isArray(data && data.modifiers) ? data.modifiers : [];
+
+                const toPrice = value => {
+                    if (value === null || value === undefined || value === "") {
+                        return "";
+                    }
+                    const n = Number(value);
+                    return Number.isFinite(n) ? n.toFixed(2) : "";
+                };
+
+                const menuItemIds = new Set();
+                menus.forEach(menu => {
+                    if (!menu || !Array.isArray(menu.itemIds)) {
+                        return;
+                    }
+                    const isActive = !menu.status || menu.status === "ACTIVE";
+                    if (!isActive) {
+                        return;
+                    }
+                    menu.itemIds.forEach(id => {
+                        if (id !== null && id !== undefined && id !== "") {
+                            menuItemIds.add(String(id));
+                        }
+                    });
+                });
+
+                const modifierById = {};
+                modifierDefs.forEach(mod => {
+                    if (!mod || mod.id === null || mod.id === undefined || mod.id === "") {
+                        return;
+                    }
+                    modifierById[String(mod.id)] = mod;
+                });
+
+                const modifierMap = {};
+                const upsertModifier = (modifier, fallbackGroup) => {
+                    const modifierId = modifier && modifier.id !== undefined && modifier.id !== null
+                        ? String(modifier.id)
+                        : "";
+                    const modifierExternalId = modifier && modifier.externalId !== undefined && modifier.externalId !== null
+                        ? String(modifier.externalId)
+                        : "";
+
+                    if (!modifierId || !modifierExternalId || modifierMap[modifierId]) {
+                        return;
+                    }
+
+                    const groupRef = modifier.modifierGroupRef || {};
+                    modifierMap[modifierId] = {
+                        mappingId: modifierExternalId,
+                        name: modifier.name || modifierId,
+                        category: modifier.categoryName || groupRef.name || fallbackGroup || "",
+                        price: toPrice(modifier.priceAmount),
+                        saleStatus: modifier.saleStatus || ""
+                    };
+                };
+
+                items.forEach(item => {
+                    if (!item || item.id === null || item.id === undefined || item.id === "") {
+                        return;
+                    }
+
+                    const itemId = String(item.id);
+                    const itemExternalId = item.externalId !== undefined && item.externalId !== null
+                        ? String(item.externalId)
+                        : "";
+                    if (!itemExternalId) {
+                        return;
+                    }
+                    if (menuItemIds.size > 0 && !menuItemIds.has(itemId)) {
+                        return;
+                    }
+
+                    const product = {
+                        mappingId: itemExternalId,
+                        name: item.name || itemId,
+                        category: item.categoryName || "",
+                        description: item.description || "",
+                        price: toPrice(item.priceAmount),
+                        saleStatus: item.saleStatus || "",
+                        modifiers: []
+                    };
+
+                    const groups = Array.isArray(item.modifierGroups) ? item.modifierGroups : [];
+                    groups.forEach(group => {
+                        if (!group) {
+                            return;
+                        }
+
+                        const groupOptions = [];
+                        const modifierIds = Array.isArray(group.modifierIds) ? group.modifierIds : [];
+                        modifierIds.forEach(modifierId => {
+                            const resolvedId = modifierId !== null && modifierId !== undefined ? String(modifierId) : "";
+                            if (!resolvedId) {
+                                return;
+                            }
+
+                            const modifier = modifierById[resolvedId] || {
+                                id: resolvedId,
+                                externalId: "",
+                                name: resolvedId,
+                                priceAmount: "",
+                                saleStatus: ""
+                            };
+
+                            upsertModifier(modifier, group.name || "");
+
+                            groupOptions.push({
+                                mappingId: modifier.externalId !== undefined && modifier.externalId !== null
+                                    ? String(modifier.externalId)
+                                    : "",
+                                name: modifier.name || resolvedId,
+                                price: toPrice(modifier.priceAmount),
+                                saleStatus: modifier.saleStatus || "",
+                                category: (modifier.modifierGroupRef && modifier.modifierGroupRef.name) || group.name || ""
+                            });
+                        });
+
+                        product.modifiers.push({
+                            modifierType: group.name || "",
+                            groupId: group.id || "",
+                            minimumSelections: group.minimumSelections,
+                            maximumSelections: group.maximumSelections,
+                            maxPerModifierSelectionQuantity: group.maxPerModifierSelectionQuantity,
+                            options: groupOptions
+                        });
+                    });
+
+                    products.push(product);
+                });
+
+                Object.keys(modifierMap).forEach(key => {
+                    modifiers.push(modifierMap[key]);
+                });
+
+                return {
+                    products: products,
+                    modifiers: modifiers
+                };
+            }
         }
-        Integration.pingError = "\n     <div class=\"connectError {{source}}\">\n        <div class=\"message\">\n            <span class=\"material-icons\">error</span>\n            <span class=\"error-desc\">{{response}}</span>\n            <span class=\"url\">{{url}}</span>\n        </div>\n    </div>\n        ";
-        Integration.pingSuccess = "\n     <div class=\"connectError success {{source}}\">\n        <div class=\"message\">\n            <span class=\"material-icons\">check_circle</span>\n            <span class=\"error-desc\">{{response}}</span>\n            <span class=\"url\">{{url}}</span>\n        </div>\n    </div>\n        ";
-        Integration.FULLSCREENERROR = "\n     <div class=\"connectError {{source}}\">\n        <div class=\"message\">\n            <span class=\"material-icons\" style=\"margin-right: 5px; color:{{color}};\">{{type}}</span>\n            <span class=\"error-desc\">{{issue}}</span>\n            <span class=\"url\">{{detail}}</span>\n        </div>\n    </div>\n        ";
-        Integration.loading = "\n    <div class=\"loading\">\n        <div class=\"spin\"></div>\n        <img src=\"resources/icon.png\">\n        <div class=\"loading-wrapper\">\n            <div class=\"spinner\">\n                <span class=\"loading-message\">Loading menu data</span> \n                <div class=\"bounce1\">.</div>\n                <div class=\"bounce2\">.</div>\n                <div class=\"bounce3\">.</div>\n            </div>\n        </div>\n    </div>\n";
-        Integration.connect = "\n    <div title=\"{{issue}}\" data-tooltip=\"{{source}} Connectivity\" class=\"material-icons connect {{source}}\" style=\"color: {{color}}\">{{error}}</div>\n";
+
+        Integration.pingError = `
+     <div class="connectError {{source}}">
+        <div class="message">
+            <span class="material-icons">error</span>
+            <span class="error-desc">{{response}}</span>
+            <span class="url">{{url}}</span>
+        </div>
+    </div>
+        `;
+        Integration.pingSuccess = `
+     <div class="connectError success {{source}}">
+        <div class="message">
+            <span class="material-icons">check_circle</span>
+            <span class="error-desc">{{response}}</span>
+            <span class="url">{{url}}</span>
+        </div>
+    </div>
+        `;
+        Integration.loading = `
+    <div class="loading">
+        <div class="spin"></div>
+        <img src="resources/icon.png">
+        <div class="loading-wrapper">
+            <div class="spinner">
+                <span class="loading-message">Loading menu data</span> 
+                <div class="bounce1">.</div>
+                <div class="bounce2">.</div>
+                <div class="bounce3">.</div>
+            </div>
+        </div>
+    </div>
+`;
+        Integration.connect = `
+    <div title="{{issue}}" data-tooltip="{{source}} Connectivity" class="material-icons connect {{source}}" style="color: {{color}}">{{error}}</div>
+`;
+        // Template for a small top drop-down banner used in development mode
+        Integration.DEV_BANNER = `
+        <div class="dev-banner" id="dev-banner">
+            <div class="dev-banner-inner">
+                <span class="material-icons" style="margin-right: 5px">error_outline</span>
+                <span class="dev-flag">Development</span>
+            </div>
+        </div>
+`;
+        Integration.errorAlert =
+            `    <div class="error-alert-overlay {{source}}"> <div class="error-alert-content"
+            style="max-height: 90vh; display: flex; flex-direction: column;"> <div class="error-alert-header"> <span
+                    class="material-icons error-alert-icon" style="color: {{color}}">error</span> <h2
+                    class="error-alert-title">Exception Detected</h2> <span
+                    class="material-icons error-alert-close">close</span> </div> <div class="error-alert-body"
+                style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"> <div
+                    class="error-alert-source"> <strong>Source:</strong> <span
+                        class="error-alert-source-value">{{source}}</span> </div> <div class="error-alert-issue">
+                    <strong>Issue:</strong> <span class="error-alert-issue-value">{{issue}}</span> </div>
+                {{#issueStack}} <div class="error-alert-stack"
+                    style="flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 10px;">
+                    <strong>Issue Stack:</strong> <div class="error-alert-stack-value"
+                        style="flex: 1; overflow: auto; max-height: none;">{{{issueStack}}}</div> </div>
+                {{/issueStack}} </div> <div
+    </div>`
         return Integration;
     })();
     IMSintegration.Integration = Integration;

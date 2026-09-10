@@ -1,5 +1,5 @@
 //Publisher: Wand Digital
-//Date: 06.22.2026
+//Date: 09.02.2026
 //Version: 65.0
 
 //asset version
@@ -9,17 +9,12 @@ const version = 65;
 //settings config
 const isUsingSettings = true;
 const fullPreview = true;
-//leave settingKey blank for co-branded assets
-var settingKey = "N2RiZDYxZTMtMjEyZS00MjE5LWFjNzktZGI3MTU4YzAwYTgy";
-var settingId_PartnerAPI = ["349"];
-var settingsId_Brand = ["350"]; //Sap Code / Business Unit
-var settingId_PartnerSite = ["351"]; //Venue / Location
 //experimental placeholdder for Centrix
 //create
 // jeOl2jyXzotZWQa7ROvrIpOM4M473WT5Y1g0wDP1tr7Oq0lXzXUq0yNMAO13FK6jjJ8
 //piccola
 //allow offline operation if specific data is not required.
-const allowMenusOffline = false;
+const allowMenusOffline = true;
 //for legacy brands with rotated content
 const assetRotation = 0; //in degrees 0 or 270
 //webtrtion config
@@ -53,27 +48,17 @@ const Display_Name = "";
 const Daypart_ID = "";
 const Daypart_Name = "";
 const Store_ID = "";
-const Store_Key = "";
+const Store_Key = "4873";
 const Zone_ID = "";
 const Duration = "";
 const zoneHeight = "";
 const zoneWidth = "";
-var Partner_API = "webtrition";
-var Brand = "31709";
-var Establishment = "21332";
-var Company_Key = "";
-var Concept_Key = "";
-const apiKey = "";
+const Partner_API = ""; 
+const Brand = ""; //business unit or sap code
+const Establishment = ""; //location or venue
 //yyyy-mm-dd ex.2026-02-23
 const dateToRequest = "";
 const devSiteKeys = ["6091", "4873", "4907", "5448", "4756", "6820"];
-//icon pack default asset folder IDs
-//these are the template defaults; a matching TRM setting overrides them in production
-//nutritional: leave blank to keep webtrition icons when no pack/setting is present
-//brand: falls back to the brand's text value when blank or the brand is unmatched
-//category icons now come from Supabase (category_cards.icon_url / icon_catalog) - see supabase/
-var brandLogoIconPackId = "297748";
-var nutritionalIconPackId = "302524";
 //end development & preview values
 //global scope variables
 var integration = null;
@@ -85,109 +70,14 @@ var isUsingIndexedDB = versionTest();
 var trmConfigs = null;
 var trmAnchors = null;
 var clientDB = null;
-var client = window.frameElement ? true : false;
-var environment = resolveEnvironmentFromLocationHost(window.location.hostname, client);
 var isCF = isContentForecaster();
 var cfCurrentTime = CFTime();
 var leader = false;
+var client = window.frameElement ? true : false;
 var platform = discoverPlatform();
 var menuLayout = null;
 var app = null;
 var shouldObserve = checkSiblings(); //exclude from leader election process if better sibling exists.
-
-//enable Microsoft Clarity tracking when not in development/preview mode
-//grab Microsoft Clarity script from https://www.clarity.ms
-(function registerClarityWhenNotDev() {
-    function loadClarity() {
-        (function (c, l, a, r, i, t, y) {
-            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
-            t = l.createElement(r);
-            t.async = 1;
-            t.src = "https://www.clarity.ms/tag/" + i;
-            y = l.getElementsByTagName(r)[0];
-            y.parentNode.insertBefore(t, y);
-        })(window, document, "clarity", "script", "w82br31nme");
-    }
-
-    window.addEventListener("load", function () {
-        var isDevMode = Boolean(development) || Boolean(isPreview) || Boolean(isCF);
-
-        if (isDevMode) {
-            console.info("Clarity disabled in development/preview/CF mode.");
-            return;
-        }
-
-        loadClarity();
-    });
-})();
-
-(function registerImageServiceWorker() {
-    if (!("serviceWorker" in navigator)) {
-        console.warn("Service workers are not supported in this runtime.");
-        return;
-    }
-
-    window.addEventListener("load", function () {
-        var isDevMode = Boolean(development) || Boolean(isPreview) || Boolean(isCF);
-
-        if (isDevMode) {
-            console.info("servicew workers disabled in development/preview/CF mode.");
-            return;
-        }
-
-        var assetId = ((typeof AssetConfiguration !== "undefined" && AssetConfiguration && AssetConfiguration.Aid)
-            || (typeof Asset_ID !== "undefined" && Asset_ID)
-            || "default");
-        var swUrl = "./sw.js?assetId=" + encodeURIComponent(assetId);
-        navigator.serviceWorker.register(swUrl).then(function (registration) {
-            console.info("Image service worker registered with scope:", registration.scope);
-        }).catch(function (error) {
-            if (!window.isSecureContext) {
-                console.warn("Image service worker blocked: this page is not in a secure context (HTTPS or localhost).", error);
-                return;
-            }
-            console.warn("Image service worker registration failed:", error);
-        });
-    });
-})();
-
-//set up Wand environment configuration if not already defined
-if (typeof window.getWandEnvironmentConfig !== "function") {
-    window.getWandEnvironmentConfig = function () {
-        var env = String(environment || "stable").toLowerCase();
-        var map = {
-            qa: {
-                apiHost: "api-qa.wanddigital.com",
-                clientHost: "client-qa.wanddigital.com",
-                orderStatusHost: "orderstatus-qa.wanddigital.com"
-            },
-            uat: {
-                apiHost: "api-uat.wanddigital.com",
-                clientHost: "client-uat.wanddigital.com",
-                orderStatusHost: "orderstatus-uat.wanddigital.com"
-            },
-            stable: {
-                apiHost: "api.wanddigital.com",
-                clientHost: "client.wanddigital.com",
-                orderStatusHost: "orderstatus-prod.wanddigital.com"
-            },
-            local: {
-                apiHost: "api.wanddigital.com",
-                clientHost: "client.wanddigital.com",
-                orderStatusHost: "orderstatus-prod.wanddigital.com"
-            }
-        };
-        var hosts = map[env] || map.stable;
-        return {
-            environment: env,
-            apiHost: hosts.apiHost,
-            clientHost: hosts.clientHost,
-            orderStatusHost: hosts.orderStatusHost,
-            locationHost: String((window.location && window.location.hostname) || "").toLowerCase(),
-            inClient: client
-        };
-    };
-}
 //global scope functions
 $(document).ready(() => {
     if (client && !development) {
@@ -290,25 +180,6 @@ $(document).ready(() => {
     }
 });
 
-function resolveEnvironmentFromLocationHost(hostname, inClient) {
-    var host = String(hostname || "").toLowerCase();
-    if (!inClient) {
-        return "local";
-    }
-
-    if (host.indexOf("trm-") === 0) {
-        var env = host.split(".")[0].substring(4);
-        return env || "stable";
-    }
-
-    if (host.indexOf("client-") === 0) {
-        var clientEnv = host.split(".")[0].substring(7);
-        return clientEnv || "stable";
-    }
-
-    return "stable";
-}
-
 function ready(isLeader) {
     if (!menuLayout) {
         try {
@@ -388,21 +259,10 @@ function CFTime() {
     if (!isCF) {
         return;
     }
-    // decode the whole search string first so the fixed-position slice aligns with literal characters
-    const t = decodeURIComponent(self.parent.location.search);
+    const t = self.parent.location.search;
     const timeindex = t.indexOf("?currentTime=");
     const cftime = t.slice(timeindex + 13, timeindex + 33);
-    // mirror the content forecaster time onto this iframe's own URL
-    // (updates the query string in place without reloading the frame)
-    try {
-        const url = new URL(window.location.href);
-        url.searchParams.set("currentTime", cftime);
-        window.history.replaceState(null, "", url.toString());
-    } catch (err) {
-        console.error("Unable to set currentTime on iframe URL:", err);
-    }
     const dateCF = new Date(cftime);
-
     dateCF.setHours(dateCF.getHours() - 3);
     return dateCF.toISOString();
 };
@@ -438,8 +298,8 @@ function discoverPlatform() {
     if (/\bWindows\b/.test(navigator.userAgent)) {
         return "windows";
     }
-    if (/\bWebOS\b/.test(navigator.userAgent)) {
-        return "webos";
+    if (/\bWeb0S\b/.test(navigator.userAgent)) {
+        return "webos"
     }
     if (/\CrOS\b/.test(navigator.userAgent)) {
         return "chrome";
@@ -466,8 +326,8 @@ function generateUniqueIdea() {
     return `${Math.random().toString(36).substring(2)}`;
 }
 
-const uniqueIdea = globalThis.__wandUniqueIdea || generateUniqueIdea();
-globalThis.__wandUniqueIdea = uniqueIdea;
+var uniqueIdea = window.__wandUniqueIdea || generateUniqueIdea();
+window.__wandUniqueIdea = uniqueIdea;
 
 function sendHeartbeat() {
     const now = Date.now();
