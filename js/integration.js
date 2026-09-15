@@ -321,20 +321,25 @@ var IMSintegration;
                     try {
                         const configsObj = {};
                         settings.forEach(each => {
-                            const settingName = (each.setting || "").toLowerCase();
-                            if (typeof settingId_PartnerAPI === "string") {
-                                // If it's a string, use it directly as the API value
-                                configsObj.API = settingId_PartnerAPI.trim().toLowerCase();
-                            } else if (settingName.indexOf("api") > -1 || settingName.indexOf("integration") > -1) {
-                                // Match by setting name instead of settingID
+                            const settingName = each.setting || "";
+                            const name = settingName.trim().toLowerCase();
+
+                            if (name.startsWith("1)")) {
                                 configsObj.API = each.value.trim().toLowerCase();
                             }
-                            if (settingName.indexOf("store") > -1 || settingName.indexOf("location") > -1 || settingName.indexOf("site") > -1) {
+                            else if (name.startsWith("2)")) {
+                                configsObj.brand = each.value
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/[^a-z0-9]/g, "");
+                            }
+                            else if (name.startsWith("3)")) {
                                 configsObj.siteId = each.value.trim().toLowerCase();
                             }
-                            if (settingName.indexOf("brand") > -1 || settingName.indexOf("sap") > -1) {
-                                configsObj.brand = each.value.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
-                            }
+
+                            // else if (name.startsWith("4)")) {
+                            //     configsObj.XXXXXX = each.value.trim().toLowerCase();
+                            // }
                         });
 
                         if (development || isPreview) {
@@ -2074,7 +2079,7 @@ var IMSintegration;
                     each.category = each.mealStation;
                     each.mappingId = each.id.toString();
                 })
-                
+
                 //return formatted items
                 return webtrition;
             }

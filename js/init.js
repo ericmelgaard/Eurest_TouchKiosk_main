@@ -9,11 +9,6 @@ const version = 65;
 //settings config
 const isUsingSettings = true;
 const fullPreview = true;
-//experimental placeholdder for Centrix
-//create
-// jeOl2jyXzotZWQa7ROvrIpOM4M473WT5Y1g0wDP1tr7Oq0lXzXUq0yNMAO13FK6jjJ8
-//piccola
-//allow offline operation if specific data is not required.
 const allowMenusOffline = true;
 //for legacy brands with rotated content
 const assetRotation = 0; //in degrees 0 or 270
