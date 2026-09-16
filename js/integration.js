@@ -104,7 +104,7 @@ var IMSintegration;
                         if (!development && !isPreview) {
                             _this.store = AssetConfiguration.SKey || $("#storeKey").text().trim().toLowerCase();
                             //remove after windows dies
-                            if (platform === "windows" && _this.store.length && _this.apiKey.length) {
+                            if (platform === "windows" && _this.store.length) {
                                 //dev mode
                                 if (devSiteKeys.includes(_this.store)) {
                                     AssetConfiguration.Daypart = Daypart_Name || AssetConfiguration.Daypart || $(window.frameElement.parentElement).parent().attr("trm-daypart");
