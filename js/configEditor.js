@@ -151,13 +151,15 @@ var configEditor = (function () {
     // Override the test store with ?configStoreKey=NNN.
     function buildLocalTestCCGS() {
         var storeKeyParam = getQueryParam("configStoreKey") || (typeof Store_Key !== "undefined" && Store_Key) || "9999999";
+        var conceptKey = (typeof Concept_Key !== "undefined" && Concept_Key !== "") ? Concept_Key : 0;
+        var companyKey = (typeof Company_Key !== "undefined" && Company_Key !== "") ? Company_Key : 0;
         return {
-            conceptKey: 0,
-            companyKey: 0,
+            conceptKey: numberOrNull(conceptKey),
+            companyKey: numberOrNull(companyKey),
             groupKey: null,
             storeKey: numberOrNull(storeKeyParam),
-            conceptName: "Local Test Concept",
-            companyName: "Local Test Company",
+            conceptName: (typeof Concept_Name !== "undefined" && Concept_Name) || "Local Test Concept",
+            companyName: (typeof Company_Name !== "undefined" && Company_Name) || "Local Test Company",
             groupName: null,
             storeName: "Local Test Store (" + storeKeyParam + ")"
         };

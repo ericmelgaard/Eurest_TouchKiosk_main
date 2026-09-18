@@ -1,7 +1,7 @@
 # Packages only the files the kiosk actually loads at runtime into release/ (+ release.zip),
 # leaving supabase/, docs/, and dev tooling (package.json, vite.config.js, .git) out of the CMS asset.
 param(
-    [string]$OutDir = "release"
+    [string]$OutDir = "dist"
 )
 
 $ErrorActionPreference = "Stop"
