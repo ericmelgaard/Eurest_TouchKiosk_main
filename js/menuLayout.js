@@ -208,6 +208,8 @@ var IMSintegration;
             var footerLogoUrl = siteConfig && siteConfig.footer_logo_url;
             if (footerLogoUrl) {
                 $(".eurest-logo img").attr("src", footerLogoUrl);
+            } else {
+                $(".eurest-logo img").removeAttr("src");
             }
         };
         MenuLayout.prototype.normalizeTRMAsset = function (asset) {

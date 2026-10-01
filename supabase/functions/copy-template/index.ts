@@ -90,10 +90,12 @@ Deno.serve(async (req: Request) => {
       const tplCompany = template.company_key;
       const tplConcept = template.concept_key;
 
-      if (tplCompany !== null && tplCompany !== callerCompany) {
-        return jsonResponse({ error: "Not allowed to import this template" }, 403);
-      }
-      if (tplConcept !== null && tplConcept !== callerConcept) {
+      // Concept scope is company-independent: match on concept alone.
+      if (tplConcept !== null) {
+        if (tplConcept !== callerConcept) {
+          return jsonResponse({ error: "Not allowed to import this template" }, 403);
+        }
+      } else if (tplCompany !== null && tplCompany !== callerCompany) {
         return jsonResponse({ error: "Not allowed to import this template" }, 403);
       }
     }

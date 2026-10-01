@@ -264,6 +264,11 @@ min-width: 900px;;
     height: auto;
 }
 
+/* no footer_logo_url configured for this store - hide instead of showing a broken image icon */
+.eurest-logo img:not([src]) {
+    display: none;
+}
+
 /* Weekly Menu Page Styles */
 #weekly_menu_page {
     position: relative;

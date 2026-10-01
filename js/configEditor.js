@@ -730,7 +730,8 @@ var configEditor = (function () {
                 }
             }
         }
-        var $preview = $('<img class="config-editor-branding-preview" alt="" />').attr("src", currentUrl || "");
+        var $preview = $('<img class="config-editor-branding-preview" alt="" />');
+        if (currentUrl) { $preview.attr("src", currentUrl); }
         $row.append($preview);
 
         function setActive(url) {
@@ -742,7 +743,7 @@ var configEditor = (function () {
             } else {
                 state.siteConfig.title_image_url = url;
             }
-            $preview.attr("src", url || "");
+            if (url) { $preview.attr("src", url); } else { $preview.removeAttr("src"); }
             if (window.menuLayout && typeof menuLayout.applyBrandingFromSiteConfig === "function") {
                 menuLayout.applyBrandingFromSiteConfig(state.siteConfig);
             }

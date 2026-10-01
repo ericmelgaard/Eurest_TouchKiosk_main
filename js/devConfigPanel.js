@@ -271,8 +271,8 @@ function getCurrentDefaults() {
         config_key: 'default',
         store_key: typeof Store_Key !== 'undefined' ? Store_Key : '',
         partner_api: typeof Partner_API !== 'undefined' ? Partner_API : '',
-        brand: typeof Brand !== 'undefined' ? Brand : '',
-        establishment: typeof Establishment !== 'undefined' ? Establishment : '',
+        brand: typeof Group !== 'undefined' ? Group : '',
+        establishment: typeof Location !== 'undefined' ? Location : '',
         company_key: typeof Company_Key !== 'undefined' ? Company_Key : '',
         concept_key: typeof Concept_Key !== 'undefined' ? Concept_Key : '',
         store_id: typeof Store_ID !== 'undefined' ? Store_ID : '',
@@ -508,8 +508,8 @@ function applyConfig() {
     try {
         if (vals.store_key) { Store_Key = vals.store_key; }
         if (vals.partner_api) { Partner_API = vals.partner_api; }
-        if (vals.brand) { Brand = vals.brand; }
-        if (vals.establishment) { Establishment = vals.establishment; }
+        if (vals.brand) { Group = vals.brand; }
+        if (vals.establishment) { Location = vals.establishment; }
         if (vals.company_key !== undefined) { Company_Key = vals.company_key; }
         if (vals.concept_key !== undefined) { Concept_Key = vals.concept_key; }
         if (vals.store_id !== undefined) { Store_ID = vals.store_id; }
@@ -539,7 +539,7 @@ function applyConfig() {
     try {
         const existing = JSON.parse(localStorage.getItem(storeContextKey) || '{}');
         existing.API = (vals.partner_api || '').toLowerCase() || existing.API;
-        existing.brand = (vals.brand || '').toLowerCase() || existing.brand;
+        existing.group = (vals.brand || '').toLowerCase() || existing.group;
         existing.siteId = (vals.establishment || '').toLowerCase() || existing.siteId;
         existing.indexedDB = typeof isUsingIndexedDB !== 'undefined' ? isUsingIndexedDB : true;
         localStorage.setItem(storeContextKey, JSON.stringify(existing));

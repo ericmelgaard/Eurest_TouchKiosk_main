@@ -1,6 +1,6 @@
-//Publisher: Wand Digital
-//Date: 09.02.2026
-//Version: 65.0
+//!Publisher: Wand Digital
+//!Date: 09.29.2026
+//!Version: 65.1.0
 var IMSintegration;
 (wandDigital => {
     var Integration = (() => {
@@ -24,7 +24,8 @@ var IMSintegration;
                 this.websocket = null;
                 this.updateQueue = null;
                 this.settings = [];
-                this.brand = "";
+                this.integrationWebhooks = {}; // channel -> active connection, keyed by API-supplied webhookChannel
+                this.group = "";
                 this.establishment = "";
                 this.trmStoreId = "";
                 this.store = "";
@@ -46,15 +47,16 @@ var IMSintegration;
                 this.settingsRetries = 2; // hard limit
                 this.imsRetries = 3; // hard limit
 
-                //			//***QA Environment***
-                //			this.orderStatus = "orderstatus-qa.wanddigital.com";
-                //			this.IMSwand = "https://api-qa.wanddigital.com";
-                //          this.wand = "api-qa.wanddigital.com";
+                //!			//***QA Environment***
+                //!			this.orderStatus = "orderstatus-qa.wanddigital.com";
+                //!			this.IMSwand = "https://api-qa.wanddigital.com";
+                //!          this.wand = "api-qa.wanddigital.com";
 
-                //***Production Environment***
+                //!***Production Environment***
                 this.orderStatus = "orderstatus-prod.wanddigital.com";
                 this.IMSwand = "https://api.wanddigital.com";
                 this.wand = "api.wanddigital.com";
+                this.wandsettings = "api.wanddigital.com";
 
 
                 this.init(isLeader, isUsingIndexedDB);
@@ -158,15 +160,7 @@ var IMSintegration;
                 }
 
                 if (trmAnchors && Object.keys(trmAnchors).length > 1) {
-                    if (trmAnchors.IMS) {
-                        //IMS and Settings: should load menu - cached start
-                        $(".loading").remove();
-                        $(".asset-wrapper").removeClass("blur");
-                        trmAnchors = true;
-                    } else {
-                        //Settings and API: should not load - but still cached start since API update isn't enough alone for full start
-                        trmAnchors = true;
-                    }
+                    trmAnchors = true;
                 } else if (trmAnchors && Object.keys(trmAnchors).length === 1) {
                     //Settings only: should not load and go full start
                     trmAnchors = null;
@@ -174,18 +168,13 @@ var IMSintegration;
 
                 if (isUsingIndexedDB) {
                     _this.openDatabase().then(() => {
-                        if (trmAnchors && trmConfigs) {
-                            if (isLeader) {
-                                _this.cached_start(isUsingIndexedDB);
-                            } else {
-                                _this.observer_cachedStart(isUsingIndexedDB);
-                            }
+                        if (!isLeader) {
+                            // Observer never fetches; app derives cached vs full render from the anchors.
+                            _this.observer_start();
+                        } else if (trmAnchors && trmConfigs) {
+                            _this.cached_start(isUsingIndexedDB);
                         } else {
-                            if (isLeader) {
-                                _this.full_start(isUsingIndexedDB);
-                            } else {
-                                _this.observer_fullstart(isUsingIndexedDB);
-                            }
+                            _this.full_start(isUsingIndexedDB);
                         }
                         //dont stack instances on each other!
                         if (!_this.websocket) {
@@ -211,11 +200,8 @@ var IMSintegration;
                             _this.updateQueue = _this.IMSUpdateQueue();
                         }
                     } else {
-                        if (trmAnchors && trmConfigs) {
-                            _this.observer_cachedStart(isUsingIndexedDB);
-                        } else {
-                            _this.observer_fullstart(isUsingIndexedDB);
-                        }
+                        // Observer never fetches; app derives cached vs full render from the anchors.
+                        _this.observer_start();
                     }
                 }
             }
@@ -284,34 +270,64 @@ var IMSintegration;
                 checkConnection('https://api.wanddigital.com/defaultrequest', "wanddigital", "#b12228");
             }
 
-            removeDuplicates(originalArray, objKey) {
-                //for Qu basically.. would like to address API side.
-                let trimmedArray = [];
-                const values = {};
-
-                for (let i = 0; i < originalArray.length; i++) {
-                    const value = originalArray[i][objKey];
-                    const price = originalArray[i].price;
-
-                    if (values[value] !== undefined) {
-                        // Remove the previously seen item
-                        trimmedArray = trimmedArray.filter(item => item[objKey] !== value);
-
-                        // If the current item has a price of 0, skip adding it
-                        if (price === 0) {
-                            continue;
+            resolveMappingConflicts(products) {
+                //groups items by their standard pathId (mappingId) - the mappingId never changes, "two octet" pathId stays the lookup key.
+                const groups = {};
+                products.forEach(item => {
+                    const key = item.mappingId;
+                    groups[key] = groups[key] || [];
+                    groups[key].push(item);
+                });
+                const resolved = [];
+                Object.keys(groups).forEach(pathId => {
+                    const items = groups[pathId];
+                    //bucket the duplicates by their own price - 0/blank is a placeholder, not a real price bucket
+                    const priceGroups = {};
+                    const priceOrder = [];
+                    items.forEach(item => {
+                        const key = item.price;
+                        if (!priceGroups[key]) {
+                            priceGroups[key] = { price: item.price, fullPathIds: [] };
+                            priceOrder.push(key);
                         }
+                        const keys = (item.itemPathKeys && item.itemPathKeys.length) ? item.itemPathKeys : [pathId];
+                        priceGroups[key].fullPathIds = priceGroups[key].fullPathIds.concat(keys);
+                    });
+                    const pricedKeys = priceOrder.filter(key => key !== 0 && key !== "");
+                    //every duplicate for this pathId priced at 0 - drop it entirely, matches prior behavior
+                    if (!pricedKeys.length && items.length > 1) {
+                        return;
                     }
+                    const keptKeys = pricedKeys.length ? pricedKeys : priceOrder;
+                    //keep the first record as the base so its other normalized fields (name, category, etc.) survive
+                    const base = items[0];
+                    base.mappingId = pathId;
+                    base.priceGroups = keptKeys.map(key => priceGroups[key]);
+                    base.price = base.priceGroups[0].price;
+                    resolved.push(base);
+                });
+                return resolved;
+            }
 
-                    // If the current item does not have a price of 0, remove the previously added item with price 0
-                    if (price !== 0 && values[value] === 0) {
-                        trimmedArray = trimmedArray.filter(item => item[objKey] !== value || item.price !== 0);
-                    }
+            //GUIDs are case sensitive and must not be lowercased
+            isGuidLike(value) {
+                return typeof value === "string" && value.length > 20;
+            }
 
-                    trimmedArray.push(originalArray[i]);
-                    values[value] = price;
+            //pulls the id out of values like "#10001 Partner Intergrations" - prefers digits after a #, else a standalone 5+ digit run
+            extractGlobalId(value) {
+                if (typeof value === "number") {
+                    return value.toString();
                 }
-                return trimmedArray;
+                if (typeof value !== "string") {
+                    return "";
+                }
+                const hashMatch = value.match(/#(\d+)/);
+                if (hashMatch) {
+                    return hashMatch[1];
+                }
+                const longDigitsMatch = value.match(/\d{5,}/);
+                return longDigitsMatch ? longDigitsMatch[0] : "";
             }
 
             updateConfigs(settings) {
@@ -323,35 +339,42 @@ var IMSintegration;
                         settings.forEach(each => {
                             const settingName = each.setting || "";
                             const name = settingName.trim().toLowerCase();
+                            const globalId = each.globalID || "";
 
-                            if (name.startsWith("1)")) {
+                            //globalID is the reliable match; name-prefix is the legacy fallback for settings not yet carrying one
+                            if (globalId === "10001" || (!globalId && name.startsWith("1)"))) {
                                 configsObj.API = each.value.trim().toLowerCase();
                             }
-                            else if (name.startsWith("2)")) {
-                                configsObj.brand = each.value
-                                    .trim()
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]/g, "");
+                            else if (globalId === "10002" || (!globalId && name.startsWith("2)"))) {
+                                const groupValue = each.value.trim();
+                                configsObj.group = _this.isGuidLike(groupValue)
+                                    ? groupValue.replace(/[^a-zA-Z0-9]/g, "")
+                                    : groupValue.toLowerCase().replace(/[^a-z0-9]/g, "");
                             }
-                            else if (name.startsWith("3)")) {
-                                configsObj.siteId = each.value.trim().toLowerCase();
+                            else if (globalId === "10003" || (!globalId && name.startsWith("3)"))) {
+                                const siteValue = each.value.trim();
+                                configsObj.siteId = _this.isGuidLike(siteValue) ? siteValue : siteValue.toLowerCase();
                             }
 
-                            // else if (name.startsWith("4)")) {
+                            // else if (globalId === "10004") {
                             //     configsObj.XXXXXX = each.value.trim().toLowerCase();
                             // }
                         });
 
                         if (development || isPreview) {
                             configsObj.API = Partner_API ? Partner_API.toLowerCase() : configsObj.API;
-                            configsObj.siteId = Establishment ? Establishment.toLowerCase() : configsObj.siteId;
-                            configsObj.brand = Brand ? Brand.toLowerCase() : configsObj.brand;
+                            configsObj.siteId = Location
+                                ? (_this.isGuidLike(Location) ? Location : Location.toLowerCase())
+                                : configsObj.siteId;
+                            configsObj.group = Group
+                                ? (_this.isGuidLike(Group) ? Group : Group.toLowerCase())
+                                : configsObj.group;
                         }
 
                         //catch no settings values and set defaults
                         if (!configsObj.API) { configsObj.API = "ims"; }
                         //allow webt business_unit and location override if no settings exist.
-                        if (!configsObj.brand && configsObj.API) { configsObj.brand = staticBusinessUnit; }
+                        if (!configsObj.group && configsObj.API) { configsObj.group = staticBusinessUnit; }
                         if (!configsObj.siteId && configsObj.API) { configsObj.siteId = staticLocation; }
 
                         // watch for webos versions upgrades and changing of database use
@@ -385,12 +408,12 @@ var IMSintegration;
                 if (!configsObj) {
                     return;
                 }
-                this.brand = configsObj.brand;
+                this.group = configsObj.group;
                 this.establishment = configsObj.siteId;
                 this.API = configsObj.API;
 
                 //webt support 04.04.2025
-                _this.business_unit = _this.business_unit ? _this.business_unit : this.brand;
+                _this.business_unit = _this.business_unit ? _this.business_unit : this.group;
                 _this.location = _this.location ? _this.location : this.establishment;
 
                 // No change for dev
@@ -411,26 +434,14 @@ var IMSintegration;
                 }
             }
 
-            observer_fullstart() {
+            observer_start() {
                 const _this = this;
-                //start but do not get data
+                //start but do not get data; app decides cached vs full render from the anchors
                 if (isUsingIndexedDB) {
                     _this.app.db = _this.db;
                 }
                 _this.app.store = _this.store;
-
-                _this.app.init(_this.API, true);
-            }
-
-            observer_cachedStart() {
-                const _this = this;
-                //start but do not get data
-
-                if (isUsingIndexedDB) {
-                    _this.app.db = _this.db;
-                }
-                _this.app.store = _this.store;
-                _this.app.init(_this.API, false);
+                _this.app.init(_this.API);
             }
 
             full_start() {
@@ -541,7 +552,7 @@ var IMSintegration;
                     }
 
                     function fetchSettings(retries) {
-                        const url = `https://alb.wandcorp.com/services/digitalclient/digital/v1/storesettings?storeKey=${_this.store}`;
+                        const url = `https://${_this.wandsettings}/services/digitalclient/digital/v1/storesettings?storeKey=${_this.store}`;
 
                         $.get(url)
                             .done(data => {
@@ -580,18 +591,13 @@ var IMSintegration;
             }
 
             forceIMSUpdate(table, item, action) {
-                const _this = this;
+                // In-document only; cross-instance notification now rides the anchors key.
                 window.dispatchEvent(new CustomEvent('dbChangeEvent', {
                     detail: {
                         table: table,
                         item: item,
                         action: action
                     }
-                }));
-                localStorage.setItem(_this.store + '_dbChangeEvent' + "(" + version + ")", JSON.stringify({
-                    table: table,
-                    item: item,
-                    action: action
                 }));
             }
 
@@ -890,7 +896,7 @@ var IMSintegration;
                         _this.addItems(products, "patch", "IMS_products", "productId");
                     } else {
                         console.warn("IMS products not found or empty!");
-                        this.app.IMSUpdate = true;
+                        _this.forceIMSUpdate("IMS_products", "forceUpdate", "patch");
                     }
                 }
 
@@ -910,21 +916,23 @@ var IMSintegration;
                     try {
                         const settings = data;
                         var setting;
-                        var setting;
                         let value;
                         let settingID;
                         let groupID;
+                        let globalID;
 
                         settings.forEach((each, idx) => {
                             setting = each[0];
                             value = each[1];
                             settingID = each[2];
                             groupID = each[3];
+                            globalID = _this.extractGlobalId(each[4]);
                             settings[idx] = {
                                 setting: setting,
                                 value: value,
                                 settingID: settingID,
                                 groupID: groupID,
+                                globalID: globalID,
                             };
                             // Add an id so the template works
                             settings[idx].id = settingID;
@@ -938,7 +946,7 @@ var IMSintegration;
                             _this.addItems(settings, "update", "IMS_settings", "settingID");
                         } else {
                             console.warn("No settings found in the response.");
-                            this.app.settingsUpdate = true;
+                            _this.forceIMSUpdate("IMS_settings", "forceUpdate", "update");
                         }
                     } catch (error) {
                         reject(error);
@@ -977,15 +985,15 @@ var IMSintegration;
                     _this.maxUpdate = 9000000;
                     _this.minUpdate = 18000000;
                     _this.integrationUpdateInterval = Math.floor(Math.random() * (_this.maxUpdate - _this.minUpdate + 1)) + _this.minUpdate;
-                    url = "https://revel-" + _this.wand + "/integration?client=" + _this.brand + "&id=" + _this.establishment + "&date=" + modifiedDate + "&storeId=" + _this.store;
+                    url = "https://revel-" + _this.wand + "/integration?client=" + _this.group + "&id=" + _this.establishment + "&date=" + modifiedDate + "&storeId=" + _this.store;
                 }
                 if (_this.API === "qu") {
                     const timeOfDay = new Date().toTimeString().split(" ")[0];
                     //Qu should use current day instead of date modified so scheudled pricing works correctly
-                    url = "https://qubeyond-" + _this.wand + "/integration?id=" + _this.establishment + "&concept=" + _this.brand + "&date=" + currentDateLocal + "&time=" + timeOfDay;
+                    url = "https://qubeyond-" + _this.wand + "/integration?id=" + _this.establishment + "&concept=" + _this.group + "&date=" + currentDateLocal + "&time=" + timeOfDay;
                 }
                 if (_this.API === "par") {
-                    url = "https://" + _this.wand + "/integrations/parbrink/v1" + "?concept=" + _this.brand + "&id=" + _this.establishment;
+                    url = "https://" + _this.wand + "/integrations/parbrink/v1" + "?concept=" + _this.group + "&id=" + _this.establishment;
                 }
                 if (_this.API === "toast") {
                     const apiEndpoint = "https://" + _this.wand + "/services/toast/client/menu/";
@@ -1001,33 +1009,38 @@ var IMSintegration;
                     url = "https://shift4-" + _this.wand + "/integration" + "?id=" + _this.establishment;
                 }
                 if (_this.API === "simphony") {
-                    url = "https://simphony-" + _this.wand + "/integration" + "?concept=" + _this.brand + "&id=" + _this.establishment;
+                    url = "https://simphony-" + _this.wand + "/integration" + "?concept=" + _this.group + "&id=" + _this.establishment;
                 }
                 if (_this.API === "transact") {
-                    url = "https://transact-" + _this.wand + "/integration" + "?concept=" + _this.brand;
+                    url = "https://transact-" + _this.wand + "/integration" + "?concept=" + _this.group;
                 }
                 if (_this.API === "clover") {
-                    url = "https://" + _this.wand + "/integrations/" + _this.API + "/v1/" + _this.brand + "?merchantId=" + _this.establishment;
+                    url = "https://" + _this.wand + "/integrations/" + _this.API + "/v1/" + _this.group + "?merchantId=" + _this.establishment;
                 }
                 if (_this.API === "mealtracker") {
                     const startDate = currentTime().split("T")[0];
                     url = "https://appjel-" + _this.wand + "/integration" + "?id=" + _this.establishment + "&startDate=" + startDate;
                 }
                 if (_this.API === "venuenext") {
-                    url = "https://venuenext-" + _this.wand + "/integration" + "?id=" + _this.establishment + "&org=" + _this.brand
+                    url = "https://venuenext-" + _this.wand + "/integration" + "?id=" + _this.establishment + "&org=" + _this.group
                 }
                 if (_this.API === "bepoz") {
-                    url = "https://bepoz-" + _this.wand + "/integration" + "?concept=" + _this.brand;
+                    url = "https://bepoz-" + _this.wand + "/integration" + "?concept=" + _this.group;
                 }
                 if (_this.API === "centricos") {
                     url = "https://centric-" + _this.wand + "/integration" + "?id=" + _this.establishment;
+                }
+                if (_this.API === "parsley") {
+                    const startDate = currentTime().split("T")[0];
+                    const endDate = new Date(new Date(startDate).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+                    url = "https://parsley-" + _this.wand + "/integration" + "?location=" + _this.group + "&startDate=" + startDate + "&endDate=" + endDate;
                 }
 
                 if (_this.API === "webtrition") {
                     url = {
                         url: "https://" + _this.wand + "/services/webtrition/client/wds",
                         body: {
-                            sapCode: _this.brand,
+                            sapCode: _this.group,
                             venue: _this.establishment,
                             menuDate: currentTime(),
                             days: 7,
@@ -1039,7 +1052,7 @@ var IMSintegration;
                 }
 
                 if (_this.API === "bonappetit") {
-                    url = "https://" + _this.wand + "/integrations/" + _this.API + "?campus=" + _this.brand + "&cafe=" + _this.establishment + "&menuDate=" + currentTime();
+                    url = "https://" + _this.wand + "/integrations/" + _this.API + "?campus=" + _this.group + "&cafe=" + _this.establishment + "&menuDate=" + currentTime();
                 }
 
                 if (_this.API === "biggby") {
@@ -1067,6 +1080,10 @@ var IMSintegration;
                         integration.showConnect(false, "forestgreen", _this.API);
                         _this.setSync(_this.API);
                         _this.addIntegrationData(message, action);
+                        // any API can opt into instant updates by returning a root-level webhookChannel
+                        if (message && message.webhookChannel) {
+                            _this.connectIntegrationWebhook(message.webhookChannel);
+                        }
                         _this.attempts = 0;
                         scheduleNextSync();
                         return;
@@ -1216,6 +1233,11 @@ var IMSintegration;
                     modifiers = biggbyData.modifiers ? biggbyData.modifiers : {};
                 }
 
+                if (_this.API === "parsley") {
+                    action = "update";
+                    products = data.events ? _this.formatParsley(data.events, "products") : {};
+                }
+
                 if (products && products.length > 0) {
                     _this.addItems(products, action, "integration_products", "mappingId");
                 }
@@ -1240,17 +1262,13 @@ var IMSintegration;
                 const _this = this;
 
                 const handleDatabaseChangeEvent = (table, item, action) => {
+                    // In-document only; cross-instance notification now rides the anchors key.
                     window.dispatchEvent(new CustomEvent('dbChangeEvent', {
                         detail: {
                             table,
                             item,
                             action
                         }
-                    }));
-                    localStorage.setItem(_this.store + '_dbChangeEvent' + "(" + version + ")", JSON.stringify({
-                        table,
-                        item,
-                        action
                     }));
                 };
 
@@ -1367,10 +1385,12 @@ var IMSintegration;
                 // Retrieve existing anchors from local storage
                 const anchors = JSON.parse(self.localStorage.getItem(key)) || {};
 
-                // Update the specific anchor with new data
+                // rev increments only here (real content change) so observers can detect intra-day updates despite day-resolution dates.
+                const prevRev = anchors[anchor] && anchors[anchor].rev ? anchors[anchor].rev : 0;
                 anchors[anchor] = {
                     date: currentTime(),
                     lastSync: Date.now(),
+                    rev: prevRev + 1,
                 };
 
                 // Save the updated anchors back to local storage
@@ -1391,13 +1411,12 @@ var IMSintegration;
                 // Retrieve existing anchors from local storage
                 const anchors = JSON.parse(self.localStorage.getItem(key)) || {};
 
-                // Retrieve the modifiedTime of the specific anchor
-                const modifiedTime = anchors[anchor] ? anchors[anchor].date : "";
-
-                // Update the specific anchor's lastSync value
+                // Preserve rev; setSync is poll bookkeeping, not a content change, so it must not look like an update to observers.
+                const existing = anchors[anchor] || {};
                 anchors[anchor] = {
-                    date: modifiedTime,
+                    date: existing.date || "",
                     lastSync: Date.now(),
+                    rev: existing.rev,
                 };
 
                 // Save the updated anchors back to local storage
@@ -1572,6 +1591,53 @@ var IMSintegration;
                 return true;
             }
 
+            connectIntegrationWebhook(channel) {
+                const _this = this;
+                // one connection per channel; ignore repeat calls (e.g. every poll response echoes the same channel)
+                if (!channel || _this.integrationWebhooks[channel]) {
+                    return;
+                }
+                _this.integrationWebhooks[channel] = true;
+
+                const baseDelay = 1000;
+                const maxDelay = 30000;
+                let delay = baseDelay;
+
+                function connect() {
+                    try {
+                        const ws = new WebSocket("wss://" + _this.orderStatus + "/?device=" + channel);
+
+                        ws.onopen = () => {
+                            delay = baseDelay;
+                        };
+
+                        ws.onmessage = () => {
+                            // payload content is irrelevant for now - any message means re-fetch the integration data
+                            _this.getIntegrationData("patch");
+                        };
+
+                        ws.onclose = () => {
+                            if (!leader) {
+                                return;
+                            }
+                            setTimeout(() => {
+                                delay = Math.min(delay * 2, maxDelay);
+                                connect();
+                            }, delay);
+                        };
+
+                        ws.onerror = err => {
+                            console.error("Integration webhook error for channel " + channel + ":", err.message);
+                            ws.close();
+                        };
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+
+                connect();
+            }
+
             IMSUpdateQueue() {
                 const _this = this;
                 //clear queue
@@ -1662,8 +1728,8 @@ var IMSintegration;
                     products.push(eachItem);
                 });
 
-                //required and in a beta state.. removes duplicates with same pathID, and attempts to keep the ones that price is not 0. Qu is a pita and we attempt somethign API side.
-                products = _this.removeDuplicates(products, "mappingId");
+                //required and in a beta state.. collapses duplicate pathIDs that price identically, but keeps a priceGroups array (per distinct price + its fullPathIds) when the same pathId prices differently across menus.
+                products = _this.resolveMappingConflicts(products);
                 return products;
             }
 
@@ -2181,6 +2247,40 @@ var IMSintegration;
             formatcentric(data) {
                 const products = [];
                 const modifiers = [];
+                const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+                const today = new Date(currentTime());
+                const todayIndex = today.getDay();
+
+                // hand-typed tags may hold a day name anywhere in the string, full or abbreviated, plural or misspelled past the first 3 letters (e.g. "flame_wednesdays", "wed", "wedsdays"); match on the unambiguous 3-letter prefix and resolve the nearest occurrence (today counts, otherwise next week) so the item only plays that day
+                const resolveTagDate = tags => {
+                    if (!Array.isArray(tags) || tags.length === 0) {
+                        return null;
+                    }
+                    let nearestOffset = null;
+                    tags.forEach(tag => {
+                        const normalized = String(tag || "").toLowerCase();
+                        const dayIndex = dayNames.findIndex(day => normalized.includes(day));
+                        if (dayIndex === -1) {
+                            return;
+                        }
+                        const offset = (dayIndex - todayIndex + 7) % 7;
+                        if (nearestOffset === null || offset < nearestOffset) {
+                            nearestOffset = offset;
+                        }
+                    });
+                    if (nearestOffset === null) {
+                        return null;
+                    }
+                    const targetDate = new Date(today);
+                    targetDate.setDate(today.getDate() + nearestOffset);
+                    const pad = n => String(n).padStart(2, "0");
+                    return targetDate.getFullYear() + "-" + pad(targetDate.getMonth() + 1) + "-" + pad(targetDate.getDate()) + "T00:00:00";
+                };
+
+                // some items carry the full nutrition facts panel (fat, carbs, sodium, etc.) beyond just calories
+                const hasExtendedNutrition = nutrition => {
+                    return !!nutrition && Object.keys(nutrition).some(key => key !== "calories");
+                };
 
                 //align to DB
                 const groups = (data.data && data.data.groups) ? data.data.groups : (data.groups || []);
@@ -2192,16 +2292,29 @@ var IMSintegration;
                         each.description = each.description.en || "";
                         each.price = each.price.amount ? parseFloat(each.price.amount).toFixed(2) : "";
                         each.calories = each.nutrition.calories ? each.nutrition.calories.amount : "";
+                        each.webtrition = hasExtendedNutrition(each.nutrition);
                         each.sortOrder = each.meta.menu_sort_number || 0;
                         each.out_of_stock = each.is.out_of_stock || false;
                         each.featured = each.is.featured || false;
                         each.hidden = each.is.hidden || false;
-                        each.tags = each.reporting.category || [];
+                        each.tags = each.meta.tags || each.reporting.category || [];
+                        each.date = resolveTagDate(each.tags) || "";
+                        each.icons = (Array.isArray(each.menu_labels) ? each.menu_labels : []).map(function (label) {
+                            var rawName = (label && label.text) || "";
+                            var normalizedName = rawName.replace(/\s+/g, "").toLowerCase();
+                            return {
+                                id: (label && label.id) || "",
+                                name: normalizedName,
+                                rank: (label && label.rank) || 0,
+                                fileName: "media/icon_" + normalizedName + ".png",
+                                url: (label && label.s3_link) || "",
+                            };
+                        });
+
                         //clean up products
                         delete each.id;
                         delete each.meta;
                         delete each.is;
-                        delete each.nutrition;
                         delete each.reporting;
                         delete each.weight;
                         delete each.label;
@@ -2217,6 +2330,7 @@ var IMSintegration;
                                 eachOptItem.description = eachOptItem.description.en || "";
                                 eachOptItem.price = eachOptItem.price.amount ? parseFloat(eachOptItem.price.amount).toFixed(2) : "";
                                 eachOptItem.calories = eachOptItem.nutrition.calories ? eachOptItem.nutrition.calories.amount : "";
+                                eachOptItem.webtrition = hasExtendedNutrition(eachOptItem.nutrition);
                                 eachOptItem.out_of_stock = eachOptItem.is.out_of_stock || false;
                                 eachOptItem.featured = eachOptItem.is.featured || false;
                                 eachOptItem.hidden = eachOptItem.is.hidden || false;
@@ -2224,7 +2338,6 @@ var IMSintegration;
                                 delete eachOptItem.id;
                                 delete eachOptItem.meta;
                                 delete eachOptItem.is;
-                                delete eachOptItem.nutrition;
                                 delete eachOptItem.reporting;
                                 delete eachOptItem.weight;
                                 delete eachOptItem.label;
@@ -2389,6 +2502,33 @@ var IMSintegration;
                     products: products,
                     modifiers: modifiers
                 };
+            }
+
+            formatParsley(data) {
+                const products = [];
+
+                if (!Array.isArray(data)) {
+                    return products;
+                }
+
+                data.forEach((event) => {
+                    const menu = event.menu || {};
+                    const menuName = menu.name || event.name || "";
+                    const date = event.date ? event.date + "T00:00:00" : "";
+                    const sections = Array.isArray(menu.sections) ? menu.sections : [];
+                    sections.forEach((section) => {
+                        const menuItems = Array.isArray(section.menuItems) ? section.menuItems : [];
+                        menuItems.forEach((item) => {
+                            item.mappingId = item.id + "-" + event.id;
+                            item.category = section.name || "";
+                            item.date = date;
+                            item.menuName = menuName;
+                            products.push(item);
+                        });
+                    });
+                });
+                
+                return products;
             }
         }
 

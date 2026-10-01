@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
     typeof payload.description === "string" ? payload.description.trim() : null;
 
   // Scope keys — both null means WAND-level.
-  const companyKey =
+  let companyKey =
     payload.companyKey != null && payload.companyKey !== ""
       ? Number(payload.companyKey)
       : null;
@@ -60,9 +60,9 @@ Deno.serve(async (req: Request) => {
   if (conceptKey !== null && !Number.isFinite(conceptKey)) {
     return jsonResponse({ error: "conceptKey must be a number or null" }, 400);
   }
-  // Concept-level template requires a company key.
-  if (conceptKey !== null && companyKey === null) {
-    return jsonResponse({ error: "conceptKey requires a companyKey" }, 400);
+  // Concept scope is company-independent, so a concept template never carries a company key.
+  if (conceptKey !== null) {
+    companyKey = null;
   }
 
   // Access check: in CCGS mode, the scope must match the caller's context.
@@ -77,11 +77,12 @@ Deno.serve(async (req: Request) => {
         ? Number(ccgs.conceptKey)
         : null;
 
-    if (companyKey !== null && companyKey !== callerCompany) {
+    if (conceptKey !== null) {
+      if (conceptKey !== callerConcept) {
+        return jsonResponse({ error: "Not allowed to save at this concept scope" }, 403);
+      }
+    } else if (companyKey !== null && companyKey !== callerCompany) {
       return jsonResponse({ error: "Not allowed to save at this company scope" }, 403);
-    }
-    if (conceptKey !== null && conceptKey !== callerConcept) {
-      return jsonResponse({ error: "Not allowed to save at this concept scope" }, 403);
     }
   }
 

@@ -64,13 +64,13 @@ Deno.serve(async (req: Request) => {
     const tplConcept = template.concept_key;
 
     // WAND-level templates: anyone in CCGS mode can delete.
-    if (tplCompany !== null || tplConcept !== null) {
-      if (tplCompany !== null && tplCompany !== callerCompany) {
+    // Concept scope is company-independent: match on concept alone.
+    if (tplConcept !== null) {
+      if (tplConcept !== callerConcept) {
         return jsonResponse({ error: "Not allowed to delete this template" }, 403);
       }
-      if (tplConcept !== null && tplConcept !== callerConcept) {
-        return jsonResponse({ error: "Not allowed to delete this template" }, 403);
-      }
+    } else if (tplCompany !== null && tplCompany !== callerCompany) {
+      return jsonResponse({ error: "Not allowed to delete this template" }, 403);
     }
   }
 

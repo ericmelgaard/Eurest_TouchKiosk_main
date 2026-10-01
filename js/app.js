@@ -37,7 +37,7 @@ var IMSintegration;
                 return new Promise((resolve, reject) => {
                     function retry() {
                         const API = self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")") && JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).API ? JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).API : null;
-                        const BRAND = self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")") && JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).brand ? JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).brand : null;
+                        const BRAND = self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")") && JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).group ? JSON.parse(self.localStorage.getItem(_this.store + "_store_context" + "(" + version + ")")).group : null;
                         if (API && BRAND) {
                             _this.API = API;
                             _this.BRAND = BRAND;

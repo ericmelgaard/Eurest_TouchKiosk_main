@@ -36,25 +36,26 @@ const ignoreIcon = "ageurest";
 //end setttings config
 const timeZoneOffset = -3; //minus three hours - after midnight support
 //development & preview values
-const Asset_Zone_ID = "";
-const Asset_ID = "";
-const Display_ID = "";
-const Display_Name = "";
-const Daypart_ID = "";
-const Daypart_Name = "";
-const Store_ID = "";
-const Store_Key = "4873";
-const Company_Key = "0";
-const Concept_Key = "236";
-const Zone_ID = "";
+//let, not const: devConfigPanel.js reassigns these at runtime
+let Asset_Zone_ID = "";
+let Asset_ID = "";
+let Display_ID = "";
+let Display_Name = "";
+let Daypart_ID = "";
+let Daypart_Name = "";
+let Store_ID = "";
+let Store_Key = "4873";
+let Company_Key = "0";
+let Concept_Key = "236";
+let Zone_ID = "";
 const Duration = "";
 const zoneHeight = "";
 const zoneWidth = "";
-const Partner_API = "webtrition"; 
-const Brand = "31709"; //business unit or sap code
-const Establishment = "21332"; //location or venue
+let Partner_API = "webtrition"; 
+let Group = "31709"; //business unit or sap code
+let Location = "21332"; //location or venue
 //yyyy-mm-dd ex.2026-02-23
-const dateToRequest = "";
+let dateToRequest = "";
 const devSiteKeys = ["6091", "4873", "4907", "5448", "4756", "6820"];
 //end development & preview values
 //global scope variables

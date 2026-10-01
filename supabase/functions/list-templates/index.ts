@@ -8,8 +8,8 @@ import { isPlainObject } from "../_shared/validation.ts";
 //   to everyone.
 // - Company-level templates (company_key set, concept_key null) are visible
 //   to anyone whose ccgsContext.companyKey matches.
-// - Concept-level templates (both keys set) are visible to anyone whose
-//   ccgsContext matches both keys.
+// - Concept-level templates (concept_key set) are the most relaxed scope:
+//   visible to anyone whose ccgsContext.conceptKey matches, regardless of company.
 // - If no ccgsContext is provided (local server / admin mode), all templates
 //   at every scope are returned.
 
@@ -49,10 +49,12 @@ Deno.serve(async (req: Request) => {
         ? Number(ccgs.conceptKey)
         : null;
 
-    if (companyKey !== null && conceptKey !== null) {
-      // User at concept level: see WAND + their company + their concept.
+    if (conceptKey !== null) {
+      // Concept scope is the most relaxed: any location in the concept sees it,
+      // regardless of company. Company scope still requires a company match.
+      const companyClause = companyKey !== null ? `and(company_key.eq.${companyKey},concept_key.is.null),` : "";
       query = query.or(
-        `company_key.is.null,and(company_key.eq.${companyKey},concept_key.is.null),and(company_key.eq.${companyKey},concept_key.eq.${conceptKey})`
+        `company_key.is.null,${companyClause}concept_key.eq.${conceptKey}`
       );
     } else if (companyKey !== null) {
       // User at company level: see WAND + their company (concept-level excluded).
