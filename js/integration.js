@@ -377,6 +377,9 @@ var IMSintegration;
                         if (!configsObj.group && configsObj.API) { configsObj.group = staticBusinessUnit; }
                         if (!configsObj.siteId && configsObj.API) { configsObj.siteId = staticLocation; }
 
+                        // kept in localStorage for legacy apps that still read "brand" directly. please remove after a safe migration.
+                        configsObj.brand = configsObj.group;
+
                         // watch for webos versions upgrades and changing of database use
                         configsObj.indexedDB = isUsingIndexedDB ? true : false;
 
@@ -591,6 +594,7 @@ var IMSintegration;
             }
 
             forceIMSUpdate(table, item, action) {
+                const _this = this;
                 // In-document only; cross-instance notification now rides the anchors key.
                 window.dispatchEvent(new CustomEvent('dbChangeEvent', {
                     detail: {
@@ -598,6 +602,11 @@ var IMSintegration;
                         item: item,
                         action: action
                     }
+                }));
+                localStorage.setItem(_this.store + '_dbChangeEvent' + "(" + version + ")", JSON.stringify({
+                    table: table,
+                    item: item,
+                    action: action
                 }));
             }
 
@@ -1262,13 +1271,19 @@ var IMSintegration;
                 const _this = this;
 
                 const handleDatabaseChangeEvent = (table, item, action) => {
-                    // In-document only; cross-instance notification now rides the anchors key.
+                    // CustomEvent covers same-document listeners; the localStorage write below is what
+                    // triggers app.js's 'storage' listener so non-leader/observer windows see the change too.
                     window.dispatchEvent(new CustomEvent('dbChangeEvent', {
                         detail: {
                             table,
                             item,
                             action
                         }
+                    }));
+                    localStorage.setItem(_this.store + '_dbChangeEvent' + "(" + version + ")", JSON.stringify({
+                        table,
+                        item,
+                        action
                     }));
                 };
 
