@@ -221,7 +221,7 @@ function checkSiblings() {
         siblingEles.forEach(each => {
             const siblingData = $(each).attr("id");
             const siblingDuration = $(each).attr("trm-duration");
-            if (siblingData.toLowerCase().indexOf("html") > -1 && siblingDuration === "0") {
+            if (siblingData && siblingData.toLowerCase().indexOf("html") > -1 && siblingDuration === "0") {
                 siblingShouldBeLeader = true;
             }
         })
