@@ -430,7 +430,7 @@ var IMSintegration;
                     $media.attr("id", asset.elementId);
                 }
                 var $frame = $("<iframe>");
-                $frame.attr("src", asset.fullPath);
+                $frame.attr("src", this.withCurrentTime(asset.fullPath));
                 $frame.attr("frameborder", "0");
                 $frame.attr("scrolling", "no");
                 $frame.attr("allowfullscreen", "allowfullscreen");
@@ -559,6 +559,40 @@ var IMSintegration;
             var shell = this.buildDynamicPageShell(pageId);
             this.ensureDynamicPagesRoot().append(shell.$page);
         };
+        // Pulls the raw Content Forecaster currentTime value from the host page's URL
+        // (falling back to the computed cfCurrentTime global) without re-encoding it,
+        // so the appended param keeps the format init.js CFTime()/isContentForecaster() expect.
+        MenuLayout.prototype.getCurrentTimeParam = function () {
+            try {
+                var search = (self.parent && self.parent.location && self.parent.location.search) || "";
+                var match = search.match(/[?&]currentTime=([^&#]*)/);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            } catch (e) {
+                // cross-origin parent; fall back to the global below
+            }
+            if (typeof cfCurrentTime !== "undefined" && cfCurrentTime) {
+                return cfCurrentTime;
+            }
+            return null;
+        };
+        // When running inside Content Forecaster, propagates currentTime onto embedded iframe
+        // URLs so nested frames can detect CF (see init.js isContentForecaster/CFTime).
+        MenuLayout.prototype.withCurrentTime = function (url) {
+            if (typeof isCF === "undefined" || !isCF || !url) {
+                return url;
+            }
+            if (/[?&]currentTime=/.test(url)) {
+                return url;
+            }
+            var value = this.getCurrentTimeParam();
+            if (!value) {
+                return url;
+            }
+            var sep = url.indexOf("?") === -1 ? "?" : "&";
+            return url + sep + "currentTime=" + value;
+        };
         // Blocks javascript:/data: etc. - iframe destinations only ever come from http(s).
         MenuLayout.prototype.isSafeIframeUrl = function (url) {
             try {
@@ -569,13 +603,14 @@ var IMSintegration;
             }
         };
         MenuLayout.prototype.ensureIframePage = function (pageId, url) {
+            var srcWithTime = this.withCurrentTime(url);
             var $existing = $('#' + pageId);
             if ($existing.length) {
-                $existing.find('iframe').attr('src', url);
+                $existing.find('iframe').attr('src', srcWithTime);
                 return;
             }
             var shell = this.buildDynamicPageShell(pageId, 'cms-media--scrollable');
-            var $frame = $('<iframe>').attr('src', url).attr('frameborder', '0').attr('allowfullscreen', 'allowfullscreen');
+            var $frame = $('<iframe>').attr('src', srcWithTime).attr('frameborder', '0').attr('allowfullscreen', 'allowfullscreen');
             shell.$media.append($frame);
             this.ensureDynamicPagesRoot().append(shell.$page);
         };

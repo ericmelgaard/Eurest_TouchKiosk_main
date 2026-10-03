@@ -1052,7 +1052,7 @@ var IMSintegration;
                             sapCode: _this.group,
                             venue: _this.establishment,
                             menuDate: currentTime(),
-                            days: 7,
+                            days: 3,
                             includeNutrients: true,
                             channel: "stable",
                             allergenMenu: "all"

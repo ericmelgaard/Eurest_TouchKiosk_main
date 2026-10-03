@@ -1526,19 +1526,61 @@ async function readClientDB(options = {}) {
   }
 
   function getCfSourceUrl() {
-    // Content Forecaster: source URL is either preview panel #2 src or the current location.
+    var candidates = [];
+
+    // Standard CF: the parent's frame element is the target carrying the source URL.
     try {
-      if (typeof window !== "undefined" && window.parent && window.parent.document) {
-        var panels = window.parent.frameElement;
-        if (panels) {
-          var panelSrc = panels.getAttribute("src") || "";
-          if (panelSrc) {
-            return panelSrc;
-          }
+      if (typeof window !== "undefined" && window.parent && window.parent.frameElement) {
+        var frameSrc = window.parent.frameElement.getAttribute("src") || window.parent.frameElement.src || "";
+        if (frameSrc) {
+          candidates.push(frameSrc);
         }
       }
     } catch (err) {
-      // Cross-frame access can fail in some contexts; fallback to location.href.
+      // Cross-frame access can fail in some contexts.
+    }
+
+    // CF standalone preview: the parent document's own URL holds the source URL.
+    try {
+      if (typeof window !== "undefined" && window.parent && window.parent.document && window.parent.document.location) {
+        var parentHref = window.parent.document.location.href || "";
+        if (parentHref) {
+          candidates.push(parentHref);
+        }
+      }
+    } catch (err) {
+      // Cross-frame access can fail in some contexts.
+    }
+
+    // Retain nested-frame discovery used by branded menu previews.
+    try {
+      var currentWindow = typeof window !== "undefined" ? window : null;
+      while (currentWindow && currentWindow.frameElement) {
+        var frame = currentWindow.frameElement;
+        var frameSrc = frame.getAttribute("src") || frame.src || "";
+        if (frameSrc) candidates.push(frameSrc);
+        var container = frame.parentElement;
+        var containerSrc = container && (container.getAttribute("src") || container.src);
+        if (containerSrc) candidates.push(containerSrc);
+        if (currentWindow.parent === currentWindow) break;
+        currentWindow = currentWindow.parent;
+      }
+    } catch (err) {
+      // Cross-frame access can fail in some contexts.
+    }
+
+    if (typeof location !== "undefined" && location.href) {
+      candidates.push(String(location.href));
+    }
+
+    // Prefer whichever candidate actually resolves to a schedule URL.
+    for (var i = 0; i < candidates.length; i++) {
+      if (getScheduleUrl(candidates[i])) {
+        return candidates[i];
+      }
+    }
+    if (candidates.length) {
+      return candidates[0];
     }
 
     if (typeof location !== "undefined" && location.href) {
@@ -1546,6 +1588,34 @@ async function readClientDB(options = {}) {
     }
 
     return "";
+  }
+
+  function getCfPreviewTime(sourceUrl) {
+    // Use the selected timestamp verbatim, not CFTime()'s legacy three-hour adjustment.
+    var candidates = [sourceUrl, getCfSourceUrl()];
+    try {
+      if (typeof window !== "undefined" && window.parent && window.parent.location) {
+        candidates.push(window.parent.location.href);
+      }
+    } catch (err) {
+      // Cross-origin previews must supply currentTime in an accessible URL.
+    }
+    if (typeof location !== "undefined" && location.href) {
+      candidates.push(String(location.href));
+    }
+
+    for (var i = 0; i < candidates.length; i++) {
+      var candidate = String(candidates[i] || "");
+      var match = candidate.match(/[?&]currentTime=([^&#]*)/i);
+      if (!match) continue;
+      var value = decodeURIComponent(match[1]);
+      var previewTime = new Date(value);
+      if (!value || !Number.isFinite(previewTime.getTime())) {
+        throw new Error("Invalid Content Forecaster currentTime: " + value);
+      }
+      return previewTime;
+    }
+    throw new Error("Content Forecaster currentTime is missing from the preview URLs.");
   }
 
   function getPricingUrl(scheduleUrl) {
@@ -1569,6 +1639,13 @@ async function readClientDB(options = {}) {
 
   function isCfAssetDayAndTimeActive(asset, date) {
     if (!asset || !asset.Engage || asset.Deploy === false) return false;
+    if (asset.TerminateDateTime != null && asset.TerminateDateTime !== "") {
+      var terminateTime = new Date(asset.TerminateDateTime);
+      if (!Number.isFinite(terminateTime.getTime())) {
+        throw new Error("Invalid TerminateDateTime for CF asset zone " + asset.AssetZoneId + ": " + asset.TerminateDateTime);
+      }
+      if (date.getTime() >= terminateTime.getTime()) return false;
+    }
     var dayKeys = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var dayKey = dayKeys[date.getDay()];
     if (asset[dayKey] !== true) return false;
@@ -1636,7 +1713,7 @@ async function readClientDB(options = {}) {
     });
   }
 
-  function extractAssetDetailFromSchedule(scheduleData, scheduleUrl) {
+  function extractAssetDetailFromSchedule(scheduleData, scheduleUrl, previewTime) {
     var rows = [];
     var displayGroups = scheduleData && Array.isArray(scheduleData.DisplayGroups) ? scheduleData.DisplayGroups : [];
     var basePath = "";
@@ -1674,7 +1751,7 @@ async function readClientDB(options = {}) {
                     return;
                   }
 
-                  if (!isCfAssetDayAndTimeActive(asset, now)) {
+                  if (!isCfAssetDayAndTimeActive(asset, previewTime)) {
                     return;
                   }
 
@@ -1802,7 +1879,9 @@ async function readClientDB(options = {}) {
   }
 
   async function loadFromCfPath() {
-    var sourceUrl = getCfSourceUrl();
+    var sourceUrl = options.scheduleUrl || options.cfScheduleUrl
+      || options.sourceUrl || options.frameUrl || options.frameSrc || getCfSourceUrl();
+    var previewTime = getCfPreviewTime(sourceUrl);
 
     var resolvedScheduleUrl = getScheduleUrl(sourceUrl);
     if (!resolvedScheduleUrl && sourceUrl && /contentschedule\.json/i.test(sourceUrl)) {
@@ -1818,7 +1897,7 @@ async function readClientDB(options = {}) {
       delayMs: 1500,
       label: "schedule"
     });
-    var resolvedPricingUrl = getPricingUrl(resolvedScheduleUrl);
+    var resolvedPricingUrl = options.pricingUrl || getPricingUrl(resolvedScheduleUrl);
 
     var pricingData = null;
     if (resolvedPricingUrl) {
@@ -1835,7 +1914,7 @@ async function readClientDB(options = {}) {
 
     return toUnifiedResponse({
       source: "cf",
-      assetDetail: extractAssetDetailFromSchedule(scheduleData, resolvedScheduleUrl),
+      assetDetail: extractAssetDetailFromSchedule(scheduleData, resolvedScheduleUrl, previewTime),
       menuItems: extractMenuItemsFromPricing(pricingData),
       scheduleUrl: resolvedScheduleUrl,
       pricingUrl: resolvedPricingUrl
@@ -1844,8 +1923,13 @@ async function readClientDB(options = {}) {
 
   var forceCf =
     requestedPlatform === "cf"
-    || (typeof isCF !== "undefined" && isCF === true);
-  if (forceCf) {
+    || (typeof isCF !== "undefined" && isCF === true)
+    || options.source === "cf"
+    || options.path === "cf"
+    || options.mode === "cf"
+    || options.dataSource === "cf";
+  var hasCfUrl = !!(options.scheduleUrl || options.cfScheduleUrl || options.sourceUrl || options.frameUrl || options.frameSrc);
+  if (forceCf || hasCfUrl) {
     return loadFromCfPath();
   }
 
