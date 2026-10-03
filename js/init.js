@@ -252,14 +252,40 @@ function versionTest() {
     }
 }
 
+//returns the query string carrying the Content Forecaster currentTime param.
+//checks the parent frame first (true CF wrapper), then this frame's own URL
+//(currentTime propagated onto embedded iframe src by menuLayout). Each lookup is
+//guarded because cross-origin access to the parent can throw.
+function getCFSearch() {
+    try {
+        if (/\bcurrentTime=\b/.test(self.parent.location.search)) {
+            return self.parent.location.search;
+        }
+    } catch (err) {
+        // cross-origin parent; fall through to this frame's own URL
+    }
+    try {
+        if (/\bcurrentTime=\b/.test(self.location.search)) {
+            return self.location.search;
+        }
+    } catch (err) {
+        // ignore and report "not CF"
+    }
+    return "";
+};
+
 //get content forecaster time
 function CFTime() {
     if (!isCF) {
         return;
     }
-    const t = self.parent.location.search;
-    const timeindex = t.indexOf("?currentTime=");
-    const cftime = t.slice(timeindex + 13, timeindex + 33);
+    const t = getCFSearch();
+    const timeindex = t.indexOf("currentTime=");
+    if (timeindex === -1) {
+        return;
+    }
+    const valueStart = timeindex + "currentTime=".length;
+    const cftime = t.slice(valueStart, valueStart + 20);
     const dateCF = new Date(cftime);
     dateCF.setHours(dateCF.getHours() - 3);
     return dateCF.toISOString();
@@ -267,14 +293,7 @@ function CFTime() {
 
 //check if in content forecaster
 function isContentForecaster() {
-    try {
-        if (/\bcurrentTime=\b/.test(self.parent.location.search)) {
-            return true;
-        }
-    } catch (err) {
-        return false;
-    }
-    return false;
+    return getCFSearch() !== "";
 };
 
 function discoverPlatform() {
