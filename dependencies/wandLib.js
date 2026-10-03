@@ -1,7 +1,7 @@
 "use strict";
-//***wandLib.js***
-//Date: 06.22.2026
-//Version: 65.0
+//!Publisher: Wand Digital
+//!Date: 09.29.2026
+//!Version: 65.1.0
 
 $(document).ready(function () {
     let cursorIdleTimeout;
@@ -17,6 +17,37 @@ $(document).ready(function () {
     showCursor();
 });
 
+// Registry of extra context-menu options contributed on demand by individual apps.
+// Keeps wandLib reusable across the platform: an app adds its own option by calling
+// registerOptionsMenuItem(...) instead of forking this file. Apps that don't need the
+// extra option simply never register it, so nothing changes for them.
+//
+// item shape:
+//   {
+//     action:    unique string used as data-action,
+//     label:     text shown in the menu,
+//     icon:      (optional) inline SVG/HTML string shown before the label,
+//     isVisible: (optional) function returning whether to show it right now,
+//     onSelect:  function run when the item is clicked
+//   }
+var optionsMenuRegistry = [];
+function registerOptionsMenuItem(item) {
+    if (!item || !item.action || typeof item.onSelect !== "function") {
+        return;
+    }
+    // Replace any existing entry with the same action so re-registration is safe.
+    for (var i = optionsMenuRegistry.length - 1; i >= 0; i--) {
+        if (optionsMenuRegistry[i].action === item.action) {
+            optionsMenuRegistry.splice(i, 1);
+        }
+    }
+    optionsMenuRegistry.push(item);
+}
+// Expose for app scripts that load after this library.
+if (typeof window !== "undefined") {
+    window.registerOptionsMenuItem = registerOptionsMenuItem;
+}
+
 function setupOptionsMenu() {
 
     // Create dropdown menu
@@ -24,8 +55,8 @@ function setupOptionsMenu() {
     dropdownMenu.className = 'options-dropdown';
     dropdownMenu.style.position = 'relative';
     // Refresh/Reset always show. Rotate/Expand stay exclusive to the non-client (browser
-    // preview) case, same as before. Edit Config is added for that case AND for CF - CF also
-    // runs inside an iframe (client === true there) but still needs the config editor entry.
+    // preview) case. Any other options are contributed on demand via
+    // registerOptionsMenuItem(...) so this library stays generic.
     var refreshItem = `
     <div class="dropdown-item" data-action="refresh">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,23 +85,35 @@ function setupOptionsMenu() {
       </svg>
       <span>Expand</span>
     </div>`;
-    var editConfigItem = `
-    <div class="dropdown-item" data-action="editConfig">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <span>Edit Config</span>
-    </div>`;
 
-    var menuItems = refreshItem + resetItem;
-    if (!client) {
-        menuItems += rotateItem + expandItem;
+    // Compose the menu fresh each time it opens so options registered on demand (via
+    // registerOptionsMenuItem) appear even when their script loaded after this menu was set
+    // up. Core items are always evaluated here; extra items come from the registry.
+    function renderMenu() {
+        var menuItems = refreshItem + resetItem;
+        if (!client) {
+            menuItems += rotateItem + expandItem;
+        }
+        for (var i = 0; i < optionsMenuRegistry.length; i++) {
+            var entry = optionsMenuRegistry[i];
+            var isVisible = true;
+            if (typeof entry.isVisible === "function") {
+                try {
+                    isVisible = !!entry.isVisible();
+                } catch (err) {
+                    isVisible = false;
+                }
+            }
+            if (isVisible) {
+                menuItems += '<div class="dropdown-item" data-action="' + entry.action + '">' +
+                    (entry.icon || '') +
+                    '<span>' + (entry.label || '') + '</span>' +
+                    '</div>';
+            }
+        }
+        dropdownMenu.innerHTML = menuItems;
     }
-    if (!client || isCF) {
-        menuItems += editConfigItem;
-    }
-    dropdownMenu.innerHTML = menuItems;
+    renderMenu();
 
 
     // Create container for the options menu
@@ -87,6 +130,8 @@ function setupOptionsMenu() {
 
     // Show custom menu at mouse position (viewport coordinates, unaffected by scale)
     function showCustomMenu(x, y) {
+        // Rebuild the menu so any on-demand registered options are reflected.
+        renderMenu();
         // Get current scale from body transform
         let scale = 1;
         const transform = document.body.style.transform;
@@ -166,9 +211,16 @@ function setupOptionsMenu() {
             case 'expand':
                 window.dispatchEvent(windowToggleScale);
                 break;
-            case 'editConfig':
-                if (window.configEditor && typeof window.configEditor.toggle === "function") {
-                    window.configEditor.toggle();
+            default:
+                for (var i = 0; i < optionsMenuRegistry.length; i++) {
+                    if (optionsMenuRegistry[i].action === action) {
+                        try {
+                            optionsMenuRegistry[i].onSelect();
+                        } catch (err) {
+                            console.error("Options menu action failed:", action, err);
+                        }
+                        break;
+                    }
                 }
                 break;
         }
@@ -317,7 +369,7 @@ function currentTime() {
     } else {
         if (!development || dateToRequest === "") {
             var tzoffset = new Date().getTimezoneOffset() * 60000;
-            var localISOTime = new Date(Date.now() - tzoffset + (timeZoneOffset * 60000))
+            var localISOTime = new Date(Date.now() - tzoffset + (timeZoneOffset * 3600000))
                 .toISOString()
                 .slice(0, -1);
             localISOTime = localISOTime.split("T")[0] + "T00:00:00";
@@ -536,7 +588,7 @@ function hideFallback() {
     }
     
     // Set timeout to show again after 30 seconds of inactivity
-    window.fallbackShowTimeout = setTimeout(function() {
+    window.fallbackShowTimeout = setTimeout(function () {
         $(".fallback-wrapper").show();
     }, 30000);
 }
