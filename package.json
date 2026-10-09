@@ -7,9 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "package": "powershell -ExecutionPolicy Bypass -File scripts/build-asset.ps1"
+    "package": "powershell -ExecutionPolicy Bypass -File scripts/build-asset.ps1",
+    "package:raw": "powershell -ExecutionPolicy Bypass -File scripts/build-asset.ps1 -NoTranspile"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "core-js": "^3.50.0",
+    "core-js-compat": "^3.50.0",
+    "esbuild": "^0.28.2",
     "vite": "^5.4.2"
   },
   "dependencies": {

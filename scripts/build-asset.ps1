@@ -1,7 +1,9 @@
 # Packages only the files the kiosk actually loads at runtime into release/ (+ release.zip),
 # leaving supabase/, docs/, and dev tooling (package.json, vite.config.js, .git) out of the CMS asset.
 param(
-    [string]$OutDir = "dist"
+    [string]$OutDir = "dist",
+    # Skip the Chrome 53 down-level step and ship the source files as-is.
+    [switch]$NoTranspile
 )
 
 $ErrorActionPreference = "Stop"
@@ -41,6 +43,11 @@ foreach ($p in $includePaths) {
     } else {
         Write-Warning "Skipping missing path: $p"
     }
+}
+
+if (-not $NoTranspile) {
+    node scripts/transpile.mjs $OutDir
+    if ($LASTEXITCODE -ne 0) { throw "Transpile failed" }
 }
 
 $zipPath = "$OutDir.zip"
