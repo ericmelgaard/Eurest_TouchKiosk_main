@@ -253,19 +253,19 @@ min-width: 900px;;
     overflow-wrap: anywhere;
 }
 
-.eurest-logo {
+.footer-logo {
     position: absolute;
     bottom: 0px;
     text-align: center;
 }
 
-.eurest-logo img {
+.footer-logo img {
     max-width: 400px;
     height: auto;
 }
 
 /* no footer_logo_url configured for this store - hide instead of showing a broken image icon */
-.eurest-logo img:not([src]) {
+.footer-logo img:not([src]) {
     display: none;
 }
 

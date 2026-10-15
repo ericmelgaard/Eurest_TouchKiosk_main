@@ -715,7 +715,7 @@ var configEditor = (function () {
                 var $liveImg = $(".welcome-header img");
                 if ($liveImg.length) { currentUrl = $liveImg.attr("src"); }
             } else if (purpose === "footer") {
-                var $liveFooter = $(".eurest-logo img");
+                var $liveFooter = $(".footer-logo img");
                 if ($liveFooter.length) { currentUrl = $liveFooter.attr("src"); }
             } else {
                 var $liveBg = $(".background img");
