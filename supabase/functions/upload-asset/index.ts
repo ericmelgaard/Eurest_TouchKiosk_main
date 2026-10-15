@@ -13,7 +13,7 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/webp": "webp",
   "image/svg+xml": "svg",
 };
-const PURPOSES = ["icon-catalog", "custom-icon", "background", "title"] as const;
+const PURPOSES = ["icon-catalog", "custom-icon", "background", "title", "footer"] as const;
 type Purpose = (typeof PURPOSES)[number];
 
 function isPurpose(v: unknown): v is Purpose {

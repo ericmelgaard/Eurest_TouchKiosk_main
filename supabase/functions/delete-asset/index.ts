@@ -6,7 +6,7 @@ import {
 } from "../_shared/supabaseAdmin.ts";
 import { isNonEmptyString, normalizeStoreKey } from "../_shared/validation.ts";
 
-const PURPOSES = ["background", "title", "custom-icon", "icon-catalog"] as const;
+const PURPOSES = ["background", "title", "footer", "custom-icon", "icon-catalog"] as const;
 type Purpose = typeof PURPOSES[number];
 
 function isPurpose(value: unknown): value is Purpose {
@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
   let storeKey: string | null = null;
   let conceptKey: number | null = null;
 
-  if (purpose === "background" || purpose === "title") {
+  if (purpose === "background" || purpose === "title" || purpose === "footer") {
     storeKey = normalizeStoreKey(payload.storeKey);
     if (!storeKey) {
       return jsonResponse({ error: "storeKey is required for purpose=" + purpose }, 400);
@@ -76,8 +76,10 @@ Deno.serve(async (req: Request) => {
 
   const publicUrl = buildPublicUrl(path);
 
-  if ((purpose === "background" || purpose === "title") && storeKey) {
-    const column = purpose === "background" ? "background_image_url" : "title_image_url";
+  if ((purpose === "background" || purpose === "title" || purpose === "footer") && storeKey) {
+    const column = purpose === "background"
+      ? "background_image_url"
+      : purpose === "footer" ? "footer_logo_url" : "title_image_url";
     const { data: site, error: siteError } = await supabase
       .from("site_config")
       .select(column)
