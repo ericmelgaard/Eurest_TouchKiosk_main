@@ -1,7 +1,7 @@
 "use strict";
 //!Publisher: Wand Digital
 //!Date: 09.29.2026
-//!Version: 65.1.0
+//!Version: 65.2.0
 
 $(document).ready(function () {
     let cursorIdleTimeout;
@@ -1109,7 +1109,23 @@ if (!Array.prototype.includes) {
         return false;
     };
 }
-
+//padStart() - Chrome 57, players are on 53. Used by formatcentric's day-tag date.
+if (!String.prototype.padStart) {
+    String.prototype.padStart = function (targetLength, padString) {
+        var s = String(this);
+        targetLength = targetLength >> 0;
+        padString = padString === undefined ? ' ' : String(padString);
+        if (s.length >= targetLength || padString === '') {
+            return s;
+        }
+        var needed = targetLength - s.length;
+        var pad = padString;
+        while (pad.length < needed) {
+            pad += padString;
+        }
+        return pad.slice(0, needed) + s;
+    };
+}
 // MenuRotator: private scoped menu rotation logic
 var MenuRotator = (function () {
     var menuRotationInterval = null;
