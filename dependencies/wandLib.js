@@ -1689,15 +1689,43 @@ async function readClientDB(options = {}) {
     return 0;
   }
 
+  function parseCfDateTime(value, field, label) {
+    var parsed = new Date(value);
+    if (!Number.isFinite(parsed.getTime())) {
+      throw new Error("Invalid " + field + " for CF " + label + ": " + value);
+    }
+    return parsed;
+  }
+
+  // CF emits Effective/Terminate on deployments, zones and assets; each level must be live.
+  // A *DateTimeSpecified flag of false means CF left that bound open.
+  function isCfDateRangeActive(record, date, label) {
+    if (!record) return false;
+    if (record.EffectiveDateTime && record.EffectiveDateTimeSpecified !== false) {
+      if (date.getTime() < parseCfDateTime(record.EffectiveDateTime, "EffectiveDateTime", label).getTime()) return false;
+    }
+    if (record.TerminateDateTime && record.TerminateDateTimeSpecified !== false) {
+      if (date.getTime() >= parseCfDateTime(record.TerminateDateTime, "TerminateDateTime", label).getTime()) return false;
+    }
+    return true;
+  }
+
+  // A daypart with WeekSchedules is only live on listed days, within that day's start/end time.
+  function isCfDaypartActive(daypart, date) {
+    var schedules = daypart && Array.isArray(daypart.WeekSchedules) ? daypart.WeekSchedules : null;
+    if (!schedules || !schedules.length) return true;
+    var dayKeys = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var dayKey = dayKeys[date.getDay()];
+    var nowSeconds = (date.getHours() * 3600) + (date.getMinutes() * 60) + date.getSeconds();
+    return schedules.some(function (schedule) {
+      return schedule && schedule.DayOfWeek === dayKey
+        && isTimeRangeActive(toSeconds(schedule.startTime), toSeconds(schedule.endTime), nowSeconds);
+    });
+  }
+
   function isCfAssetDayAndTimeActive(asset, date) {
     if (!asset || !asset.Engage || asset.Deploy === false) return false;
-    if (asset.TerminateDateTime != null && asset.TerminateDateTime !== "") {
-      var terminateTime = new Date(asset.TerminateDateTime);
-      if (!Number.isFinite(terminateTime.getTime())) {
-        throw new Error("Invalid TerminateDateTime for CF asset zone " + asset.AssetZoneId + ": " + asset.TerminateDateTime);
-      }
-      if (date.getTime() >= terminateTime.getTime()) return false;
-    }
+    if (!isCfDateRangeActive(asset, date, "asset zone " + asset.AssetZoneId)) return false;
     var dayKeys = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var dayKey = dayKeys[date.getDay()];
     if (asset[dayKey] !== true) return false;
@@ -1777,9 +1805,16 @@ async function readClientDB(options = {}) {
     displayGroups.forEach(function (group) {
       var deployments = group && Array.isArray(group.Deployments) ? group.Deployments : [];
       deployments.forEach(function (deployment) {
+        if (!isCfDateRangeActive(deployment, previewTime, "deployment " + (deployment && deployment.ID))) {
+          return;
+        }
         var dayparts = deployment && Array.isArray(deployment.Dayparts) ? deployment.Dayparts : [];
         dayparts.forEach(function (daypart) {
           if (daypartIdFilter !== null && Number(daypart.ID || daypart.DaypartID || 0) !== daypartIdFilter) {
+            return;
+          }
+
+          if (!isCfDaypartActive(daypart, previewTime)) {
             return;
           }
 
@@ -1790,6 +1825,10 @@ async function readClientDB(options = {}) {
               var cfZones = region && Array.isArray(region.Zones) ? region.Zones : [];
               cfZones.forEach(function (zone) {
                 if (zoneIdFilter !== null && Number(zone.ID || zone.ZoneId || 0) !== zoneIdFilter) {
+                  return;
+                }
+
+                if (!isCfDateRangeActive(zone, previewTime, "zone " + (zone && zone.ID))) {
                   return;
                 }
 
