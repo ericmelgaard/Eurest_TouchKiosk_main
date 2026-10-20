@@ -22,6 +22,15 @@ var IMSintegration;
             if (!API) {
                 return;
             }
+            // A data refresh re-runs init, and renderCategoryCards tears down every dynamic
+            // page - including the one a guest may be on. Go home first so nothing blanks out.
+            if (this._coreInitialized && $('.home:visible').length === 0) {
+                try {
+                    this.returnHome();
+                } catch (e) {
+                    console.error("Error in MenuLayout returnHome before re-init: ", e);
+                }
+            }
             try {
                 this.applyThemeFromSiteConfig(siteConfig);
             } catch (e) {
